@@ -213,7 +213,7 @@ describe("DashboardPage", () => {
     api.submitPlan.mockResolvedValue({
       audit_id: "AUD-2026-99482",
       submission_id: "SUB-99482",
-      status: "APPROVED",
+      status: "SUBMITTED",
       cluster_id: "STV-CLUSTER-01",
       scenario_type: "BALANCED",
       sku_actions_committed: 12,

@@ -74,7 +74,7 @@ def submit_assortment_plan(
         cluster_id=cluster.id,
         audit_id=audit_id,
         scenario_type=scenario_type,
-        status="APPROVED",
+        status="SUBMITTED",
         projected_sales_delta_pct=evaluation.projected_impact.sales_delta_percentage,
         projected_margin_delta_pct=evaluation.projected_impact.margin_delta_percentage,
         projected_pb_mix_delta=evaluation.projected_impact.private_brand_mix_delta,
@@ -152,7 +152,7 @@ def submit_assortment_plan(
     return PlanSubmitResponse(
         audit_id=audit_id,
         submission_id=submission_id,
-        status="APPROVED",
+        status="SUBMITTED",
         cluster_id=cluster.cluster_code,
         scenario_type=scenario_type,
         sku_actions_committed=committed_count or 12,

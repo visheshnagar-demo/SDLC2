@@ -11,7 +11,7 @@ def test_submit_assortment_plan_success(client):
     assert "audit_id" in data
     assert data["audit_id"].startswith("AUD-")
     assert "submission_id" in data
-    assert data["status"] == "APPROVED"
+    assert data["status"] == "SUBMITTED"
     assert data["cluster_id"] == "STV-CLUSTER-01"
     assert data["scenario_type"] == "BALANCED"
     assert data["sku_actions_committed"] == 12

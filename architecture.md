@@ -53,7 +53,20 @@ graph TD
 - server/tests/test_skus.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/components/ApprovalReviewPanel.jsx
+- client/src/components/InlineConfirmationModal.jsx
+- client/src/components/KpiHeaderStrip.jsx
+- client/src/components/ScenarioSelectorCards.jsx
+- client/src/components/SkuPerformanceTable.jsx
+- client/src/main.jsx
+- client/src/pages/DashboardPage.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/src/tests/DashboardPage.test.jsx
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - GET /api/v1/cluster/kpis

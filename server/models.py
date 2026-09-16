@@ -121,7 +121,7 @@ class AssortmentPlan(Base):
     audit_id = Column(String(50), unique=True, index=True, nullable=False)
     scenario_type = Column(String(20), nullable=False)
     status = Column(
-        String(20), nullable=False, default="APPROVED"
+        String(20), nullable=False, default="SUBMITTED"
     )  # SUBMITTED | APPROVED | REJECTED
     projected_sales_delta_pct = Column(Float, nullable=False, default=0.0)
     projected_margin_delta_pct = Column(Float, nullable=False, default=0.0)
