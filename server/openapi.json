@@ -1,0 +1,1113 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DG Cluster Assortment Advisor API",
+    "description": "Decision-support tool for Dollar General category managers evaluating Snacks assortment for Small Town Value Cluster stores.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/kpis": {
+      "get": {
+        "tags": [
+          "Cluster KPIs"
+        ],
+        "summary": "Get Kpis Endpoint",
+        "description": "Fetch top-level cluster KPI metrics including Sales per Linear Foot,\nPrivate Brand %, In-Stock Rate %, and Shelf Capacity %.",
+        "operationId": "get_kpis_endpoint_api_v1_kpis_get",
+        "parameters": [
+          {
+            "name": "cluster_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cluster ID or code",
+              "default": "STV-CLUSTER-01",
+              "title": "Cluster Id"
+            },
+            "description": "Cluster ID or code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClusterKpiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cluster/kpis": {
+      "get": {
+        "tags": [
+          "Cluster KPIs"
+        ],
+        "summary": "Get Kpis Endpoint",
+        "description": "Fetch top-level cluster KPI metrics including Sales per Linear Foot,\nPrivate Brand %, In-Stock Rate %, and Shelf Capacity %.",
+        "operationId": "get_kpis_endpoint_api_v1_cluster_kpis_get",
+        "parameters": [
+          {
+            "name": "cluster_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cluster ID or code",
+              "default": "STV-CLUSTER-01",
+              "title": "Cluster Id"
+            },
+            "description": "Cluster ID or code"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClusterKpiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/skus": {
+      "get": {
+        "tags": [
+          "SKU Assortment"
+        ],
+        "summary": "Get Skus Endpoint",
+        "description": "Fetch Snacks category SKUs with performance metrics and status badges\n(GROW, MAINTAIN, SWAP, REDUCE).",
+        "operationId": "get_skus_endpoint_api_v1_skus_get",
+        "parameters": [
+          {
+            "name": "cluster_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Cluster ID or code",
+              "default": "STV-CLUSTER-01",
+              "title": "Cluster Id"
+            },
+            "description": "Cluster ID or code"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by SKU code or name",
+              "title": "Search"
+            },
+            "description": "Search by SKU code or name"
+          },
+          {
+            "name": "brand_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by brand type (PRIVATE_BRAND/NATIONAL_BRAND)",
+              "title": "Brand Type"
+            },
+            "description": "Filter by brand type (PRIVATE_BRAND/NATIONAL_BRAND)"
+          },
+          {
+            "name": "action",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by recommended action (GROW/MAINTAIN/SWAP/REDUCE)",
+              "title": "Action"
+            },
+            "description": "Filter by recommended action (GROW/MAINTAIN/SWAP/REDUCE)"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Pagination skip offset",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Pagination skip offset"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "description": "Pagination limit",
+              "default": 50,
+              "title": "Limit"
+            },
+            "description": "Pagination limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkuListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios": {
+      "get": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "Get Scenarios Endpoint",
+        "description": "Retrieve scenario cards (Conservative, Balanced, Aggressive).",
+        "operationId": "get_scenarios_endpoint_api_v1_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/evaluate": {
+      "post": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "Evaluate Scenario Endpoint",
+        "description": "Evaluate projected impacts and automated guardrail checks for a scenario.",
+        "operationId": "evaluate_scenario_endpoint_api_v1_scenarios_evaluate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioEvaluateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioEvaluateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/submit": {
+      "post": {
+        "tags": [
+          "Assortment Plans & Audit"
+        ],
+        "summary": "Submit Plan Endpoint",
+        "description": "Submit approved assortment plan, validate guardrails, and generate audit trail record.",
+        "operationId": "submit_plan_endpoint_api_v1_plans_submit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PlanSubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlanSubmitResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/plans/audit/{audit_id}": {
+      "get": {
+        "tags": [
+          "Assortment Plans & Audit"
+        ],
+        "summary": "Get Plan Audit Endpoint",
+        "description": "Retrieve audit-trail record by Audit ID.",
+        "operationId": "get_plan_audit_endpoint_api_v1_plans_audit__audit_id__get",
+        "parameters": [
+          {
+            "name": "audit_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "Audit ID (e.g., AUD-2026-99482)",
+              "title": "Audit Id"
+            },
+            "description": "Audit ID (e.g., AUD-2026-99482)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root Endpoint",
+        "operationId": "root_endpoint__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "summary": "Healthcheck",
+        "operationId": "healthcheck_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Healthcheck",
+        "operationId": "healthcheck_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuditDetailResponse": {
+        "properties": {
+          "audit_id": {
+            "type": "string",
+            "title": "Audit Id"
+          },
+          "plan_id": {
+            "type": "string",
+            "title": "Plan Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id"
+          },
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type"
+          },
+          "submitted_by": {
+            "type": "string",
+            "title": "Submitted By"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "projected_sales_delta_pct": {
+            "type": "number",
+            "title": "Projected Sales Delta Pct"
+          },
+          "projected_margin_delta_pct": {
+            "type": "number",
+            "title": "Projected Margin Delta Pct"
+          },
+          "projected_pb_mix_delta": {
+            "type": "number",
+            "title": "Projected Pb Mix Delta"
+          },
+          "guardrail_status": {
+            "type": "string",
+            "title": "Guardrail Status"
+          },
+          "actions": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Actions"
+          },
+          "guardrail_checks": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailCheck"
+            },
+            "type": "array",
+            "title": "Guardrail Checks"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audit_id",
+          "plan_id",
+          "status",
+          "cluster_id",
+          "scenario_type",
+          "submitted_by",
+          "submitted_at",
+          "projected_sales_delta_pct",
+          "projected_margin_delta_pct",
+          "projected_pb_mix_delta",
+          "guardrail_status",
+          "actions",
+          "guardrail_checks",
+          "created_at"
+        ],
+        "title": "AuditDetailResponse"
+      },
+      "ClusterKpiResponse": {
+        "properties": {
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id"
+          },
+          "cluster_name": {
+            "type": "string",
+            "title": "Cluster Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "sales_per_linear_ft": {
+            "type": "number",
+            "title": "Sales Per Linear Ft"
+          },
+          "sales_per_linear_ft_formatted": {
+            "type": "string",
+            "title": "Sales Per Linear Ft Formatted"
+          },
+          "private_brand_percentage": {
+            "type": "number",
+            "title": "Private Brand Percentage"
+          },
+          "in_stock_rate_percentage": {
+            "type": "number",
+            "title": "In Stock Rate Percentage"
+          },
+          "shelf_capacity_percentage": {
+            "type": "number",
+            "title": "Shelf Capacity Percentage"
+          },
+          "metrics": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KpiMetrics"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster_id",
+          "cluster_name",
+          "category",
+          "sales_per_linear_ft",
+          "sales_per_linear_ft_formatted",
+          "private_brand_percentage",
+          "in_stock_rate_percentage",
+          "shelf_capacity_percentage",
+          "updated_at"
+        ],
+        "title": "ClusterKpiResponse"
+      },
+      "GuardrailCheck": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "current_value": {
+            "type": "string",
+            "title": "Current Value"
+          },
+          "threshold": {
+            "type": "string",
+            "title": "Threshold"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "status",
+          "current_value",
+          "threshold"
+        ],
+        "title": "GuardrailCheck"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "KpiMetrics": {
+        "properties": {
+          "sales_per_linear_ft": {
+            "type": "number",
+            "title": "Sales Per Linear Ft"
+          },
+          "sales_per_linear_ft_formatted": {
+            "type": "string",
+            "title": "Sales Per Linear Ft Formatted"
+          },
+          "private_brand_percentage": {
+            "type": "number",
+            "title": "Private Brand Percentage"
+          },
+          "in_stock_rate_percentage": {
+            "type": "number",
+            "title": "In Stock Rate Percentage"
+          },
+          "shelf_capacity_percentage": {
+            "type": "number",
+            "title": "Shelf Capacity Percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sales_per_linear_ft",
+          "sales_per_linear_ft_formatted",
+          "private_brand_percentage",
+          "in_stock_rate_percentage",
+          "shelf_capacity_percentage"
+        ],
+        "title": "KpiMetrics"
+      },
+      "PlanSubmitRequest": {
+        "properties": {
+          "cluster_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster Id"
+          },
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type",
+            "description": "CONSERVATIVE, BALANCED, or AGGRESSIVE"
+          },
+          "submitted_by": {
+            "type": "string",
+            "title": "Submitted By",
+            "default": "category_manager_dg@example.com"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_type"
+        ],
+        "title": "PlanSubmitRequest"
+      },
+      "PlanSubmitResponse": {
+        "properties": {
+          "audit_id": {
+            "type": "string",
+            "title": "Audit Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id"
+          },
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type"
+          },
+          "sku_actions_committed": {
+            "type": "integer",
+            "title": "Sku Actions Committed"
+          },
+          "guardrail_summary": {
+            "type": "string",
+            "title": "Guardrail Summary"
+          },
+          "submitted_by": {
+            "type": "string",
+            "title": "Submitted By"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "confirmation_message": {
+            "type": "string",
+            "title": "Confirmation Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audit_id",
+          "submission_id",
+          "status",
+          "cluster_id",
+          "scenario_type",
+          "sku_actions_committed",
+          "guardrail_summary",
+          "submitted_by",
+          "submitted_at",
+          "confirmation_message"
+        ],
+        "title": "PlanSubmitResponse"
+      },
+      "ProjectedImpact": {
+        "properties": {
+          "sales_delta_percentage": {
+            "type": "number",
+            "title": "Sales Delta Percentage"
+          },
+          "margin_delta_percentage": {
+            "type": "number",
+            "title": "Margin Delta Percentage"
+          },
+          "private_brand_mix_delta": {
+            "type": "number",
+            "title": "Private Brand Mix Delta"
+          },
+          "shelf_capacity_projected_percentage": {
+            "type": "number",
+            "title": "Shelf Capacity Projected Percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sales_delta_percentage",
+          "margin_delta_percentage",
+          "private_brand_mix_delta",
+          "shelf_capacity_projected_percentage"
+        ],
+        "title": "ProjectedImpact"
+      },
+      "ScenarioEvaluateRequest": {
+        "properties": {
+          "cluster_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster Id"
+          },
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type",
+            "description": "CONSERVATIVE, BALANCED, or AGGRESSIVE"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_type"
+        ],
+        "title": "ScenarioEvaluateRequest"
+      },
+      "ScenarioEvaluateResponse": {
+        "properties": {
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type"
+          },
+          "scenario_name": {
+            "type": "string",
+            "title": "Scenario Name"
+          },
+          "projected_impact": {
+            "$ref": "#/components/schemas/ProjectedImpact"
+          },
+          "sku_action_summary": {
+            "$ref": "#/components/schemas/SkuActionSummary"
+          },
+          "guardrail_checks": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailCheck"
+            },
+            "type": "array",
+            "title": "Guardrail Checks"
+          },
+          "can_submit": {
+            "type": "boolean",
+            "title": "Can Submit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_type",
+          "scenario_name",
+          "projected_impact",
+          "sku_action_summary",
+          "guardrail_checks",
+          "can_submit"
+        ],
+        "title": "ScenarioEvaluateResponse"
+      },
+      "ScenarioListResponse": {
+        "properties": {
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioOptionResponse"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_count",
+          "scenarios"
+        ],
+        "title": "ScenarioListResponse"
+      },
+      "ScenarioOptionResponse": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "scenario_type": {
+            "type": "string",
+            "title": "Scenario Type"
+          },
+          "scenario_name": {
+            "type": "string",
+            "title": "Scenario Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default"
+          },
+          "sales_delta_percentage": {
+            "type": "number",
+            "title": "Sales Delta Percentage"
+          },
+          "margin_delta_percentage": {
+            "type": "number",
+            "title": "Margin Delta Percentage"
+          },
+          "private_brand_mix_delta": {
+            "type": "number",
+            "title": "Private Brand Mix Delta"
+          },
+          "shelf_capacity_projected_percentage": {
+            "type": "number",
+            "title": "Shelf Capacity Projected Percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_type",
+          "scenario_name",
+          "description",
+          "is_default",
+          "sales_delta_percentage",
+          "margin_delta_percentage",
+          "private_brand_mix_delta",
+          "shelf_capacity_projected_percentage"
+        ],
+        "title": "ScenarioOptionResponse"
+      },
+      "SkuActionSummary": {
+        "properties": {
+          "grow_count": {
+            "type": "integer",
+            "title": "Grow Count"
+          },
+          "maintain_count": {
+            "type": "integer",
+            "title": "Maintain Count"
+          },
+          "swap_count": {
+            "type": "integer",
+            "title": "Swap Count"
+          },
+          "reduce_count": {
+            "type": "integer",
+            "title": "Reduce Count"
+          },
+          "total_actions": {
+            "type": "integer",
+            "title": "Total Actions"
+          }
+        },
+        "type": "object",
+        "required": [
+          "grow_count",
+          "maintain_count",
+          "swap_count",
+          "reduce_count",
+          "total_actions"
+        ],
+        "title": "SkuActionSummary"
+      },
+      "SkuItemResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sku_code": {
+            "type": "string",
+            "title": "Sku Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "brand_type": {
+            "type": "string",
+            "title": "Brand Type"
+          },
+          "weekly_sales_units": {
+            "type": "integer",
+            "title": "Weekly Sales Units"
+          },
+          "sales_volume_usd": {
+            "type": "number",
+            "title": "Sales Volume Usd"
+          },
+          "margin_percentage": {
+            "type": "number",
+            "title": "Margin Percentage"
+          },
+          "linear_space_inches": {
+            "type": "number",
+            "title": "Linear Space Inches"
+          },
+          "recommended_action": {
+            "type": "string",
+            "title": "Recommended Action"
+          },
+          "status_badge_color": {
+            "type": "string",
+            "title": "Status Badge Color"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sku_code",
+          "name",
+          "brand_type",
+          "weekly_sales_units",
+          "sales_volume_usd",
+          "margin_percentage",
+          "linear_space_inches",
+          "recommended_action",
+          "status_badge_color"
+        ],
+        "title": "SkuItemResponse"
+      },
+      "SkuListResponse": {
+        "properties": {
+          "total_count": {
+            "type": "integer",
+            "title": "Total Count"
+          },
+          "skus": {
+            "items": {
+              "$ref": "#/components/schemas/SkuItemResponse"
+            },
+            "type": "array",
+            "title": "Skus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_count",
+          "skus"
+        ],
+        "title": "SkuListResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
