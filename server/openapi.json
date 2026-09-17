@@ -1,0 +1,684 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DG Cluster Assortment Advisor API",
+    "description": "Decision-support API for Dollar General category managers for Small Town Value Cluster stores.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/assortment/metrics": {
+      "get": {
+        "tags": [
+          "Assortment Advisor"
+        ],
+        "summary": "Get Metrics",
+        "description": "Fetch baseline summary KPIs or scenario-adjusted summary metrics.",
+        "operationId": "get_metrics_api_v1_assortment_metrics_get",
+        "parameters": [
+          {
+            "name": "scenario",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional scenario key (conservative, balanced, aggressive)",
+              "title": "Scenario"
+            },
+            "description": "Optional scenario key (conservative, balanced, aggressive)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MetricsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assortment/skus": {
+      "get": {
+        "tags": [
+          "Assortment Advisor"
+        ],
+        "summary": "Get Skus",
+        "description": "Fetch list of SKUs with optional category and status badge filtering.",
+        "operationId": "get_skus_api_v1_assortment_skus_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by category",
+              "title": "Category"
+            },
+            "description": "Filter by category"
+          },
+          {
+            "name": "badge",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status badge (GROW, MAINTAIN, SWAP, REDUCE)",
+              "title": "Badge"
+            },
+            "description": "Filter by status badge (GROW, MAINTAIN, SWAP, REDUCE)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/SKUResponse"
+                  },
+                  "title": "Response Get Skus Api V1 Assortment Skus Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assortment/scenarios": {
+      "get": {
+        "tags": [
+          "Assortment Advisor"
+        ],
+        "summary": "Get Scenarios",
+        "description": "Fetch definitions and projections for Conservative, Balanced, and Aggressive scenarios.",
+        "operationId": "get_scenarios_api_v1_assortment_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenariosResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assortment/submit": {
+      "post": {
+        "tags": [
+          "Assortment Advisor"
+        ],
+        "summary": "Submit Assortment Plan",
+        "description": "Validate guardrails server-side, format audit confirmation ID, and persist submission snapshot.",
+        "operationId": "submit_assortment_plan_api_v1_assortment_submit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmitResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assortment/submissions": {
+      "get": {
+        "tags": [
+          "Assortment Advisor"
+        ],
+        "summary": "Get Submissions",
+        "description": "Retrieve all audit submission records.",
+        "operationId": "get_submissions_api_v1_assortment_submissions_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SubmissionRecordResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Submissions Api V1 Assortment Submissions Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ActionCounts": {
+        "properties": {
+          "GROW": {
+            "type": "integer",
+            "title": "Grow",
+            "default": 0
+          },
+          "MAINTAIN": {
+            "type": "integer",
+            "title": "Maintain",
+            "default": 0
+          },
+          "SWAP": {
+            "type": "integer",
+            "title": "Swap",
+            "default": 0
+          },
+          "REDUCE": {
+            "type": "integer",
+            "title": "Reduce",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "title": "ActionCounts"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MetricsResponse": {
+        "properties": {
+          "sales_per_linear_ft": {
+            "type": "number",
+            "title": "Sales Per Linear Ft"
+          },
+          "private_brand_pct": {
+            "type": "number",
+            "title": "Private Brand Pct"
+          },
+          "in_stock_rate_pct": {
+            "type": "number",
+            "title": "In Stock Rate Pct"
+          },
+          "shelf_capacity_pct": {
+            "type": "number",
+            "title": "Shelf Capacity Pct"
+          },
+          "is_projected": {
+            "type": "boolean",
+            "title": "Is Projected",
+            "default": false
+          }
+        },
+        "type": "object",
+        "required": [
+          "sales_per_linear_ft",
+          "private_brand_pct",
+          "in_stock_rate_pct",
+          "shelf_capacity_pct"
+        ],
+        "title": "MetricsResponse"
+      },
+      "SKUResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sku_code": {
+            "type": "string",
+            "title": "Sku Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "weekly_sales": {
+            "type": "number",
+            "title": "Weekly Sales"
+          },
+          "margin_pct": {
+            "type": "number",
+            "title": "Margin Pct"
+          },
+          "shelf_space_ft": {
+            "type": "number",
+            "title": "Shelf Space Ft"
+          },
+          "status_badge": {
+            "type": "string",
+            "title": "Status Badge"
+          },
+          "is_private_brand": {
+            "type": "boolean",
+            "title": "Is Private Brand"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sku_code",
+          "product_name",
+          "category",
+          "weekly_sales",
+          "margin_pct",
+          "shelf_space_ft",
+          "status_badge",
+          "is_private_brand"
+        ],
+        "title": "SKUResponse"
+      },
+      "ScenarioDetail": {
+        "properties": {
+          "scenario_key": {
+            "type": "string",
+            "title": "Scenario Key"
+          },
+          "display_name": {
+            "type": "string",
+            "title": "Display Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "projected_sales_per_linear_ft": {
+            "type": "number",
+            "title": "Projected Sales Per Linear Ft"
+          },
+          "projected_private_brand_pct": {
+            "type": "number",
+            "title": "Projected Private Brand Pct"
+          },
+          "projected_in_stock_rate_pct": {
+            "type": "number",
+            "title": "Projected In Stock Rate Pct"
+          },
+          "projected_shelf_capacity_pct": {
+            "type": "number",
+            "title": "Projected Shelf Capacity Pct"
+          },
+          "action_counts": {
+            "$ref": "#/components/schemas/ActionCounts"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_key",
+          "display_name",
+          "description",
+          "projected_sales_per_linear_ft",
+          "projected_private_brand_pct",
+          "projected_in_stock_rate_pct",
+          "projected_shelf_capacity_pct",
+          "action_counts"
+        ],
+        "title": "ScenarioDetail"
+      },
+      "ScenariosResponse": {
+        "properties": {
+          "active_default": {
+            "type": "string",
+            "title": "Active Default",
+            "default": "balanced"
+          },
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioDetail"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenarios"
+        ],
+        "title": "ScenariosResponse"
+      },
+      "SubmissionRecordResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "audit_confirmation_id": {
+            "type": "string",
+            "title": "Audit Confirmation Id"
+          },
+          "scenario_key": {
+            "type": "string",
+            "title": "Scenario Key"
+          },
+          "scenario_name": {
+            "type": "string",
+            "title": "Scenario Name"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "justification_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justification Note"
+          },
+          "guardrail_status": {
+            "type": "string",
+            "title": "Guardrail Status"
+          },
+          "audit_trail_json": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Audit Trail Json"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "audit_confirmation_id",
+          "scenario_key",
+          "scenario_name",
+          "user_id",
+          "guardrail_status",
+          "audit_trail_json",
+          "created_at"
+        ],
+        "title": "SubmissionRecordResponse"
+      },
+      "SubmissionSummary": {
+        "properties": {
+          "projected_sales_per_linear_ft": {
+            "type": "number",
+            "title": "Projected Sales Per Linear Ft"
+          },
+          "projected_private_brand_pct": {
+            "type": "number",
+            "title": "Projected Private Brand Pct"
+          },
+          "total_skus_reviewed": {
+            "type": "integer",
+            "title": "Total Skus Reviewed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "projected_sales_per_linear_ft",
+          "projected_private_brand_pct",
+          "total_skus_reviewed"
+        ],
+        "title": "SubmissionSummary"
+      },
+      "SubmitRequest": {
+        "properties": {
+          "scenario_key": {
+            "type": "string",
+            "title": "Scenario Key",
+            "description": "Scenario key: conservative, balanced, aggressive"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id",
+            "description": "ID of category manager",
+            "default": "mgr_snack_001"
+          },
+          "justification_note": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Justification Note",
+            "description": "Optional approval justification notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_key"
+        ],
+        "title": "SubmitRequest"
+      },
+      "SubmitResponse": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "SUCCESS"
+          },
+          "audit_confirmation_id": {
+            "type": "string",
+            "title": "Audit Confirmation Id"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "scenario_name": {
+            "type": "string",
+            "title": "Scenario Name"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "guardrail_status": {
+            "type": "string",
+            "title": "Guardrail Status",
+            "default": "PASSED"
+          },
+          "summary": {
+            "$ref": "#/components/schemas/SubmissionSummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "audit_confirmation_id",
+          "submitted_at",
+          "scenario_name",
+          "user_id",
+          "summary"
+        ],
+        "title": "SubmitResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
