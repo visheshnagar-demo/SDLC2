@@ -27,11 +27,20 @@ def test_schema_json_conformance():
 
 
 def test_transformation_spec_conformance():
-    """Verifies that transformation_spec.json contains all required metadata."""
+    """Verifies that transformation_spec.json contains all required metadata and source/target/transformations structure."""
     spec_path = "transformation_spec.json"
     assert os.path.isfile(spec_path), f"Missing transformation spec: {spec_path}"
     with open(spec_path, "r", encoding="utf-8") as f:
         spec = json.load(f)
+
+    # Check top-level source/target/transformations structure
+    assert "source" in spec, "transformation_spec.json must contain 'source' section"
+    assert "target" in spec, "transformation_spec.json must contain 'target' section"
+    assert "transformations" in spec, "transformation_spec.json must contain 'transformations' list"
+
+    assert spec["source"].get("type") == "gcs"
+    assert spec["target"].get("type") == "bigquery"
+    assert len(spec["transformations"]) > 0
 
     assert spec.get("target_table") == "analytics.daily_sales"
     assert spec.get("partition_field") == "order_date"
@@ -41,6 +50,21 @@ def test_transformation_spec_conformance():
     assert "order_id" in source_names
     assert "amount" in source_names
     assert "created_at" in source_names
+
+
+def test_env_deploy_json_conformance():
+    """Verifies that env.deploy.json contains failure_behavior, cpu/memory, and resources configuration."""
+    deploy_path = "env.deploy.json"
+    assert os.path.isfile(deploy_path), f"Missing deploy config: {deploy_path}"
+    with open(deploy_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+
+    assert "resources" in config or ("cpu" in config and "memory" in config)
+    assert "failure_behavior" in config
+    assert "GCP_PROJECT_ID" in config
+    assert "GCS_SOURCE_BUCKET" in config
+    assert "BIGQUERY_DATASET" in config
+    assert "BIGQUERY_TABLE" in config
 
 
 def test_modules_ast_syntax():

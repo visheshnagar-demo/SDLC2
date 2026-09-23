@@ -1,8 +1,123 @@
 {
+  "source": {
+    "type": "gcs",
+    "bucket": "sdlc-workspec-store",
+    "prefix": "etl/data/raw_sales_data.csv",
+    "format": "csv",
+    "dataset": "gs://sdlc-workspec-store/etl/data/raw_sales_data.csv"
+  },
+  "target": {
+    "type": "bigquery",
+    "project_id": "upbeat-repeater-477110-q6",
+    "dataset": "analytics",
+    "table": "daily_sales",
+    "table_name": "analytics.daily_sales",
+    "partition_field": "order_date",
+    "clustering_fields": [
+      "customer_id",
+      "order_status"
+    ],
+    "write_mode": "append"
+  },
+  "transformations": [
+    {
+      "source_column": "order_id",
+      "target_column": "order_id",
+      "source_type": "INTEGER",
+      "target_type": "STRING",
+      "transform": "strip and cast to string",
+      "required": true
+    },
+    {
+      "source_column": "customer_id",
+      "target_column": "customer_id",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "strip and cast to string",
+      "required": false
+    },
+    {
+      "source_column": "customer_name",
+      "target_column": "customer_name",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "strip and standardize string",
+      "required": false
+    },
+    {
+      "source_column": "customer_email",
+      "target_column": "customer_email",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "strip, lower, and clean email",
+      "required": false
+    },
+    {
+      "source_column": "product_category",
+      "target_column": "product_category",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "strip and standardize category",
+      "required": false
+    },
+    {
+      "source_column": "amount",
+      "target_column": "amount",
+      "source_type": "FLOAT",
+      "target_type": "FLOAT64",
+      "transform": "clean numeric symbols and cast to float",
+      "required": false
+    },
+    {
+      "source_column": "currency",
+      "target_column": "currency",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "strip and upper currency code",
+      "required": false
+    },
+    {
+      "source_column": "order_status",
+      "target_column": "order_status",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "strip and upper order status",
+      "required": false
+    },
+    {
+      "source_column": "created_at",
+      "target_column": "created_at",
+      "source_type": "TIMESTAMP",
+      "target_type": "TIMESTAMP",
+      "transform": "parse ISO timestamp to UTC",
+      "required": true
+    },
+    {
+      "source_column": "created_at",
+      "target_column": "order_date",
+      "source_type": "TIMESTAMP",
+      "target_type": "DATE",
+      "transform": "derive order date from created_at timestamp",
+      "derived": true,
+      "required": true
+    },
+    {
+      "source_column": null,
+      "target_column": "ingested_at",
+      "source_type": null,
+      "target_type": "TIMESTAMP",
+      "transform": "current UTC timestamp at ingestion",
+      "derived": true,
+      "required": true
+    }
+  ],
   "source_dataset": "gs://sdlc-workspec-store/etl/data/raw_sales_data.csv",
   "target_table": "analytics.daily_sales",
   "partition_field": "order_date",
-  "clustering_fields": ["customer_id", "order_status"],
+  "clustering_fields": [
+    "customer_id",
+    "order_status"
+  ],
   "columns": [
     {
       "source_name": "order_id",
