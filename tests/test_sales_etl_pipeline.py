@@ -1,5 +1,6 @@
 """Automated tests for pipeline sales_etl."""
 import ast
+import json
 import os
 import pytest
 
@@ -43,11 +44,23 @@ def test_transformation_spec_validity():
     """Verifies that transformation_spec.json is well-formed and covers mandatory columns."""
     spec_path = "transformation_spec.json"
     assert os.path.isfile(spec_path)
-    import json
     with open(spec_path, "r", encoding="utf-8") as f:
         spec = json.load(f)
     assert "columns" in spec
-    column_names = [col.get("source_name") or col.get("source") for col in spec["columns"]]
+    assert "source" in spec
+    assert "target" in spec
+    assert "transformations" in spec
+    column_names = [col.get("source_name") or col.get("source_column") or col.get("source") for col in spec["columns"]]
     assert "order_id" in column_names
     assert "amount" in column_names
     assert "created_at" in column_names
+
+def test_deploy_config_validity():
+    """Verifies that env.deploy.json contains required Cloud Run Job resource and behavior fields."""
+    deploy_path = "env.deploy.json"
+    assert os.path.isfile(deploy_path)
+    with open(deploy_path, "r", encoding="utf-8") as f:
+        config = json.load(f)
+    assert "failure_behavior" in config
+    assert "cpu" in config or "resources" in config
+    assert "memory" in config or "resources" in config

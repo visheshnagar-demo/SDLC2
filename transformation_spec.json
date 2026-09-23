@@ -1,5 +1,106 @@
 {
   "pipeline_id": "sales_etl",
+  "source": {
+    "type": "gcs",
+    "uri": "gs://sdlc-workspec-store/etl/data/raw_sales_data.csv",
+    "bucket": "sdlc-workspec-store",
+    "path": "etl/data/raw_sales_data.csv",
+    "format": "csv"
+  },
+  "target": {
+    "type": "bigquery",
+    "dataset": "analytics",
+    "table": "daily_sales",
+    "partition_by": "order_date",
+    "partition_field": "order_date",
+    "clustering_fields": ["customer_id", "order_status"]
+  },
+  "transformations": [
+    {
+      "source_column": "order_id",
+      "target_column": "order_id",
+      "target_type": "STRING",
+      "transformation": "to_string",
+      "description": "Unique sales order business identifier"
+    },
+    {
+      "source_column": "customer_id",
+      "target_column": "customer_id",
+      "target_type": "STRING",
+      "transformation": "trim_whitespace",
+      "description": "Identifier of the purchasing customer"
+    },
+    {
+      "source_column": "customer_name",
+      "target_column": "customer_name",
+      "target_type": "STRING",
+      "transformation": "trim_whitespace",
+      "description": "Customer full name"
+    },
+    {
+      "source_column": "customer_email",
+      "target_column": "customer_email",
+      "target_type": "STRING",
+      "transformation": "trim_whitespace",
+      "description": "Customer email address"
+    },
+    {
+      "source_column": "product_category",
+      "target_column": "product_category",
+      "target_type": "STRING",
+      "transformation": "trim_whitespace",
+      "description": "Product category"
+    },
+    {
+      "source_column": "amount",
+      "target_column": "amount",
+      "target_type": "FLOAT",
+      "transformation": "to_float",
+      "description": "Total transaction amount"
+    },
+    {
+      "source_column": "currency",
+      "target_column": "currency",
+      "target_type": "STRING",
+      "transformation": "uppercase",
+      "description": "ISO 4217 Currency code"
+    },
+    {
+      "source_column": "order_status",
+      "target_column": "order_status",
+      "target_type": "STRING",
+      "transformation": "uppercase",
+      "description": "Order lifecycle status"
+    },
+    {
+      "source_column": "created_at",
+      "target_column": "created_at",
+      "target_type": "TIMESTAMP",
+      "transformation": "to_timestamp_utc",
+      "description": "Order creation timestamp"
+    },
+    {
+      "source_column": "created_at",
+      "target_column": "order_date",
+      "target_type": "DATE",
+      "transformation": "extract_date",
+      "description": "Date of order placement (Partition Key)"
+    },
+    {
+      "source_column": "system_time",
+      "target_column": "ingested_at",
+      "target_type": "TIMESTAMP",
+      "transformation": "current_timestamp_utc",
+      "description": "UTC timestamp when the record was loaded"
+    },
+    {
+      "source_column": "uuid",
+      "target_column": "batch_id",
+      "target_type": "STRING",
+      "transformation": "generate_uuid",
+      "description": "UUID v4 identifying the Cloud Run Job execution"
+    }
+  ],
   "source_dataset": "gs://sdlc-workspec-store/etl/data/raw_sales_data.csv",
   "target_table": "analytics.daily_sales",
   "columns": [
