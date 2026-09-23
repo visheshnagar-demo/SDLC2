@@ -1,0 +1,68 @@
+[
+  {
+    "name": "order_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique identifier for the sales order"
+  },
+  {
+    "name": "order_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Date of the order transaction (partition field)"
+  },
+  {
+    "name": "customer_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Customer ID"
+  },
+  {
+    "name": "customer_name",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Customer Full Name"
+  },
+  {
+    "name": "customer_email",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Customer Email Address"
+  },
+  {
+    "name": "product_category",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Category of product purchased"
+  },
+  {
+    "name": "amount",
+    "type": "FLOAT64",
+    "mode": "NULLABLE",
+    "description": "Order total amount"
+  },
+  {
+    "name": "currency",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Currency code (e.g. USD)"
+  },
+  {
+    "name": "order_status",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Order fulfillment status"
+  },
+  {
+    "name": "created_at",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Original order timestamp"
+  },
+  {
+    "name": "ingested_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "Ingestion timestamp UTC"
+  }
+]

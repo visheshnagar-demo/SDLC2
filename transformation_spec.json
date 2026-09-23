@@ -1,0 +1,80 @@
+{
+  "source_dataset": "gs://sdlc-workspec-store/etl/data/raw_sales_data.csv",
+  "target_table": "analytics.daily_sales",
+  "partition_field": "order_date",
+  "clustering_fields": ["customer_id", "order_status"],
+  "columns": [
+    {
+      "source_name": "order_id",
+      "target_name": "order_id",
+      "target_type": "STRING",
+      "transform": "strip and cast to string"
+    },
+    {
+      "source_name": "customer_id",
+      "target_name": "customer_id",
+      "target_type": "STRING",
+      "transform": "strip and cast to string"
+    },
+    {
+      "source_name": "customer_name",
+      "target_name": "customer_name",
+      "target_type": "STRING",
+      "transform": "strip and standardize string"
+    },
+    {
+      "source_name": "customer_email",
+      "target_name": "customer_email",
+      "target_type": "STRING",
+      "transform": "strip, lower, and clean email"
+    },
+    {
+      "source_name": "product_category",
+      "target_name": "product_category",
+      "target_type": "STRING",
+      "transform": "strip and standardize category"
+    },
+    {
+      "source_name": "amount",
+      "target_name": "amount",
+      "target_type": "FLOAT64",
+      "transform": "clean numeric symbols and cast to float"
+    },
+    {
+      "source_name": "currency",
+      "target_name": "currency",
+      "target_type": "STRING",
+      "transform": "strip and upper currency code"
+    },
+    {
+      "source_name": "order_status",
+      "target_name": "order_status",
+      "target_type": "STRING",
+      "transform": "strip and upper order status"
+    },
+    {
+      "source_name": "created_at",
+      "target_name": "created_at",
+      "target_type": "TIMESTAMP",
+      "transform": "parse ISO timestamp to UTC"
+    }
+  ],
+  "derived_columns": [
+    {
+      "target_name": "order_date",
+      "target_type": "DATE",
+      "expression": "created_at.dt.date"
+    },
+    {
+      "target_name": "ingested_at",
+      "target_type": "TIMESTAMP",
+      "expression": "datetime.utcnow()"
+    }
+  ],
+  "deduplication": {
+    "subset": [
+      "order_id"
+    ],
+    "keep": "last"
+  }
+}
