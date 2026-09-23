@@ -1,0 +1,96 @@
+{
+  "pipeline_id": "sales_etl",
+  "source_dataset": "gs://sdlc-workspec-store/etl/data/raw_sales_data.csv",
+  "target_table": "analytics.daily_sales",
+  "columns": [
+    {
+      "source_name": "order_id",
+      "target_name": "order_id",
+      "target_type": "STRING",
+      "transform": "to_string",
+      "description": "Unique sales order business identifier"
+    },
+    {
+      "source_name": "customer_id",
+      "target_name": "customer_id",
+      "target_type": "STRING",
+      "transform": "trim_whitespace",
+      "description": "Identifier of the purchasing customer"
+    },
+    {
+      "source_name": "customer_name",
+      "target_name": "customer_name",
+      "target_type": "STRING",
+      "transform": "trim_whitespace",
+      "description": "Customer full name"
+    },
+    {
+      "source_name": "customer_email",
+      "target_name": "customer_email",
+      "target_type": "STRING",
+      "transform": "trim_whitespace",
+      "description": "Customer email address"
+    },
+    {
+      "source_name": "product_category",
+      "target_name": "product_category",
+      "target_type": "STRING",
+      "transform": "trim_whitespace",
+      "description": "Product category"
+    },
+    {
+      "source_name": "amount",
+      "target_name": "amount",
+      "target_type": "FLOAT",
+      "transform": "to_float",
+      "description": "Total transaction amount"
+    },
+    {
+      "source_name": "currency",
+      "target_name": "currency",
+      "target_type": "STRING",
+      "transform": "uppercase",
+      "description": "ISO 4217 Currency code"
+    },
+    {
+      "source_name": "order_status",
+      "target_name": "order_status",
+      "target_type": "STRING",
+      "transform": "uppercase",
+      "description": "Order lifecycle status"
+    },
+    {
+      "source_name": "created_at",
+      "target_name": "created_at",
+      "target_type": "TIMESTAMP",
+      "transform": "to_timestamp_utc",
+      "description": "Order creation timestamp"
+    }
+  ],
+  "derived_columns": [
+    {
+      "target_name": "order_date",
+      "target_type": "DATE",
+      "source_name": "created_at",
+      "transform": "extract_date",
+      "description": "Date of order placement (Partition Key)"
+    },
+    {
+      "target_name": "ingested_at",
+      "target_type": "TIMESTAMP",
+      "source_name": "system_time",
+      "transform": "current_timestamp_utc",
+      "description": "UTC timestamp when the record was loaded"
+    },
+    {
+      "target_name": "batch_id",
+      "target_type": "STRING",
+      "source_name": "uuid",
+      "transform": "generate_uuid",
+      "description": "UUID v4 identifying the Cloud Run Job execution"
+    }
+  ],
+  "deduplication_keys": [
+    "order_id"
+  ]
+}

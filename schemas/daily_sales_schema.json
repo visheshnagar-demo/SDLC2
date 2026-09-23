@@ -1,0 +1,74 @@
+[
+  {
+    "name": "order_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique sales order business identifier"
+  },
+  {
+    "name": "customer_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Identifier of the purchasing customer"
+  },
+  {
+    "name": "customer_name",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Customer full name"
+  },
+  {
+    "name": "customer_email",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Customer email address"
+  },
+  {
+    "name": "product_category",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Product category"
+  },
+  {
+    "name": "amount",
+    "type": "FLOAT",
+    "mode": "REQUIRED",
+    "description": "Total transaction amount"
+  },
+  {
+    "name": "currency",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "ISO 4217 Currency code"
+  },
+  {
+    "name": "order_status",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Order lifecycle status"
+  },
+  {
+    "name": "created_at",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Order creation timestamp"
+  },
+  {
+    "name": "order_date",
+    "type": "DATE",
+    "mode": "REQUIRED",
+    "description": "Date of order placement (Partition Key)"
+  },
+  {
+    "name": "ingested_at",
+    "type": "TIMESTAMP",
+    "mode": "REQUIRED",
+    "description": "UTC timestamp when the record was loaded"
+  },
+  {
+    "name": "batch_id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "UUID v4 identifying the Cloud Run Job execution"
+  }
+]
