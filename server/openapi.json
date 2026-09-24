@@ -1,0 +1,768 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DG Cluster Assortment Advisor API",
+    "description": "Backend decision-support API for Dollar General Snacks Assortment in Small Town Value Clusters",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/kpis/summary": {
+      "get": {
+        "tags": [
+          "kpis"
+        ],
+        "summary": "Get Kpi Summary",
+        "operationId": "get_kpi_summary_api_v1_kpis_summary_get",
+        "parameters": [
+          {
+            "name": "cluster_code",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "default": "STV-CLUSTER-04",
+              "title": "Cluster Code"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KPISummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/skus": {
+      "get": {
+        "tags": [
+          "skus"
+        ],
+        "summary": "Get Skus",
+        "operationId": "get_skus_api_v1_skus_get",
+        "parameters": [
+          {
+            "name": "category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Category filter (e.g. Snacks)",
+              "title": "Category"
+            },
+            "description": "Category filter (e.g. Snacks)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Status badge filter (GROW, MAINTAIN, SWAP, REDUCE)",
+              "title": "Status"
+            },
+            "description": "Status badge filter (GROW, MAINTAIN, SWAP, REDUCE)"
+          },
+          {
+            "name": "is_private_brand",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by Private Brand flag",
+              "title": "Is Private Brand"
+            },
+            "description": "Filter by Private Brand flag"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search keyword for name or SKU number",
+              "title": "Search"
+            },
+            "description": "Search keyword for name or SKU number"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SKUListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios": {
+      "get": {
+        "tags": [
+          "scenarios"
+        ],
+        "summary": "Get Scenarios",
+        "operationId": "get_scenarios_api_v1_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assortment/submit": {
+      "post": {
+        "tags": [
+          "assortment"
+        ],
+        "summary": "Submit Assortment Plan",
+        "operationId": "submit_assortment_plan_api_v1_assortment_submit_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssortmentSubmitRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AssortmentSubmitResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assortment/audit-logs": {
+      "get": {
+        "tags": [
+          "assortment"
+        ],
+        "summary": "Get Audit Logs",
+        "operationId": "get_audit_logs_api_v1_assortment_audit_logs_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/AuditLogResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Audit Logs Api V1 Assortment Audit Logs Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "Health Check",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssortmentSubmitRequest": {
+        "properties": {
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id",
+            "default": "STV-CLUSTER-04"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category",
+            "default": "Snacks"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id",
+            "default": "balanced"
+          },
+          "submitted_by": {
+            "type": "string",
+            "title": "Submitted By",
+            "default": "category.manager@dollargeneral.com"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "title": "AssortmentSubmitRequest"
+      },
+      "AssortmentSubmitResponse": {
+        "properties": {
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "scenario_selected": {
+            "type": "string",
+            "title": "Scenario Selected"
+          },
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "submitted_by": {
+            "type": "string",
+            "title": "Submitted By"
+          },
+          "submitted_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Submitted At"
+          },
+          "sku_action_summary": {
+            "$ref": "#/components/schemas/SkuActionSummary"
+          },
+          "guardrail_results": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailResult"
+            },
+            "type": "array",
+            "title": "Guardrail Results"
+          },
+          "audit_trail_message": {
+            "type": "string",
+            "title": "Audit Trail Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "submission_id",
+          "status",
+          "scenario_selected",
+          "cluster_id",
+          "category",
+          "submitted_by",
+          "submitted_at",
+          "sku_action_summary",
+          "guardrail_results",
+          "audit_trail_message"
+        ],
+        "title": "AssortmentSubmitResponse"
+      },
+      "AuditLogResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "plan_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Id"
+          },
+          "event_type": {
+            "type": "string",
+            "title": "Event Type"
+          },
+          "user_id": {
+            "type": "string",
+            "title": "User Id"
+          },
+          "payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Payload"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "event_type",
+          "user_id",
+          "payload",
+          "created_at"
+        ],
+        "title": "AuditLogResponse"
+      },
+      "GuardrailResult": {
+        "properties": {
+          "rule": {
+            "type": "string",
+            "title": "Rule"
+          },
+          "passed": {
+            "type": "boolean",
+            "title": "Passed"
+          },
+          "actual_value": {
+            "type": "string",
+            "title": "Actual Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule",
+          "passed",
+          "actual_value"
+        ],
+        "title": "GuardrailResult"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "KPIMetrics": {
+        "properties": {
+          "sales_per_linear_foot": {
+            "type": "number",
+            "title": "Sales Per Linear Foot"
+          },
+          "private_brand_percentage": {
+            "type": "number",
+            "title": "Private Brand Percentage"
+          },
+          "in_stock_rate": {
+            "type": "number",
+            "title": "In Stock Rate"
+          },
+          "shelf_capacity_used": {
+            "type": "number",
+            "title": "Shelf Capacity Used"
+          },
+          "shelf_capacity_total": {
+            "type": "number",
+            "title": "Shelf Capacity Total"
+          },
+          "shelf_utilization_percentage": {
+            "type": "number",
+            "title": "Shelf Utilization Percentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sales_per_linear_foot",
+          "private_brand_percentage",
+          "in_stock_rate",
+          "shelf_capacity_used",
+          "shelf_capacity_total",
+          "shelf_utilization_percentage"
+        ],
+        "title": "KPIMetrics"
+      },
+      "KPISummaryResponse": {
+        "properties": {
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "metrics": {
+            "$ref": "#/components/schemas/KPIMetrics"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster_id",
+          "category",
+          "metrics",
+          "updated_at"
+        ],
+        "title": "KPISummaryResponse"
+      },
+      "SKUListResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SKUResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "items"
+        ],
+        "title": "SKUListResponse"
+      },
+      "SKUResponse": {
+        "properties": {
+          "sku_number": {
+            "type": "string",
+            "title": "Sku Number"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "brand": {
+            "type": "string",
+            "title": "Brand"
+          },
+          "is_private_brand": {
+            "type": "boolean",
+            "title": "Is Private Brand"
+          },
+          "sales_amount": {
+            "type": "number",
+            "title": "Sales Amount"
+          },
+          "sales_per_linear_foot": {
+            "type": "number",
+            "title": "Sales Per Linear Foot"
+          },
+          "margin_percentage": {
+            "type": "number",
+            "title": "Margin Percentage"
+          },
+          "velocity_units_per_week": {
+            "type": "integer",
+            "title": "Velocity Units Per Week"
+          },
+          "shelf_space_linear_ft": {
+            "type": "number",
+            "title": "Shelf Space Linear Ft"
+          },
+          "status_badge": {
+            "type": "string",
+            "title": "Status Badge"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "cluster_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sku_number",
+          "name",
+          "brand",
+          "is_private_brand",
+          "sales_amount",
+          "sales_per_linear_foot",
+          "margin_percentage",
+          "velocity_units_per_week",
+          "shelf_space_linear_ft",
+          "status_badge",
+          "id"
+        ],
+        "title": "SKUResponse"
+      },
+      "ScenarioListResponse": {
+        "properties": {
+          "scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/ScenarioResponse"
+            },
+            "type": "array",
+            "title": "Scenarios"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenarios"
+        ],
+        "title": "ScenarioListResponse"
+      },
+      "ScenarioResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          },
+          "projected_sales_lift_pct": {
+            "type": "number",
+            "title": "Projected Sales Lift Pct"
+          },
+          "projected_private_brand_change_pct": {
+            "type": "number",
+            "title": "Projected Private Brand Change Pct"
+          },
+          "projected_shelf_utilization_pct": {
+            "type": "number",
+            "title": "Projected Shelf Utilization Pct"
+          },
+          "actions_summary": {
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "type": "object",
+            "title": "Actions Summary"
+          },
+          "is_default": {
+            "type": "boolean",
+            "title": "Is Default"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "projected_sales_lift_pct",
+          "projected_private_brand_change_pct",
+          "projected_shelf_utilization_pct",
+          "actions_summary",
+          "is_default"
+        ],
+        "title": "ScenarioResponse"
+      },
+      "SkuActionSummary": {
+        "properties": {
+          "grow_count": {
+            "type": "integer",
+            "title": "Grow Count"
+          },
+          "maintain_count": {
+            "type": "integer",
+            "title": "Maintain Count"
+          },
+          "swap_count": {
+            "type": "integer",
+            "title": "Swap Count"
+          },
+          "reduce_count": {
+            "type": "integer",
+            "title": "Reduce Count"
+          },
+          "total_skus": {
+            "type": "integer",
+            "title": "Total Skus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "grow_count",
+          "maintain_count",
+          "swap_count",
+          "reduce_count",
+          "total_skus"
+        ],
+        "title": "SkuActionSummary"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
