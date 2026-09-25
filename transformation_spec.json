@@ -1,0 +1,192 @@
+{
+  "pipeline_id": "sales_order_etl",
+  "source_dataset": "sdlc-workspec-store",
+  "source_table": "raw_sales_data.csv",
+  "target_dataset": "analytics",
+  "target_table": "vishesh-test1",
+  "columns": [
+    {
+      "source_name": "order_id",
+      "target_name": "order_id",
+      "source_type": "INTEGER",
+      "target_type": "INTEGER",
+      "transform": "cast_int",
+      "nullable": false,
+      "description": "Unique identifier of the sales order"
+    },
+    {
+      "source_name": "customer_id",
+      "target_name": "customer_id",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "trim",
+      "nullable": true,
+      "description": "Customer identifier"
+    },
+    {
+      "source_name": "customer_name",
+      "target_name": "customer_name",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "trim",
+      "nullable": true,
+      "description": "Customer full name"
+    },
+    {
+      "source_name": "customer_email",
+      "target_name": "customer_email",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "lowercase",
+      "nullable": true,
+      "description": "Customer email address"
+    },
+    {
+      "source_name": "product_category",
+      "target_name": "product_category",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "trim",
+      "nullable": true,
+      "description": "Product category"
+    },
+    {
+      "source_name": "amount",
+      "target_name": "amount",
+      "source_type": "FLOAT",
+      "target_type": "FLOAT",
+      "transform": "cast_float",
+      "nullable": true,
+      "description": "Sales order total amount"
+    },
+    {
+      "source_name": "currency",
+      "target_name": "currency",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "uppercase",
+      "nullable": true,
+      "description": "Currency code"
+    },
+    {
+      "source_name": "order_status",
+      "target_name": "order_status",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "uppercase",
+      "nullable": true,
+      "description": "Status of the order"
+    },
+    {
+      "source_name": "created_at",
+      "target_name": "created_at",
+      "source_type": "TIMESTAMP",
+      "target_type": "TIMESTAMP",
+      "transform": "parse_timestamp",
+      "nullable": true,
+      "description": "Timestamp when the order was placed"
+    },
+    {
+      "source_name": "_ingestion_timestamp",
+      "target_name": "_ingestion_timestamp",
+      "source_type": "TIMESTAMP",
+      "target_type": "TIMESTAMP",
+      "transform": "current_timestamp",
+      "nullable": true,
+      "description": "Audit timestamp when record was ingested"
+    }
+  ],
+  "mappings": [
+    {
+      "source_column": "order_id",
+      "target_column": "order_id",
+      "target_type": "INTEGER",
+      "transforms": [
+        "cast_int",
+        "not_null"
+      ]
+    },
+    {
+      "source_column": "customer_id",
+      "target_column": "customer_id",
+      "target_type": "STRING",
+      "transforms": [
+        "trim",
+        "not_null"
+      ]
+    },
+    {
+      "source_column": "customer_name",
+      "target_column": "customer_name",
+      "target_type": "STRING",
+      "transforms": [
+        "trim"
+      ]
+    },
+    {
+      "source_column": "customer_email",
+      "target_column": "customer_email",
+      "target_type": "STRING",
+      "transforms": [
+        "trim",
+        "lowercase"
+      ]
+    },
+    {
+      "source_column": "product_category",
+      "target_column": "product_category",
+      "target_type": "STRING",
+      "transforms": [
+        "trim"
+      ]
+    },
+    {
+      "source_column": "amount",
+      "target_column": "amount",
+      "target_type": "FLOAT",
+      "transforms": [
+        "cast_float"
+      ]
+    },
+    {
+      "source_column": "currency",
+      "target_column": "currency",
+      "target_type": "STRING",
+      "transforms": [
+        "trim",
+        "uppercase"
+      ]
+    },
+    {
+      "source_column": "order_status",
+      "target_column": "order_status",
+      "target_type": "STRING",
+      "transforms": [
+        "trim",
+        "uppercase"
+      ]
+    },
+    {
+      "source_column": "created_at",
+      "target_column": "created_at",
+      "target_type": "TIMESTAMP",
+      "transforms": [
+        "parse_timestamp"
+      ]
+    }
+  ],
+  "deduplication": {
+    "key_columns": [
+      "order_id"
+    ],
+    "order_by": "created_at",
+    "keep": "last"
+  },
+  "add_columns": [
+    {
+      "name": "_ingestion_timestamp",
+      "type": "TIMESTAMP",
+      "value": "current_timestamp"
+    }
+  ]
+}
