@@ -1,0 +1,80 @@
+{
+  "source_table": "test_data",
+  "target_table": "vishesh_postgres_test1",
+  "columns": [
+    {
+      "source_name": "id",
+      "target_name": "id",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "trim",
+      "nullable": false
+    },
+    {
+      "source_name": "data",
+      "target_name": "data",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "clean_text",
+      "nullable": true
+    },
+    {
+      "source_name": "status",
+      "target_name": "status",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "trim_upper",
+      "nullable": true
+    },
+    {
+      "source_name": "created_at",
+      "target_name": "created_at",
+      "source_type": "TIMESTAMP",
+      "target_type": "TIMESTAMP",
+      "transform": "to_timestamp",
+      "nullable": true
+    },
+    {
+      "source_name": "_extracted_at",
+      "target_name": "_extracted_at",
+      "source_type": "TIMESTAMP",
+      "target_type": "TIMESTAMP",
+      "transform": "current_timestamp",
+      "nullable": false
+    },
+    {
+      "source_name": "_pipeline_run_id",
+      "target_name": "_pipeline_run_id",
+      "source_type": "STRING",
+      "target_type": "STRING",
+      "transform": "uuid",
+      "nullable": false
+    }
+  ],
+  "mappings": [
+    {
+      "source_column": "id",
+      "target_column": "id",
+      "target_type": "STRING",
+      "transform": "trim"
+    },
+    {
+      "source_column": "data",
+      "target_column": "data",
+      "target_type": "STRING",
+      "transform": "clean_text"
+    },
+    {
+      "source_column": "status",
+      "target_column": "status",
+      "target_type": "STRING",
+      "transform": "trim_upper"
+    },
+    {
+      "source_column": "created_at",
+      "target_column": "created_at",
+      "target_type": "TIMESTAMP",
+      "transform": "to_timestamp"
+    }
+  ]
+}

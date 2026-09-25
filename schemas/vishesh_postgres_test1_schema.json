@@ -1,0 +1,38 @@
+[
+  {
+    "name": "id",
+    "type": "STRING",
+    "mode": "REQUIRED",
+    "description": "Unique record identifier"
+  },
+  {
+    "name": "data",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Raw or cleaned payload data"
+  },
+  {
+    "name": "status",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Status indicator"
+  },
+  {
+    "name": "created_at",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Record creation timestamp"
+  },
+  {
+    "name": "_extracted_at",
+    "type": "TIMESTAMP",
+    "mode": "NULLABLE",
+    "description": "Timestamp when record was extracted"
+  },
+  {
+    "name": "_pipeline_run_id",
+    "type": "STRING",
+    "mode": "NULLABLE",
+    "description": "Pipeline execution run ID"
+  }
+]
