@@ -2,7 +2,7 @@
 import re
 import logging
 from datetime import datetime, timezone
-from typing import Tuple, Dict, Any
+from typing import Tuple, Dict, Any, Optional
 import pandas as pd
 import numpy as np
 
@@ -15,6 +15,16 @@ class SalesDataTransformer:
     def __init__(self):
         self._numeric_strip_re = re.compile(r"[,$€£¥\s\u00a0]")
         self._footnote_re = re.compile(r"\[[^\]]*\]")
+
+    @staticmethod
+    def _clean_str(val: Any) -> Optional[str]:
+        """Safely cleans and strips string values, handling float NaN / None."""
+        if val is None or pd.isna(val):
+            return None
+        s = str(val).strip()
+        if s.lower() in ("nan", "none", "null", "nat", ""):
+            return None
+        return s
 
     def _clean_numeric(self, series: pd.Series) -> pd.Series:
         """Strip currency symbols, commas, and whitespace before casting to numeric."""
@@ -69,19 +79,25 @@ class SalesDataTransformer:
                 f"FATAL: All {raw_count} raw records were malformed or missing order_id."
             )
 
-        # 3. Clean string columns
-        for col in ["customer_id", "customer_name", "customer_email", "product_category", "currency", "order_status"]:
+        # 3. Clean string columns safely handling floats, NaN, nulls
+        for col in ["customer_id", "customer_name", "product_category"]:
             if col in df.columns:
-                df[col] = df[col].apply(lambda v: str(v).strip() if pd.notna(v) and str(v).strip() not in ("nan", "None", "") else None)
+                df[col] = df[col].apply(self._clean_str)
 
         if "customer_email" in df.columns:
-            df["customer_email"] = df["customer_email"].apply(lambda v: v.lower() if v is not None else None)
+            df["customer_email"] = df["customer_email"].apply(
+                lambda v: self._clean_str(v).lower() if self._clean_str(v) is not None else None
+            )
 
         if "currency" in df.columns:
-            df["currency"] = df["currency"].apply(lambda v: v.upper() if v is not None else "USD")
+            df["currency"] = df["currency"].apply(
+                lambda v: self._clean_str(v).upper() if self._clean_str(v) is not None else "USD"
+            )
 
         if "order_status" in df.columns:
-            df["order_status"] = df["order_status"].apply(lambda v: v.upper() if v is not None else "PENDING")
+            df["order_status"] = df["order_status"].apply(
+                lambda v: self._clean_str(v).upper() if self._clean_str(v) is not None else "PENDING"
+            )
 
         # 4. Clean numeric columns (amount)
         if "amount" in df.columns:

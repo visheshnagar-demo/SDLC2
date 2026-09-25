@@ -1,5 +1,98 @@
 {
   "pipeline_id": "sales_order_etl",
+  "source": {
+    "type": "gcs",
+    "bucket": "sdlc-workspec-store",
+    "prefix": "etl/data/raw_sales_data.csv",
+    "uri": "gs://sdlc-workspec-store/etl/data/raw_sales_data.csv",
+    "format": "csv"
+  },
+  "target": {
+    "type": "bigquery",
+    "project_id": "upbeat-repeater-477110-q6",
+    "dataset": "analytics",
+    "table": "vishesh-test1",
+    "partition_field": "created_at"
+  },
+  "transformations": [
+    {
+      "source_column": "order_id",
+      "target_column": "order_id",
+      "target_type": "INTEGER",
+      "transforms": [
+        "cast_int",
+        "not_null"
+      ]
+    },
+    {
+      "source_column": "customer_id",
+      "target_column": "customer_id",
+      "target_type": "STRING",
+      "transforms": [
+        "trim",
+        "not_null"
+      ]
+    },
+    {
+      "source_column": "customer_name",
+      "target_column": "customer_name",
+      "target_type": "STRING",
+      "transforms": [
+        "trim"
+      ]
+    },
+    {
+      "source_column": "customer_email",
+      "target_column": "customer_email",
+      "target_type": "STRING",
+      "transforms": [
+        "trim",
+        "lowercase"
+      ]
+    },
+    {
+      "source_column": "product_category",
+      "target_column": "product_category",
+      "target_type": "STRING",
+      "transforms": [
+        "trim"
+      ]
+    },
+    {
+      "source_column": "amount",
+      "target_column": "amount",
+      "target_type": "FLOAT",
+      "transforms": [
+        "cast_float"
+      ]
+    },
+    {
+      "source_column": "currency",
+      "target_column": "currency",
+      "target_type": "STRING",
+      "transforms": [
+        "trim",
+        "uppercase"
+      ]
+    },
+    {
+      "source_column": "order_status",
+      "target_column": "order_status",
+      "target_type": "STRING",
+      "transforms": [
+        "trim",
+        "uppercase"
+      ]
+    },
+    {
+      "source_column": "created_at",
+      "target_column": "created_at",
+      "target_type": "TIMESTAMP",
+      "transforms": [
+        "parse_timestamp"
+      ]
+    }
+  ],
   "source_dataset": "sdlc-workspec-store",
   "source_table": "raw_sales_data.csv",
   "target_dataset": "analytics",
