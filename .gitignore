@@ -1,0 +1,6 @@
+
+# Frontend build artifacts (auto-added by Frontend Agent)
+node_modules/
+client/node_modules/
+dist/
+build/

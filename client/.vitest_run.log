@@ -1,0 +1,9 @@
+QUALITY GATE — SCRUM-409 — PASSED
+
+  [PASS] npm-install (level=block, exit 0)
+  [PASS] eslint (level=advisory, exit 0)
+  [PASS] prettier (level=advisory, exit 0)
+  [PASS] vite-build (level=block, exit 0)
+  [PASS] vitest (level=advisory, exit 0)
+
+Skipped: backend (not detected or out of scope); e2e (only runs under scope='auto')
