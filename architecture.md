@@ -62,7 +62,27 @@ graph TD
 - server/tests/test_assortment_api.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/eslint.config.js
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/__tests__/ApprovalReviewPanel.test.jsx
+- client/src/__tests__/Dashboard.test.jsx
+- client/src/__tests__/InlineAuditConfirmationModal.test.jsx
+- client/src/__tests__/KpiHeaderStrip.test.jsx
+- client/src/__tests__/ScenarioSelector.test.jsx
+- client/src/__tests__/SkuPerformanceTable.test.jsx
+- client/src/__tests__/api.test.js
+- client/src/components/ApprovalReviewPanel.jsx
+- client/src/components/InlineAuditConfirmationModal.jsx
+- client/src/components/KpiHeaderStrip.jsx
+- client/src/components/ScenarioSelector.jsx
+- client/src/components/SkuPerformanceTable.jsx
+- client/src/main.jsx
+- client/src/pages/Dashboard.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - GET /api/v1/assortment/kpis

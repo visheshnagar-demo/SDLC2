@@ -3,8 +3,8 @@ from pydantic import BaseModel, ConfigDict
 
 
 class ApprovalRequest(BaseModel):
+    scenario_key: str
     cluster_id: Optional[str] = "small_town_value"
-    scenario_key: str = "balanced"
     manager_user_id: Optional[str] = "MGR-DG-8812"
     manager_email: Optional[str] = "category.manager@dollargeneral.com"
     notes: Optional[str] = None

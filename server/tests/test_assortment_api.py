@@ -124,6 +124,14 @@ def test_submit_approval_success(client: TestClient):
     assert "message" in data
 
 
+def test_submit_approval_invalid_payload(client: TestClient):
+    payload = {
+        "cluster_id": "small_town_value",
+    }
+    response = client.post("/api/v1/assortment/approvals", json=payload)
+    assert response.status_code == 422
+
+
 def test_scenario_impact_not_found(client: TestClient):
     response = client.post(
         "/api/v1/assortment/scenario-impact",

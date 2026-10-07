@@ -256,6 +256,10 @@
     "schemas": {
       "ApprovalRequest": {
         "properties": {
+          "scenario_key": {
+            "type": "string",
+            "title": "Scenario Key"
+          },
           "cluster_id": {
             "anyOf": [
               {
@@ -267,11 +271,6 @@
             ],
             "title": "Cluster Id",
             "default": "small_town_value"
-          },
-          "scenario_key": {
-            "type": "string",
-            "title": "Scenario Key",
-            "default": "balanced"
           },
           "manager_user_id": {
             "anyOf": [
@@ -310,6 +309,9 @@
           }
         },
         "type": "object",
+        "required": [
+          "scenario_key"
+        ],
         "title": "ApprovalRequest"
       },
       "ApprovalResponse": {
