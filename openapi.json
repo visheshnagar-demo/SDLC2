@@ -1,0 +1,736 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "DG Cluster Assortment Advisor",
+    "description": "DG Cluster Assortment Advisor Decision-Support REST API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/assortment/kpis": {
+      "get": {
+        "tags": [
+          "Assortment KPIs"
+        ],
+        "summary": "Get Kpis",
+        "description": "Retrieve live baseline KPI metrics for the cluster.",
+        "operationId": "get_kpis_api_v1_assortment_kpis_get",
+        "parameters": [
+          {
+            "name": "cluster_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target store cluster identifier",
+              "default": "small_town_value",
+              "title": "Cluster Id"
+            },
+            "description": "Target store cluster identifier"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/KpiResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assortment/skus": {
+      "get": {
+        "tags": [
+          "SKU Performance"
+        ],
+        "summary": "Get Skus",
+        "description": "Retrieve SKU catalog with velocity, efficiency metrics, and recommendation badges.",
+        "operationId": "get_skus_api_v1_assortment_skus_get",
+        "parameters": [
+          {
+            "name": "cluster_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Target store cluster identifier",
+              "default": "small_town_value",
+              "title": "Cluster Id"
+            },
+            "description": "Target store cluster identifier"
+          },
+          {
+            "name": "sub_category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by Snacks subcategory",
+              "title": "Sub Category"
+            },
+            "description": "Filter by Snacks subcategory"
+          },
+          {
+            "name": "badge",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status badge (GROW, MAINTAIN, SWAP, REDUCE)",
+              "title": "Badge"
+            },
+            "description": "Filter by status badge (GROW, MAINTAIN, SWAP, REDUCE)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SkuListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assortment/scenario-impact": {
+      "post": {
+        "tags": [
+          "Scenario Impact"
+        ],
+        "summary": "Post Scenario Impact",
+        "description": "Calculate real-time projected impact and guardrail evaluations for a scenario strategy.",
+        "operationId": "post_scenario_impact_api_v1_assortment_scenario_impact_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ScenarioImpactRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ScenarioImpactResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/assortment/approvals": {
+      "post": {
+        "tags": [
+          "Approval Audit"
+        ],
+        "summary": "Submit Approval",
+        "description": "Submit and lock an assortment scenario approval with immutable audit logging.",
+        "operationId": "submit_approval_api_v1_assortment_approvals_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovalResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApprovalRequest": {
+        "properties": {
+          "cluster_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster Id",
+            "default": "small_town_value"
+          },
+          "scenario_key": {
+            "type": "string",
+            "title": "Scenario Key",
+            "default": "balanced"
+          },
+          "manager_user_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager User Id",
+            "default": "MGR-DG-8812"
+          },
+          "manager_email": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manager Email",
+            "default": "category.manager@dollargeneral.com"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "title": "ApprovalRequest"
+      },
+      "ApprovalResponse": {
+        "properties": {
+          "approval_id": {
+            "type": "string",
+            "title": "Approval Id"
+          },
+          "audit_reference_id": {
+            "type": "string",
+            "title": "Audit Reference Id"
+          },
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id"
+          },
+          "approved_scenario": {
+            "type": "string",
+            "title": "Approved Scenario"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "approved_at": {
+            "type": "string",
+            "title": "Approved At"
+          },
+          "manager_user_id": {
+            "type": "string",
+            "title": "Manager User Id"
+          },
+          "manager_email": {
+            "type": "string",
+            "title": "Manager Email"
+          },
+          "sku_action_metrics": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Sku Action Metrics"
+          },
+          "projected_impact": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Projected Impact"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approval_id",
+          "audit_reference_id",
+          "cluster_id",
+          "approved_scenario",
+          "status",
+          "approved_at",
+          "manager_user_id",
+          "manager_email",
+          "sku_action_metrics",
+          "projected_impact",
+          "message"
+        ],
+        "title": "ApprovalResponse"
+      },
+      "GuardrailItem": {
+        "properties": {
+          "rule_id": {
+            "type": "string",
+            "title": "Rule Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "target_value": {
+            "type": "string",
+            "title": "Target Value"
+          },
+          "projected_value": {
+            "type": "string",
+            "title": "Projected Value"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "is_critical": {
+            "type": "boolean",
+            "title": "Is Critical"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rule_id",
+          "name",
+          "target_value",
+          "projected_value",
+          "status",
+          "is_critical"
+        ],
+        "title": "GuardrailItem"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "KpiResponse": {
+        "properties": {
+          "cluster_id": {
+            "type": "string",
+            "title": "Cluster Id"
+          },
+          "cluster_name": {
+            "type": "string",
+            "title": "Cluster Name"
+          },
+          "sales_per_linear_ft": {
+            "type": "number",
+            "title": "Sales Per Linear Ft"
+          },
+          "sales_per_linear_ft_formatted": {
+            "type": "string",
+            "title": "Sales Per Linear Ft Formatted"
+          },
+          "private_brand_percentage": {
+            "type": "number",
+            "title": "Private Brand Percentage"
+          },
+          "private_brand_percentage_formatted": {
+            "type": "string",
+            "title": "Private Brand Percentage Formatted"
+          },
+          "instock_rate": {
+            "type": "number",
+            "title": "Instock Rate"
+          },
+          "instock_rate_formatted": {
+            "type": "string",
+            "title": "Instock Rate Formatted"
+          },
+          "shelf_capacity_used_ft": {
+            "type": "number",
+            "title": "Shelf Capacity Used Ft"
+          },
+          "shelf_capacity_total_ft": {
+            "type": "number",
+            "title": "Shelf Capacity Total Ft"
+          },
+          "shelf_capacity_percentage": {
+            "type": "number",
+            "title": "Shelf Capacity Percentage"
+          },
+          "shelf_capacity_formatted": {
+            "type": "string",
+            "title": "Shelf Capacity Formatted"
+          }
+        },
+        "type": "object",
+        "required": [
+          "cluster_id",
+          "cluster_name",
+          "sales_per_linear_ft",
+          "sales_per_linear_ft_formatted",
+          "private_brand_percentage",
+          "private_brand_percentage_formatted",
+          "instock_rate",
+          "instock_rate_formatted",
+          "shelf_capacity_used_ft",
+          "shelf_capacity_total_ft",
+          "shelf_capacity_percentage",
+          "shelf_capacity_formatted"
+        ],
+        "title": "KpiResponse"
+      },
+      "ScenarioImpactRequest": {
+        "properties": {
+          "cluster_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cluster Id",
+            "default": "small_town_value"
+          },
+          "scenario_key": {
+            "type": "string",
+            "title": "Scenario Key",
+            "default": "balanced"
+          }
+        },
+        "type": "object",
+        "title": "ScenarioImpactRequest"
+      },
+      "ScenarioImpactResponse": {
+        "properties": {
+          "scenario_key": {
+            "type": "string",
+            "title": "Scenario Key"
+          },
+          "scenario_name": {
+            "type": "string",
+            "title": "Scenario Name"
+          },
+          "projected_sales_lift_pct": {
+            "type": "number",
+            "title": "Projected Sales Lift Pct"
+          },
+          "projected_sales_per_linear_ft": {
+            "type": "number",
+            "title": "Projected Sales Per Linear Ft"
+          },
+          "projected_pb_share_pct": {
+            "type": "number",
+            "title": "Projected Pb Share Pct"
+          },
+          "projected_instock_rate_pct": {
+            "type": "number",
+            "title": "Projected Instock Rate Pct"
+          },
+          "projected_shelf_capacity_pct": {
+            "type": "number",
+            "title": "Projected Shelf Capacity Pct"
+          },
+          "sku_action_summary": {
+            "$ref": "#/components/schemas/SkuActionSummary"
+          },
+          "guardrails": {
+            "items": {
+              "$ref": "#/components/schemas/GuardrailItem"
+            },
+            "type": "array",
+            "title": "Guardrails"
+          },
+          "can_submit": {
+            "type": "boolean",
+            "title": "Can Submit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_key",
+          "scenario_name",
+          "projected_sales_lift_pct",
+          "projected_sales_per_linear_ft",
+          "projected_pb_share_pct",
+          "projected_instock_rate_pct",
+          "projected_shelf_capacity_pct",
+          "sku_action_summary",
+          "guardrails",
+          "can_submit"
+        ],
+        "title": "ScenarioImpactResponse"
+      },
+      "SkuActionSummary": {
+        "properties": {
+          "grow_count": {
+            "type": "integer",
+            "title": "Grow Count"
+          },
+          "maintain_count": {
+            "type": "integer",
+            "title": "Maintain Count"
+          },
+          "swap_count": {
+            "type": "integer",
+            "title": "Swap Count"
+          },
+          "reduce_count": {
+            "type": "integer",
+            "title": "Reduce Count"
+          },
+          "total_actionable": {
+            "type": "integer",
+            "title": "Total Actionable"
+          }
+        },
+        "type": "object",
+        "required": [
+          "grow_count",
+          "maintain_count",
+          "swap_count",
+          "reduce_count",
+          "total_actionable"
+        ],
+        "title": "SkuActionSummary"
+      },
+      "SkuItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "sku_code": {
+            "type": "string",
+            "title": "Sku Code"
+          },
+          "product_name": {
+            "type": "string",
+            "title": "Product Name"
+          },
+          "sub_category": {
+            "type": "string",
+            "title": "Sub Category"
+          },
+          "sales_velocity": {
+            "type": "number",
+            "title": "Sales Velocity"
+          },
+          "sales_per_linear_ft": {
+            "type": "number",
+            "title": "Sales Per Linear Ft"
+          },
+          "linear_ft_required": {
+            "type": "number",
+            "title": "Linear Ft Required"
+          },
+          "is_private_brand": {
+            "type": "boolean",
+            "title": "Is Private Brand"
+          },
+          "status_badge": {
+            "type": "string",
+            "title": "Status Badge"
+          },
+          "instock_rate": {
+            "type": "number",
+            "title": "Instock Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "sku_code",
+          "product_name",
+          "sub_category",
+          "sales_velocity",
+          "sales_per_linear_ft",
+          "linear_ft_required",
+          "is_private_brand",
+          "status_badge",
+          "instock_rate"
+        ],
+        "title": "SkuItem"
+      },
+      "SkuListResponse": {
+        "properties": {
+          "total_skus": {
+            "type": "integer",
+            "title": "Total Skus"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SkuItem"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_skus",
+          "items"
+        ],
+        "title": "SkuListResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
