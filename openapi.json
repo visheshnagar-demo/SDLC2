@@ -1,0 +1,575 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Motor Insurance Premium Calculator API",
+    "description": "RESTful API for instant motor insurance premium calculation and itemized factor breakdown",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotes/calculate": {
+      "post": {
+        "tags": [
+          "Quotes"
+        ],
+        "summary": "Calculate Quote",
+        "description": "Calculate motor insurance premium with itemized factor breakdown and audit logging.",
+        "operationId": "calculate_quote_api_v1_quotes_calculate_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteCalculateRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotes": {
+      "get": {
+        "tags": [
+          "Quotes"
+        ],
+        "summary": "List Quotes",
+        "description": "Retrieve paginated quote calculation history and audit trail.",
+        "operationId": "list_quotes_api_v1_quotes_get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Offset for pagination",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Offset for pagination"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Limit for pagination",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Limit for pagination"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotes/stats": {
+      "get": {
+        "tags": [
+          "Quotes"
+        ],
+        "summary": "Get Quote Stats",
+        "description": "Retrieve KPI statistics for quotes.",
+        "operationId": "get_quote_stats_api_v1_quotes_stats_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteStatsResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotes/{quote_id}": {
+      "get": {
+        "tags": [
+          "Quotes"
+        ],
+        "summary": "Get Quote By Id",
+        "description": "Retrieve single quote calculation details and itemized factors by quote ID.",
+        "operationId": "get_quote_by_id_api_v1_quotes__quote_id__get",
+        "parameters": [
+          {
+            "name": "quote_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Quote Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotes/{quote_id}/bind": {
+      "post": {
+        "tags": [
+          "Quotes"
+        ],
+        "summary": "Bind Quote",
+        "description": "Mark a calculated quote as Bound policy.",
+        "operationId": "bind_quote_api_v1_quotes__quote_id__bind_post",
+        "parameters": [
+          {
+            "name": "quote_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Quote Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FactorBreakdownItem": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "factor_name": {
+            "type": "string",
+            "title": "Factor Name"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "factor_name",
+          "amount",
+          "category"
+        ],
+        "title": "FactorBreakdownItem"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "QuoteCalculateRequest": {
+        "properties": {
+          "vehicle_make": {
+            "type": "string",
+            "title": "Vehicle Make",
+            "description": "Vehicle make (e.g. Toyota, Honda)"
+          },
+          "vehicle_year": {
+            "type": "integer",
+            "title": "Vehicle Year",
+            "description": "Vehicle manufacture year (e.g. 2022)"
+          },
+          "vehicle_value": {
+            "type": "number",
+            "title": "Vehicle Value",
+            "description": "Estimated vehicle market value in USD"
+          },
+          "driver_age": {
+            "type": "integer",
+            "title": "Driver Age",
+            "description": "Driver age in years"
+          },
+          "driving_experience": {
+            "type": "integer",
+            "title": "Driving Experience",
+            "description": "Years of driving experience"
+          },
+          "coverage_type": {
+            "type": "string",
+            "title": "Coverage Type",
+            "description": "Coverage type: Third Party, Comprehensive, or Third Party Fire and Theft"
+          }
+        },
+        "type": "object",
+        "required": [
+          "vehicle_make",
+          "vehicle_year",
+          "vehicle_value",
+          "driver_age",
+          "driving_experience",
+          "coverage_type"
+        ],
+        "title": "QuoteCalculateRequest"
+      },
+      "QuoteListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/QuoteResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "skip": {
+            "type": "integer",
+            "title": "Skip"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "skip",
+          "limit"
+        ],
+        "title": "QuoteListResponse"
+      },
+      "QuoteResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "quote_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote Id"
+          },
+          "vehicle_make": {
+            "type": "string",
+            "title": "Vehicle Make"
+          },
+          "vehicle_year": {
+            "type": "integer",
+            "title": "Vehicle Year"
+          },
+          "vehicle_value": {
+            "type": "number",
+            "title": "Vehicle Value"
+          },
+          "driver_age": {
+            "type": "integer",
+            "title": "Driver Age"
+          },
+          "driving_experience": {
+            "type": "integer",
+            "title": "Driving Experience"
+          },
+          "coverage_type": {
+            "type": "string",
+            "title": "Coverage Type"
+          },
+          "base_premium": {
+            "type": "number",
+            "title": "Base Premium"
+          },
+          "total_premium": {
+            "type": "number",
+            "title": "Total Premium"
+          },
+          "currency": {
+            "type": "string",
+            "title": "Currency",
+            "default": "USD"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "Calculated"
+          },
+          "calculated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calculated At"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
+          },
+          "breakdown": {
+            "items": {
+              "$ref": "#/components/schemas/FactorBreakdownItem"
+            },
+            "type": "array",
+            "title": "Breakdown",
+            "default": []
+          },
+          "factors": {
+            "items": {
+              "$ref": "#/components/schemas/FactorBreakdownItem"
+            },
+            "type": "array",
+            "title": "Factors",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "vehicle_make",
+          "vehicle_year",
+          "vehicle_value",
+          "driver_age",
+          "driving_experience",
+          "coverage_type",
+          "base_premium",
+          "total_premium"
+        ],
+        "title": "QuoteResponse"
+      },
+      "QuoteStatsResponse": {
+        "properties": {
+          "total_quotes": {
+            "type": "integer",
+            "title": "Total Quotes"
+          },
+          "quotes_today": {
+            "type": "integer",
+            "title": "Quotes Today"
+          },
+          "avg_quote_value": {
+            "type": "number",
+            "title": "Avg Quote Value"
+          },
+          "conversion_rate": {
+            "type": "number",
+            "title": "Conversion Rate"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total_quotes",
+          "quotes_today",
+          "avg_quote_value",
+          "conversion_rate"
+        ],
+        "title": "QuoteStatsResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
