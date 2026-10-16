@@ -1,0 +1,1359 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Facultative Reinsurance Gateway API",
+    "description": "Portal for carrier facultative reinsurance submissions and underwriter review queue.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/reinsurance-requests": {
+      "post": {
+        "tags": [
+          "Reinsurance Requests"
+        ],
+        "summary": "Create facultative reinsurance submission",
+        "operationId": "create_reinsurance_request_api_v1_reinsurance_requests_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReinsuranceSubmissionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReinsuranceSubmissionCreateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/reinsurance-requests/{submission_id}": {
+      "get": {
+        "tags": [
+          "Reinsurance Requests"
+        ],
+        "summary": "Get reinsurance submission details by ID",
+        "operationId": "get_reinsurance_request_api_v1_reinsurance_requests__submission_id__get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionQueueItemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/queue": {
+      "get": {
+        "tags": [
+          "Underwriting Queue"
+        ],
+        "summary": "Query underwriter review queue with filters, sorting, and pagination",
+        "operationId": "get_underwriter_queue_api_v1_underwriting_queue_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (SUBMITTED, UNDER_REVIEW, QUOTED, DECLINED)",
+              "title": "Status"
+            },
+            "description": "Filter by status (SUBMITTED, UNDER_REVIEW, QUOTED, DECLINED)"
+          },
+          {
+            "name": "risk_category",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by risk category (CYBER, DO)",
+              "title": "Risk Category"
+            },
+            "description": "Filter by risk category (CYBER, DO)"
+          },
+          {
+            "name": "priority",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by priority (LOW, MEDIUM, HIGH, CRITICAL)",
+              "title": "Priority"
+            },
+            "description": "Filter by priority (LOW, MEDIUM, HIGH, CRITICAL)"
+          },
+          {
+            "name": "carrier_name",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by carrier name substring",
+              "title": "Carrier Name"
+            },
+            "description": "Filter by carrier name substring"
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Search by reference, insured entity, or policy number",
+              "title": "Search"
+            },
+            "description": "Search by reference, insured entity, or policy number"
+          },
+          {
+            "name": "sort_by",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Field to sort by (created_at, risk_score, priority, policy_limit_usd)",
+              "default": "created_at",
+              "title": "Sort By"
+            },
+            "description": "Field to sort by (created_at, risk_score, priority, policy_limit_usd)"
+          },
+          {
+            "name": "sort_order",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "description": "Sort order (asc, desc)",
+              "default": "desc",
+              "title": "Sort Order"
+            },
+            "description": "Sort order (asc, desc)"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Number of items to skip",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Number of items to skip"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max items to return",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max items to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnderwritingQueueResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/score": {
+      "post": {
+        "tags": [
+          "Risk Scoring"
+        ],
+        "summary": "Calculate or preview risk score for Cyber / D&O submission parameters",
+        "operationId": "calculate_risk_score_api_v1_underwriting_score_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RiskScoreRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/decisions": {
+      "post": {
+        "tags": [
+          "Underwriting Decisions & Flags"
+        ],
+        "summary": "Record binding quote or decline decision with audit logging",
+        "operationId": "record_underwriting_decision_api_v1_underwriting_decisions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnderwritingDecisionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UnderwritingDecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/flags/{flag_id}/resolve": {
+      "patch": {
+        "tags": [
+          "Underwriting Decisions & Flags"
+        ],
+        "summary": "Resolve a missing information flag",
+        "operationId": "resolve_missing_info_flag_patch_api_v1_underwriting_flags__flag_id__resolve_patch",
+        "parameters": [
+          {
+            "name": "flag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Flag Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveFlagRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionMissingFlagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Underwriting Decisions & Flags"
+        ],
+        "summary": "Resolve a missing information flag (POST alias)",
+        "operationId": "resolve_missing_info_flag_post_api_v1_underwriting_flags__flag_id__resolve_post",
+        "parameters": [
+          {
+            "name": "flag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Flag Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResolveFlagRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionMissingFlagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/livez": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_livez_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/healthz": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "operationId": "health_check_healthz_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "Root"
+        ],
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AttachedDocumentCreate": {
+        "properties": {
+          "document_type": {
+            "type": "string",
+            "title": "Document Type",
+            "description": "E.g., CYBER_QUESTIONNAIRE, AUDITED_FINANCIALS, PRIMARY_POLICY"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "file_size_bytes": {
+            "type": "integer",
+            "exclusiveMinimum": 0.0,
+            "title": "File Size Bytes"
+          },
+          "storage_uri": {
+            "type": "string",
+            "title": "Storage Uri"
+          }
+        },
+        "type": "object",
+        "required": [
+          "document_type",
+          "file_name",
+          "file_size_bytes",
+          "storage_uri"
+        ],
+        "title": "AttachedDocumentCreate"
+      },
+      "DecisionType": {
+        "type": "string",
+        "enum": [
+          "QUOTE",
+          "DECLINE"
+        ],
+        "title": "DecisionType"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ReinsuranceSubmissionCreate": {
+        "properties": {
+          "carrier_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Carrier Name"
+          },
+          "carrier_rating": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Carrier Rating"
+          },
+          "risk_category": {
+            "$ref": "#/components/schemas/RiskCategory"
+          },
+          "policy_limit_usd": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Policy Limit Usd",
+            "description": "Requested policy limit in USD"
+          },
+          "attachment_point_usd": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Attachment Point Usd",
+            "description": "Primary attachment point in USD"
+          },
+          "effective_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Effective Date"
+          },
+          "expiration_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Expiration Date"
+          },
+          "primary_policy_number": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Primary Policy Number"
+          },
+          "insured_entity_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Insured Entity Name"
+          },
+          "industry_sector": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Industry Sector"
+          },
+          "prior_loss_amount_usd": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Prior Loss Amount Usd",
+            "default": 0.0
+          },
+          "attached_documents": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/AttachedDocumentCreate"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attached Documents"
+          }
+        },
+        "type": "object",
+        "required": [
+          "carrier_name",
+          "carrier_rating",
+          "risk_category",
+          "policy_limit_usd",
+          "attachment_point_usd",
+          "effective_date",
+          "expiration_date",
+          "primary_policy_number",
+          "insured_entity_name",
+          "industry_sector"
+        ],
+        "title": "ReinsuranceSubmissionCreate"
+      },
+      "ReinsuranceSubmissionCreateResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_reference": {
+            "type": "string",
+            "title": "Submission Reference"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "risk_category": {
+            "type": "string",
+            "title": "Risk Category"
+          },
+          "risk_score": {
+            "type": "number",
+            "title": "Risk Score"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "has_missing_info": {
+            "type": "boolean",
+            "title": "Has Missing Info"
+          },
+          "missing_flags_count": {
+            "type": "integer",
+            "title": "Missing Flags Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_reference",
+          "status",
+          "risk_category",
+          "risk_score",
+          "priority",
+          "has_missing_info",
+          "missing_flags_count",
+          "created_at"
+        ],
+        "title": "ReinsuranceSubmissionCreateResponse"
+      },
+      "ResolveFlagRequest": {
+        "properties": {
+          "underwriter_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Underwriter Id",
+            "description": "Underwriter resolving the flag"
+          }
+        },
+        "type": "object",
+        "required": [
+          "underwriter_id"
+        ],
+        "title": "ResolveFlagRequest"
+      },
+      "RiskCategory": {
+        "type": "string",
+        "enum": [
+          "CYBER",
+          "DO"
+        ],
+        "title": "RiskCategory"
+      },
+      "RiskScoreBreakdown": {
+        "properties": {
+          "exposure_score": {
+            "type": "number",
+            "title": "Exposure Score"
+          },
+          "carrier_rating_penalty": {
+            "type": "number",
+            "title": "Carrier Rating Penalty"
+          },
+          "category_baseline": {
+            "type": "number",
+            "title": "Category Baseline"
+          },
+          "loss_history_factor": {
+            "type": "number",
+            "title": "Loss History Factor"
+          }
+        },
+        "type": "object",
+        "required": [
+          "exposure_score",
+          "carrier_rating_penalty",
+          "category_baseline",
+          "loss_history_factor"
+        ],
+        "title": "RiskScoreBreakdown"
+      },
+      "RiskScoreRequest": {
+        "properties": {
+          "risk_category": {
+            "$ref": "#/components/schemas/RiskCategory"
+          },
+          "policy_limit_usd": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Policy Limit Usd"
+          },
+          "attachment_point_usd": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Attachment Point Usd"
+          },
+          "carrier_rating": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Carrier Rating"
+          },
+          "industry_sector": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Industry Sector"
+          },
+          "prior_loss_amount_usd": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Prior Loss Amount Usd",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "risk_category",
+          "policy_limit_usd",
+          "attachment_point_usd",
+          "carrier_rating",
+          "industry_sector"
+        ],
+        "title": "RiskScoreRequest"
+      },
+      "RiskScoreResponse": {
+        "properties": {
+          "risk_score": {
+            "type": "number",
+            "title": "Risk Score"
+          },
+          "risk_grade": {
+            "type": "string",
+            "title": "Risk Grade"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "breakdown": {
+            "$ref": "#/components/schemas/RiskScoreBreakdown"
+          }
+        },
+        "type": "object",
+        "required": [
+          "risk_score",
+          "risk_grade",
+          "priority",
+          "breakdown"
+        ],
+        "title": "RiskScoreResponse"
+      },
+      "SubmissionDocumentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "document_type": {
+            "type": "string",
+            "title": "Document Type"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "file_size_bytes": {
+            "type": "integer",
+            "title": "File Size Bytes"
+          },
+          "storage_uri": {
+            "type": "string",
+            "title": "Storage Uri"
+          },
+          "uploaded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Uploaded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_id",
+          "document_type",
+          "file_name",
+          "file_size_bytes",
+          "storage_uri",
+          "uploaded_at"
+        ],
+        "title": "SubmissionDocumentResponse"
+      },
+      "SubmissionMissingFlagResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "field_name": {
+            "type": "string",
+            "title": "Field Name"
+          },
+          "flag_message": {
+            "type": "string",
+            "title": "Flag Message"
+          },
+          "is_blocking": {
+            "type": "boolean",
+            "title": "Is Blocking"
+          },
+          "is_resolved": {
+            "type": "boolean",
+            "title": "Is Resolved"
+          },
+          "resolved_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved By"
+          },
+          "resolved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_id",
+          "field_name",
+          "flag_message",
+          "is_blocking",
+          "is_resolved",
+          "created_at"
+        ],
+        "title": "SubmissionMissingFlagResponse"
+      },
+      "SubmissionQueueItemResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_reference": {
+            "type": "string",
+            "title": "Submission Reference"
+          },
+          "carrier_name": {
+            "type": "string",
+            "title": "Carrier Name"
+          },
+          "carrier_rating": {
+            "type": "string",
+            "title": "Carrier Rating"
+          },
+          "risk_category": {
+            "type": "string",
+            "title": "Risk Category"
+          },
+          "insured_entity_name": {
+            "type": "string",
+            "title": "Insured Entity Name"
+          },
+          "industry_sector": {
+            "type": "string",
+            "title": "Industry Sector"
+          },
+          "policy_limit_usd": {
+            "type": "number",
+            "title": "Policy Limit Usd"
+          },
+          "attachment_point_usd": {
+            "type": "number",
+            "title": "Attachment Point Usd"
+          },
+          "effective_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Effective Date"
+          },
+          "expiration_date": {
+            "type": "string",
+            "format": "date",
+            "title": "Expiration Date"
+          },
+          "primary_policy_number": {
+            "type": "string",
+            "title": "Primary Policy Number"
+          },
+          "prior_loss_amount_usd": {
+            "type": "number",
+            "title": "Prior Loss Amount Usd"
+          },
+          "risk_score": {
+            "type": "number",
+            "title": "Risk Score"
+          },
+          "priority": {
+            "type": "string",
+            "title": "Priority"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "has_missing_info": {
+            "type": "boolean",
+            "title": "Has Missing Info"
+          },
+          "missing_flags": {
+            "items": {
+              "$ref": "#/components/schemas/SubmissionMissingFlagResponse"
+            },
+            "type": "array",
+            "title": "Missing Flags"
+          },
+          "documents": {
+            "items": {
+              "$ref": "#/components/schemas/SubmissionDocumentResponse"
+            },
+            "type": "array",
+            "title": "Documents"
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/UnderwritingDecisionResponse"
+            },
+            "type": "array",
+            "title": "Decisions"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_reference",
+          "carrier_name",
+          "carrier_rating",
+          "risk_category",
+          "insured_entity_name",
+          "industry_sector",
+          "policy_limit_usd",
+          "attachment_point_usd",
+          "effective_date",
+          "expiration_date",
+          "primary_policy_number",
+          "prior_loss_amount_usd",
+          "risk_score",
+          "priority",
+          "status",
+          "has_missing_info",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SubmissionQueueItemResponse"
+      },
+      "UnderwritingDecisionCreate": {
+        "properties": {
+          "submission_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Submission Id"
+          },
+          "underwriter_id": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Underwriter Id"
+          },
+          "decision": {
+            "$ref": "#/components/schemas/DecisionType"
+          },
+          "quoted_premium_usd": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Premium Usd"
+          },
+          "quoted_limit_usd": {
+            "anyOf": [
+              {
+                "type": "number",
+                "exclusiveMinimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Limit Usd"
+          },
+          "quoted_attachment_usd": {
+            "anyOf": [
+              {
+                "type": "number",
+                "minimum": 0.0
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Attachment Usd"
+          },
+          "decline_reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Reason Code"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "submission_id",
+          "underwriter_id",
+          "decision"
+        ],
+        "title": "UnderwritingDecisionCreate"
+      },
+      "UnderwritingDecisionResponse": {
+        "properties": {
+          "id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Id"
+          },
+          "decision_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "underwriter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Underwriter Id"
+          },
+          "quoted_premium_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Premium Usd"
+          },
+          "quoted_limit_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Limit Usd"
+          },
+          "quoted_attachment_usd": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Attachment Usd"
+          },
+          "decline_reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Reason Code"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "recorded_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Recorded At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "submission_id",
+          "decision",
+          "recorded_at"
+        ],
+        "title": "UnderwritingDecisionResponse"
+      },
+      "UnderwritingQueueResponse": {
+        "properties": {
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "skip": {
+            "type": "integer",
+            "title": "Skip"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          },
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SubmissionQueueItemResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "total",
+          "skip",
+          "limit",
+          "items"
+        ],
+        "title": "UnderwritingQueueResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
