@@ -1,0 +1,1011 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gen Re QTB Backend",
+    "description": "Gen Re Quote to Bind (QTB) Static Web Prototype API",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/quotes": {
+      "get": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Get Quotes",
+        "operationId": "get_quotes_api_v1_quotes_get",
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "lineOfBusiness",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Lineofbusiness"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 10,
+              "title": "Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaginatedQuotesResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Create Quote",
+        "operationId": "create_quote_api_v1_quotes_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/quotes/{id}": {
+      "get": {
+        "tags": [
+          "quotes"
+        ],
+        "summary": "Get Quote By Id",
+        "operationId": "get_quote_by_id_api_v1_quotes__id__get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risks": {
+      "get": {
+        "tags": [
+          "risks"
+        ],
+        "summary": "Get Risks",
+        "operationId": "get_risks_api_v1_risks_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RiskExposureResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Risks Api V1 Risks Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risks/{id}": {
+      "get": {
+        "tags": [
+          "risks"
+        ],
+        "summary": "Get Risk By Id",
+        "operationId": "get_risk_by_id_api_v1_risks__id__get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskExposureResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/risks/{id}/decision": {
+      "patch": {
+        "tags": [
+          "risks"
+        ],
+        "summary": "Update Risk Decision",
+        "operationId": "update_risk_decision_api_v1_risks__id__decision_patch",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnderwritingDecisionRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskExposureResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/binders": {
+      "get": {
+        "tags": [
+          "binders"
+        ],
+        "summary": "Get Binders",
+        "operationId": "get_binders_api_v1_binders_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BinderResponse"
+                  },
+                  "type": "array",
+                  "title": "Response Get Binders Api V1 Binders Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "binders"
+        ],
+        "summary": "Create Binder",
+        "operationId": "create_binder_api_v1_binders_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BinderCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BinderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/binders/{id}": {
+      "get": {
+        "tags": [
+          "binders"
+        ],
+        "summary": "Get Binder By Id",
+        "operationId": "get_binder_by_id_api_v1_binders__id__get",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BinderResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Get Health",
+        "operationId": "get_health_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BinderCreate": {
+        "properties": {
+          "quoteId": {
+            "type": "string",
+            "title": "Quoteid"
+          },
+          "effectiveDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effectivedate"
+          },
+          "expiryDate": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expirydate"
+          },
+          "boundBy": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Boundby",
+            "default": "UW-4091"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quoteId"
+        ],
+        "title": "BinderCreate"
+      },
+      "BinderResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "policyReferenceId": {
+            "type": "string",
+            "title": "Policyreferenceid"
+          },
+          "quoteId": {
+            "type": "string",
+            "title": "Quoteid"
+          },
+          "insuredName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insuredname"
+          },
+          "lineOfBusiness": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lineofbusiness"
+          },
+          "effectiveDate": {
+            "type": "string",
+            "title": "Effectivedate"
+          },
+          "expiryDate": {
+            "type": "string",
+            "title": "Expirydate"
+          },
+          "boundBy": {
+            "type": "string",
+            "title": "Boundby"
+          },
+          "bindingTimestamp": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bindingtimestamp"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "grossPremium": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Grosspremium"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "documentSummary": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Documentsummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "policyReferenceId",
+          "quoteId",
+          "effectiveDate",
+          "expiryDate",
+          "boundBy",
+          "status"
+        ],
+        "title": "BinderResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LayerStructureSchema": {
+        "properties": {
+          "layerNumber": {
+            "type": "integer",
+            "title": "Layernumber"
+          },
+          "attachment": {
+            "type": "number",
+            "title": "Attachment"
+          },
+          "limit": {
+            "type": "number",
+            "title": "Limit"
+          },
+          "genreSharePercentage": {
+            "type": "number",
+            "title": "Genresharepercentage"
+          }
+        },
+        "type": "object",
+        "required": [
+          "layerNumber",
+          "attachment",
+          "limit",
+          "genreSharePercentage"
+        ],
+        "title": "LayerStructureSchema"
+      },
+      "PaginatedQuotesResponse": {
+        "properties": {
+          "content": {
+            "items": {
+              "$ref": "#/components/schemas/QuoteResponse"
+            },
+            "type": "array",
+            "title": "Content"
+          },
+          "totalElements": {
+            "type": "integer",
+            "title": "Totalelements"
+          },
+          "totalPages": {
+            "type": "integer",
+            "title": "Totalpages"
+          },
+          "pageNumber": {
+            "type": "integer",
+            "title": "Pagenumber"
+          },
+          "pageSize": {
+            "type": "integer",
+            "title": "Pagesize"
+          }
+        },
+        "type": "object",
+        "required": [
+          "content",
+          "totalElements",
+          "totalPages",
+          "pageNumber",
+          "pageSize"
+        ],
+        "title": "PaginatedQuotesResponse"
+      },
+      "QuoteCreate": {
+        "properties": {
+          "insuredName": {
+            "type": "string",
+            "title": "Insuredname"
+          },
+          "lineOfBusiness": {
+            "type": "string",
+            "title": "Lineofbusiness"
+          },
+          "sumInsured": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Suminsured"
+          },
+          "deductible": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Deductible",
+            "default": 0.0
+          },
+          "structureType": {
+            "type": "string",
+            "title": "Structuretype"
+          },
+          "attachmentPoint": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachmentpoint",
+            "default": 0.0
+          },
+          "targetRate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Targetrate"
+          },
+          "cedingCommission": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Cedingcommission"
+          }
+        },
+        "type": "object",
+        "required": [
+          "insuredName",
+          "lineOfBusiness",
+          "sumInsured",
+          "structureType"
+        ],
+        "title": "QuoteCreate"
+      },
+      "QuoteResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "quoteNumber": {
+            "type": "string",
+            "title": "Quotenumber"
+          },
+          "insuredName": {
+            "type": "string",
+            "title": "Insuredname"
+          },
+          "lineOfBusiness": {
+            "type": "string",
+            "title": "Lineofbusiness"
+          },
+          "sumInsured": {
+            "type": "number",
+            "title": "Suminsured"
+          },
+          "deductible": {
+            "type": "number",
+            "title": "Deductible",
+            "default": 0.0
+          },
+          "structureType": {
+            "type": "string",
+            "title": "Structuretype"
+          },
+          "attachmentPoint": {
+            "type": "number",
+            "title": "Attachmentpoint",
+            "default": 0.0
+          },
+          "quotedPremium": {
+            "type": "number",
+            "title": "Quotedpremium"
+          },
+          "rateOnLine": {
+            "type": "number",
+            "title": "Rateonline"
+          },
+          "cedingCommission": {
+            "type": "number",
+            "title": "Cedingcommission",
+            "default": 0.0
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "createdAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updatedat"
+          },
+          "layers": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/LayerStructureSchema"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Layers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "quoteNumber",
+          "insuredName",
+          "lineOfBusiness",
+          "sumInsured",
+          "structureType",
+          "quotedPremium",
+          "rateOnLine",
+          "status"
+        ],
+        "title": "QuoteResponse"
+      },
+      "RiskExposureResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "quoteId": {
+            "type": "string",
+            "title": "Quoteid"
+          },
+          "quoteNumber": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quotenumber"
+          },
+          "insuredName": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insuredname"
+          },
+          "lineOfBusiness": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lineofbusiness"
+          },
+          "totalExposure": {
+            "type": "number",
+            "title": "Totalexposure"
+          },
+          "probableMaximumLoss": {
+            "type": "number",
+            "title": "Probablemaximumloss"
+          },
+          "catRiskScore": {
+            "type": "integer",
+            "title": "Catriskscore"
+          },
+          "underwritingDecision": {
+            "type": "string",
+            "title": "Underwritingdecision"
+          },
+          "underwriterNotes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Underwriternotes"
+          },
+          "layers": {
+            "items": {
+              "$ref": "#/components/schemas/LayerStructureSchema"
+            },
+            "type": "array",
+            "title": "Layers"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "quoteId",
+          "totalExposure",
+          "probableMaximumLoss",
+          "catRiskScore",
+          "underwritingDecision"
+        ],
+        "title": "RiskExposureResponse"
+      },
+      "UnderwritingDecisionRequest": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "underwriterId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Underwriterid",
+            "default": "UW-4091"
+          },
+          "reviewNotes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reviewnotes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision"
+        ],
+        "title": "UnderwritingDecisionRequest"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "id": "e8f9a0b1-c2d3-4e5f-6a7b-8c9d0e1f2a3b",
+    "policyReferenceId": "GENRE-QTB-2026-88412",
+    "quoteId": "d4e5f6a7-b8c9-0123-defa-4567890123de",
+    "effectiveDate": "2026-06-01",
+    "expiryDate": "2027-06-01",
+    "boundBy": "UW-4091",
+    "bindingTimestamp": "2026-05-18T14:15:22Z",
+    "status": "BOUND",
+    "documentSummary": {
+      "binderTitle": "Gen Re Treaty Reinsurance Binder Certificate",
+      "jurisdiction": "State of New York, USA",
+      "securityRating": "S&P AA+ / A.M. Best A++",
+      "specialConditions": [
+        "Quarterly loss bordereau reporting required within 30 days of quarter close.",
+        "Sanctions limitation and exclusion clause LMA3100 applies.",
+        "Premium installment schedule: 4 equal quarterly payments."
+      ]
+    }
+  }
+]
