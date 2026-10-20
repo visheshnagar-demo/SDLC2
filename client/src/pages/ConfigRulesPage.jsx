@@ -70,7 +70,7 @@ export const ConfigRulesPage = () => {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-blue-600 block">
-            Underwriting Policy & Engine Engine Settings
+            Underwriting Policy & Engine Settings
           </span>
           <h1 className="text-2xl font-bold text-slate-900 mt-1">
             Configurable Scoring Rules & Authority Thresholds
