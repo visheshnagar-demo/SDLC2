@@ -9,98 +9,115 @@ import java.util.List;
 import java.util.UUID;
 
 @Entity
-@Table(name = "submissions")
+@Table(name = "submissions", indexes = {
+    @Index(name = "idx_sub_status_lob", columnList = "status, line_of_business"),
+    @Index(name = "idx_sub_created_at", columnList = "created_at"),
+    @Index(name = "idx_sub_cedent", columnList = "ceding_company_name")
+})
 public class SubmissionEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "ceding_company_name", nullable = false)
     private String cedingCompanyName;
 
-    @Column(nullable = false)
+    @Column(name = "insured_name", nullable = false)
     private String insuredName;
 
-    @Column(nullable = false)
+    @Column(name = "line_of_business", nullable = false)
     private String lineOfBusiness;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(name = "policy_limit", precision = 19, scale = 2, nullable = false)
     private BigDecimal policyLimit;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(name = "attachment_point", precision = 19, scale = 2, nullable = false)
     private BigDecimal attachmentPoint;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(name = "retention", precision = 19, scale = 2, nullable = false)
     private BigDecimal retention;
 
-    @Column(nullable = false, precision = 19, scale = 2)
+    @Column(name = "gross_premium", precision = 19, scale = 2, nullable = false)
     private BigDecimal grossPremium;
 
-    @Column(nullable = false)
+    @Column(name = "effective_date", nullable = false)
     private LocalDate effectiveDate;
 
-    @Column(nullable = false)
+    @Column(name = "expiry_date", nullable = false)
     private LocalDate expiryDate;
 
-    @Column(nullable = false)
+    @Column(name = "industry", nullable = false)
     private String industry;
 
-    @Column(nullable = false)
+    @Column(name = "revenue_band", nullable = false)
     private String revenueBand;
 
-    @Column(nullable = false)
+    @Column(name = "jurisdiction", nullable = false)
     private String jurisdiction;
 
-    @Column(nullable = false)
-    private String status = "RECEIVED";
+    @Column(name = "status", nullable = false)
+    private String status; // RECEIVED, IN_REVIEW, INFO_REQUESTED, QUOTED, BOUND, DECLINED, REFERRED_TO_MANAGER
 
+    @Column(name = "risk_score")
     private Integer riskScore;
 
-    private String riskTier;
+    @Column(name = "risk_tier")
+    private String riskTier; // LOW, MEDIUM, HIGH, ELEVATED
 
-    private Boolean isReferred = false;
+    @Column(name = "is_referred", nullable = false)
+    private boolean isReferred = false;
 
-    private UUID assignedUnderwriterId;
+    @Column(name = "assigned_underwriter_id")
+    private String assignedUnderwriterId;
 
+    @Column(name = "created_by")
     private String createdBy;
 
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
 
-    @Column(nullable = false)
-    private Instant updatedAt = Instant.now();
+    @Column(name = "updated_at", nullable = false)
+    private Instant updatedAt;
 
     @Lob
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "risk_attributes_json")
     private String riskAttributesJson;
 
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<SubmissionDocumentEntity> documents = new ArrayList<>();
 
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<RiskFactorBreakdownEntity> factorBreakdowns = new ArrayList<>();
+    private List<RiskFactorBreakdownEntity> riskFactors = new ArrayList<>();
 
-    @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<QuoteEntity> quotes = new ArrayList<>();
+    @OneToOne(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private QuoteEntity quote;
 
     @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<UnderwritingDecisionEntity> decisions = new ArrayList<>();
 
-    @OneToMany(mappedBy = "submission", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
-    private List<AuditLogEntity> auditLogs = new ArrayList<>();
-
     @PrePersist
     public void prePersist() {
-        if (createdAt == null) createdAt = Instant.now();
-        if (updatedAt == null) updatedAt = Instant.now();
-        if (status == null) status = "RECEIVED";
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = Instant.now();
+        }
+        if (this.status == null) {
+            this.status = "RECEIVED";
+        }
     }
 
     @PreUpdate
     public void preUpdate() {
-        updatedAt = Instant.now();
+        this.updatedAt = Instant.now();
     }
+
+    public SubmissionEntity() {}
 
     // Getters and Setters
     public UUID getId() { return id; }
@@ -151,11 +168,11 @@ public class SubmissionEntity {
     public String getRiskTier() { return riskTier; }
     public void setRiskTier(String riskTier) { this.riskTier = riskTier; }
 
-    public Boolean getIsReferred() { return isReferred; }
-    public void setIsReferred(Boolean referred) { isReferred = referred; }
+    public boolean isReferred() { return isReferred; }
+    public void setReferred(boolean referred) { isReferred = referred; }
 
-    public UUID getAssignedUnderwriterId() { return assignedUnderwriterId; }
-    public void setAssignedUnderwriterId(UUID assignedUnderwriterId) { this.assignedUnderwriterId = assignedUnderwriterId; }
+    public String getAssignedUnderwriterId() { return assignedUnderwriterId; }
+    public void setAssignedUnderwriterId(String assignedUnderwriterId) { this.assignedUnderwriterId = assignedUnderwriterId; }
 
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
@@ -172,15 +189,12 @@ public class SubmissionEntity {
     public List<SubmissionDocumentEntity> getDocuments() { return documents; }
     public void setDocuments(List<SubmissionDocumentEntity> documents) { this.documents = documents; }
 
-    public List<RiskFactorBreakdownEntity> getFactorBreakdowns() { return factorBreakdowns; }
-    public void setFactorBreakdowns(List<RiskFactorBreakdownEntity> factorBreakdowns) { this.factorBreakdowns = factorBreakdowns; }
+    public List<RiskFactorBreakdownEntity> getRiskFactors() { return riskFactors; }
+    public void setRiskFactors(List<RiskFactorBreakdownEntity> riskFactors) { this.riskFactors = riskFactors; }
 
-    public List<QuoteEntity> getQuotes() { return quotes; }
-    public void setQuotes(List<QuoteEntity> quotes) { this.quotes = quotes; }
+    public QuoteEntity getQuote() { return quote; }
+    public void setQuote(QuoteEntity quote) { this.quote = quote; }
 
     public List<UnderwritingDecisionEntity> getDecisions() { return decisions; }
     public void setDecisions(List<UnderwritingDecisionEntity> decisions) { this.decisions = decisions; }
-
-    public List<AuditLogEntity> getAuditLogs() { return auditLogs; }
-    public void setAuditLogs(List<AuditLogEntity> auditLogs) { this.auditLogs = auditLogs; }
 }

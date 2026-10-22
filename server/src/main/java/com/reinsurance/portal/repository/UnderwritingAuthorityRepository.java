@@ -9,5 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface UnderwritingAuthorityRepository extends JpaRepository<UnderwritingAuthorityEntity, UUID> {
+    Optional<UnderwritingAuthorityEntity> findByUnderwriterId(String underwriterId);
     Optional<UnderwritingAuthorityEntity> findByRoleName(String roleName);
 }

@@ -9,6 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface RiskFactorBreakdownRepository extends JpaRepository<RiskFactorBreakdownEntity, UUID> {
-    List<RiskFactorBreakdownEntity> findBySubmissionId(UUID submissionId);
+    List<RiskFactorBreakdownEntity> findBySubmissionIdOrderByCreatedAtAsc(UUID submissionId);
     void deleteBySubmissionId(UUID submissionId);
 }

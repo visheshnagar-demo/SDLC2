@@ -7,15 +7,15 @@ import java.util.UUID;
 public record RiskScoreResponse(
     UUID submissionId,
     int compositeScore,
-    String riskTier,
+    String riskTier, // LOW, MEDIUM, HIGH, ELEVATED
     List<FactorScoreItem> factorBreakdown,
     Instant calculatedAt
 ) {
     public record FactorScoreItem(
         String factorCategory,
         String factorName,
-        int pointsEarned,
-        int maxPoints,
-        String evaluationNotes
+        int scoreAwarded,
+        int maxScore,
+        String evalNotes
     ) {}
 }

@@ -24,14 +24,15 @@ public record SubmissionResponse(
     String status,
     Integer riskScore,
     String riskTier,
-    Boolean isReferred,
-    UUID assignedUnderwriterId,
+    boolean isReferred,
+    String assignedUnderwriterId,
     String createdBy,
     Instant createdAt,
     Instant updatedAt,
     Map<String, Object> riskAttributes,
-    List<RiskScoreResponse.FactorScoreItem> factorBreakdown,
     List<DocumentUploadResponse> documents,
-    String slaIndicator,
-    Long ageHours
+    List<RiskScoreResponse.FactorScoreItem> riskFactors,
+    QuoteResponse quote,
+    Long slaElapsedHours,
+    String slaIndicator // GREEN, YELLOW, RED
 ) {}

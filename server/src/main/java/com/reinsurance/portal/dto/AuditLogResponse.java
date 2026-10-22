@@ -10,7 +10,5 @@ public record AuditLogResponse(
     String userId,
     String userRole,
     String changeSummary,
-    String previousState,
-    String newState,
     Instant timestamp
 ) {}

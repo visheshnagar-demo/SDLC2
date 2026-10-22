@@ -9,5 +9,5 @@ import java.util.UUID;
 
 @Repository
 public interface AuditLogRepository extends JpaRepository<AuditLogEntity, UUID> {
-    List<AuditLogEntity> findBySubmissionIdOrderByTimestampDesc(UUID submissionId);
+    List<AuditLogEntity> findBySubmissionIdOrderByTimestampAsc(UUID submissionId);
 }

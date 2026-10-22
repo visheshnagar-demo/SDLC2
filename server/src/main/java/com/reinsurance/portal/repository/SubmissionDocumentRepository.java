@@ -9,5 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface SubmissionDocumentRepository extends JpaRepository<SubmissionDocumentEntity, UUID> {
-    List<SubmissionDocumentEntity> findBySubmissionId(UUID submissionId);
+    List<SubmissionDocumentEntity> findBySubmissionIdOrderByCreatedAtAsc(UUID submissionId);
+    List<SubmissionDocumentEntity> findBySubmissionIdAndDocumentType(UUID submissionId, String documentType);
 }

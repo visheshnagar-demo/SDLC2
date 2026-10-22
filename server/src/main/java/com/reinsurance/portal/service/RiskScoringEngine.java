@@ -1,146 +1,224 @@
 package com.reinsurance.portal.service;
 
+import com.reinsurance.portal.config.ScoringRulesConfig;
 import com.reinsurance.portal.dto.RiskScoreResponse;
-import com.reinsurance.portal.entity.RiskFactorBreakdownEntity;
-import com.reinsurance.portal.entity.SubmissionEntity;
-import com.reinsurance.portal.repository.RiskFactorBreakdownRepository;
-import com.reinsurance.portal.repository.SubmissionRepository;
+import com.reinsurance.portal.dto.RiskScoreResponse.FactorScoreItem;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class RiskScoringEngine {
 
-    private final SubmissionRepository submissionRepository;
-    private final RiskFactorBreakdownRepository factorBreakdownRepository;
+    private final ScoringRulesConfig scoringRulesConfig;
 
-    public RiskScoringEngine(SubmissionRepository submissionRepository,
-                             RiskFactorBreakdownRepository factorBreakdownRepository) {
-        this.submissionRepository = submissionRepository;
-        this.factorBreakdownRepository = factorBreakdownRepository;
+    public RiskScoringEngine(ScoringRulesConfig scoringRulesConfig) {
+        this.scoringRulesConfig = scoringRulesConfig;
     }
 
-    @Transactional
-    public RiskScoreResponse scoreSubmission(SubmissionEntity submission, Map<String, Object> riskAttributes) {
-        List<RiskScoreResponse.FactorScoreItem> factorItems = new ArrayList<>();
-        String lob = submission.getLineOfBusiness();
+    public RiskScoreResponse scoreSubmission(UUID submissionId, String lineOfBusiness, Map<String, Object> riskAttributes) {
+        String normLob = (lineOfBusiness != null) ? lineOfBusiness.toUpperCase().trim().replace(" ", "_").replace("&", "AND") : "CYBER_RISK";
+        Map<String, Object> attrs = (riskAttributes != null) ? riskAttributes : Collections.emptyMap();
 
+        List<FactorScoreItem> factorItems = new ArrayList<>();
         int compositeScore = 0;
 
-        if ("Cyber Risk".equalsIgnoreCase(lob)) {
-            // Cyber Risk Scoring
-            boolean mfa = getBoolean(riskAttributes, "hasMfa", true);
-            boolean edr = getBoolean(riskAttributes, "hasEdr", true);
-            boolean backups = getBoolean(riskAttributes, "hasBackups", true);
-            int priorLosses = getInt(riskAttributes, "priorLossCount", 0);
-            boolean training = getBoolean(riskAttributes, "hasTraining", true);
+        switch (normLob) {
+            case "CYBER_RISK" -> {
+                // MFA
+                boolean hasMfa = getBoolean(attrs, "hasMfa", "mfaEnforced", "mfa");
+                int mfaScore = hasMfa ? 20 : 0;
+                factorItems.add(new FactorScoreItem("Cyber Controls", "MFA Enforcement", mfaScore, 20,
+                    hasMfa ? "Multi-factor authentication enforced across all systems" : "No MFA enforcement detected (High exposure)"));
 
-            int mfaPts = mfa ? 20 : 0;
-            int edrPts = edr ? 15 : 0;
-            int backupPts = backups ? 15 : 0;
-            int lossPts = priorLosses == 0 ? 30 : (priorLosses <= 2 ? 15 : 0);
-            int trainingPts = training ? 20 : 0;
+                // EDR
+                boolean hasEdr = getBoolean(attrs, "hasEdr", "edrDeployed", "edr");
+                int edrScore = hasEdr ? 15 : 0;
+                factorItems.add(new FactorScoreItem("Cyber Controls", "Endpoint Detection & Response (EDR)", edrScore, 15,
+                    hasEdr ? "Enterprise EDR actively monitoring endpoints" : "Legacy or no endpoint detection in place"));
 
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Technical Controls", "MFA Enforcement", mfaPts, 20, mfa ? "MFA active across enterprise" : "MFA not fully enforced"));
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Technical Controls", "EDR Deployment", edrPts, 15, edr ? "Endpoint Detection & Response active" : "Missing central EDR"));
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Operational Resilience", "Immutable Backups", backupPts, 15, backups ? "Air-gapped / immutable backups present" : "Backup controls insufficient"));
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Loss History", "3-Year Prior Claims", lossPts, 30, "Prior claims count: " + priorLosses));
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Human Factors", "Security Awareness Training", trainingPts, 20, training ? "Quarterly phishing tests passed" : "No structured awareness program"));
+                // Backups
+                boolean hasBackups = getBoolean(attrs, "hasImmutableBackups", "immutableBackups", "backups");
+                int backupScore = hasBackups ? 15 : 0;
+                factorItems.add(new FactorScoreItem("Cyber Controls", "Automated Immutable Backups", backupScore, 15,
+                    hasBackups ? "Daily air-gapped immutable backup strategy active" : "Backups lack immutability or air-gapping"));
 
-            compositeScore = mfaPts + edrPts + backupPts + lossPts + trainingPts;
+                // Prior Loss History
+                int priorLossCount = getInt(attrs, "priorLossCount", "priorClaims", "claimsCount", 0);
+                int lossScore;
+                String lossNote;
+                if (priorLossCount == 0) {
+                    lossScore = 30;
+                    lossNote = "Clean 3-year claims history with 0 reported loss events";
+                } else if (priorLossCount == 1) {
+                    lossScore = 15;
+                    lossNote = "Single isolated historical claim under mitigation";
+                } else {
+                    lossScore = 0;
+                    lossNote = priorLossCount + " reported loss events in prior 36 months";
+                }
+                factorItems.add(new FactorScoreItem("Claims Experience", "3-Year Prior Loss History", lossScore, 30, lossNote));
 
-        } else if ("D&O".equalsIgnoreCase(lob)) {
-            // D&O Scoring
-            String financialHealth = getString(riskAttributes, "financialStrength", "Strong");
-            int claimsCount = getInt(riskAttributes, "priorClaimsCount", 0);
-            boolean governance = getBoolean(riskAttributes, "independentBoard", true);
-            boolean regulatoryHistory = getBoolean(riskAttributes, "regulatoryInquiries", false);
+                // Security Awareness Training
+                boolean hasTraining = getBoolean(attrs, "hasSecurityTraining", "securityTraining", "training");
+                int trainingScore = hasTraining ? 20 : 0;
+                factorItems.add(new FactorScoreItem("Cyber Controls", "Security Awareness Training", trainingScore, 20,
+                    hasTraining ? "Mandatory quarterly employee phishing simulation & training" : "No regular security training curriculum"));
+            }
 
-            int finPts = "Strong".equalsIgnoreCase(financialHealth) ? 30 : ("Moderate".equalsIgnoreCase(financialHealth) ? 15 : 5);
-            int claimsPts = claimsCount == 0 ? 35 : (claimsCount <= 1 ? 20 : 0);
-            int govPts = governance ? 20 : 10;
-            int regPts = !regulatoryHistory ? 15 : 0;
+            case "DIRECTORS_AND_OFFICERS" -> {
+                boolean strongFinancials = getBoolean(attrs, "strongFinancials", "auditedFinancials", "financialStrength");
+                int finScore = strongFinancials ? 30 : 10;
+                factorItems.add(new FactorScoreItem("Financial Assessment", "Balance Sheet & Financial Strength", finScore, 30,
+                    strongFinancials ? "Strong liquidity ratio and positive operational cash flows" : "Moderate or unverified financial liquidity"));
 
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Financial Strength", "Balance Sheet Liquidity & D/E", finPts, 30, "Financial health assessed as " + financialHealth));
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Claims Record", "Historical D&O Securities Litigation", claimsPts, 35, "Prior claims count: " + claimsCount));
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Corporate Governance", "Independent Board Majority", govPts, 20, governance ? "Majority independent board members" : "Inside board control"));
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Compliance", "Clean Regulatory Record", regPts, 15, !regulatoryHistory ? "No active regulatory inquiries" : "Prior regulatory inquiries noted"));
+                int claims = getInt(attrs, "priorLossCount", "securitiesClaims", 0);
+                int claimScore = (claims == 0) ? 30 : (claims == 1 ? 15 : 0);
+                factorItems.add(new FactorScoreItem("Claims Experience", "Prior Securities & Regulatory Claims", claimScore, 30,
+                    claims == 0 ? "Zero regulatory or shareholder actions reported" : claims + " prior claims recorded"));
 
-            compositeScore = finPts + claimsPts + govPts + regPts;
+                boolean independentBoard = getBoolean(attrs, "independentBoard", "boardGovernance", "governance");
+                int govScore = independentBoard ? 20 : 5;
+                factorItems.add(new FactorScoreItem("Governance", "Independent Board Oversight", govScore, 20,
+                    independentBoard ? "Majority independent board members and audit committee" : "Limited independent governance structure"));
 
-        } else {
-            // General specialty scoring (E&O, EPLI, MPL)
-            int priorLossCount = getInt(riskAttributes, "priorLossCount", 0);
-            int experienceYears = getInt(riskAttributes, "experienceYears", 10);
-            boolean riskControls = getBoolean(riskAttributes, "standardRiskControls", true);
+                boolean stableMarketCap = getBoolean(attrs, "stableMarketCap", "marketCapitalization", "stableRevenue");
+                int mktCapScore = stableMarketCap ? 20 : 10;
+                factorItems.add(new FactorScoreItem("Market Stability", "Market Capitalization & Revenue Stability", mktCapScore, 20,
+                    stableMarketCap ? "Established enterprise valuation with low stock volatility" : "Volatile revenue/market valuation tier"));
+            }
 
-            int lossPts = priorLossCount == 0 ? 40 : (priorLossCount <= 2 ? 20 : 5);
-            int expPts = experienceYears >= 10 ? 30 : (experienceYears >= 5 ? 20 : 10);
-            int ctrlPts = riskControls ? 30 : 10;
+            case "ERRORS_AND_OMISSIONS" -> {
+                boolean peerReview = getBoolean(attrs, "peerReview", "qualityControls", "isoCertified");
+                int qcScore = peerReview ? 30 : 10;
+                factorItems.add(new FactorScoreItem("Operational Controls", "Quality Assurance & Peer Review", qcScore, 30,
+                    peerReview ? "Formal peer review & QA sign-off protocols enforced" : "Ad-hoc quality assurance workflows"));
 
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Loss Experience", "Historical Loss Ratio & Claims", lossPts, 40, "Claims record: " + priorLossCount));
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Underwriting Experience", "Industry Tenure & Maturity", expPts, 30, "Operating tenure: " + experienceYears + " years"));
-            factorItems.add(new RiskScoreResponse.FactorScoreItem("Operating Procedures", "Standard Risk Protocols", ctrlPts, 30, riskControls ? "Documented risk mitigation protocols" : "Informal risk management"));
+                int lossRatio = getInt(attrs, "priorLossRatio", "lossRatio", 35);
+                int lrScore = (lossRatio < 30) ? 30 : (lossRatio <= 60 ? 15 : 0);
+                factorItems.add(new FactorScoreItem("Loss Performance", "Historical Loss Ratio", lrScore, 30,
+                    "Historical 5-year loss ratio measured at " + lossRatio + "%"));
 
-            compositeScore = lossPts + expPts + ctrlPts;
+                boolean standardContracts = getBoolean(attrs, "standardContracts", "contractReviewProcess", "legalReview");
+                int crScore = standardContracts ? 20 : 5;
+                factorItems.add(new FactorScoreItem("Legal Risk", "Contract Review & Limitation of Liability", crScore, 20,
+                    standardContracts ? "Mandatory legal review with liability limitation clauses" : "Non-standard contractual indemnities permitted"));
+
+                boolean expStaff = getBoolean(attrs, "experiencedStaff", "employeeExperience", "seniorStaffRatio");
+                int expScore = expStaff ? 20 : 10;
+                factorItems.add(new FactorScoreItem("Human Capital", "Professional Staff Experience", expScore, 20,
+                    expStaff ? "Average professional tenure exceeds 7 years" : "High proportion of entry-level practitioners"));
+            }
+
+            case "EMPLOYMENT_PRACTICES_LIABILITY" -> {
+                boolean hrHandbooks = getBoolean(attrs, "hrHandbooks", "hrPoliciesAndHandbooks", "hrManual");
+                int hrScore = hrHandbooks ? 25 : 5;
+                factorItems.add(new FactorScoreItem("HR Infrastructure", "HR Policies & Employee Handbooks", hrScore, 25,
+                    hrHandbooks ? "Comprehensive up-to-date employee handbook with legal review" : "Outdated or informal employee policies"));
+
+                boolean termProtocols = getBoolean(attrs, "severanceProtocols", "severanceAndTerminationProtocols", "legalSignoff");
+                int termScore = termProtocols ? 25 : 5;
+                factorItems.add(new FactorScoreItem("HR Infrastructure", "Termination & Severance Protocols", termScore, 25,
+                    termProtocols ? "Two-level managerial & legal sign-off required for terminations" : "Single-manager discretionary termination process"));
+
+                int epliClaims = getInt(attrs, "pastEpliClaims", "priorLossCount", 0);
+                int claimScore = (epliClaims == 0) ? 30 : (epliClaims == 1 ? 15 : 0);
+                factorItems.add(new FactorScoreItem("Claims Experience", "Prior EPLI Claims History", claimScore, 30,
+                    epliClaims == 0 ? "Zero discrimination or wrongful termination claims in 5 years" : epliClaims + " prior claims recorded"));
+
+                boolean annualTraining = getBoolean(attrs, "annualTraining", "harassmentTraining", "complianceTraining");
+                int trainScore = annualTraining ? 20 : 0;
+                factorItems.add(new FactorScoreItem("Compliance", "Annual Anti-Harassment & Diversity Training", trainScore, 20,
+                    annualTraining ? "100% staff completion of annual anti-harassment training" : "Training not mandatory across all staff tiers"));
+            }
+
+            default -> { // MEDICAL_PROFESSIONAL_LIABILITY and others
+                boolean credentialing = getBoolean(attrs, "credentialingProcess", "formalCredentialing", "credentialing");
+                int credScore = credentialing ? 30 : 10;
+                factorItems.add(new FactorScoreItem("Clinical Governance", "Physician Credentialing & Privileging", credScore, 30,
+                    credentialing ? "Formal bi-annual board-approved peer review credentialing" : "Informal or single-source physician verification"));
+
+                boolean incidentReporting = getBoolean(attrs, "incidentReportingSystem", "incidentSystem", "adverseEventSystem");
+                int incScore = incidentReporting ? 25 : 5;
+                factorItems.add(new FactorScoreItem("Risk Management", "Adverse Incident Reporting System", incScore, 25,
+                    incidentReporting ? "Near-miss electronic incident reporting with root-cause analysis" : "Paper-based incident escalation"));
+
+                int medLosses = getInt(attrs, "lossHistory", "priorLossCount", 0);
+                int medLossScore = (medLosses == 0) ? 30 : (medLosses == 1 ? 15 : 0);
+                factorItems.add(new FactorScoreItem("Claims Experience", "Prior Malpractice Claims", medLossScore, 30,
+                    medLosses == 0 ? "Zero malpractice loss events in 5-year operating window" : medLosses + " prior malpractice claims logged"));
+
+                boolean accredited = getBoolean(attrs, "accreditationStatus", "jointCommissionAccredited", "accredited");
+                int accScore = accredited ? 15 : 5;
+                factorItems.add(new FactorScoreItem("Institutional Quality", "Accreditation Status (Joint Commission)", accScore, 15,
+                    accredited ? "Full gold seal accreditation with zero major non-conformances" : "Regional or provisional accreditation tier"));
+            }
         }
 
-        // Tier classification
-        String tier;
-        if (compositeScore >= 75) {
-            tier = "LOW";
-        } else if (compositeScore >= 50) {
-            tier = "MEDIUM";
-        } else {
-            tier = "HIGH";
+        for (FactorScoreItem item : factorItems) {
+            compositeScore += item.scoreAwarded();
         }
 
-        // Persist score to submission entity
-        submission.setRiskScore(compositeScore);
-        submission.setRiskTier(tier);
-        submissionRepository.save(submission);
+        compositeScore = Math.max(0, Math.min(100, compositeScore));
+        String riskTier = determineRiskTier(compositeScore);
 
-        // Save factors
-        factorBreakdownRepository.deleteBySubmissionId(submission.getId());
-        for (RiskScoreResponse.FactorScoreItem item : factorItems) {
-            RiskFactorBreakdownEntity entity = new RiskFactorBreakdownEntity();
-            entity.setSubmission(submission);
-            entity.setFactorCategory(item.factorCategory());
-            entity.setFactorName(item.factorName());
-            entity.setScoreAwarded(item.pointsEarned());
-            entity.setMaxScore(item.maxPoints());
-            entity.setEvaluationNotes(item.evaluationNotes());
-            factorBreakdownRepository.save(entity);
-        }
-
-        return new RiskScoreResponse(submission.getId(), compositeScore, tier, factorItems, Instant.now());
+        return new RiskScoreResponse(
+            submissionId,
+            compositeScore,
+            riskTier,
+            factorItems,
+            Instant.now()
+        );
     }
 
-    private boolean getBoolean(Map<String, Object> map, String key, boolean defaultVal) {
-        if (map == null || !map.containsKey(key)) return defaultVal;
-        Object val = map.get(key);
-        if (val instanceof Boolean b) return b;
-        return Boolean.parseBoolean(String.valueOf(val));
+    public String determineRiskTier(int score) {
+        if (score >= 80) return "LOW";
+        if (score >= 60) return "MEDIUM";
+        if (score >= 40) return "HIGH";
+        return "ELEVATED";
     }
 
-    private int getInt(Map<String, Object> map, String key, int defaultVal) {
-        if (map == null || !map.containsKey(key)) return defaultVal;
-        Object val = map.get(key);
-        if (val instanceof Number n) return n.intValue();
-        try {
-            return Integer.parseInt(String.valueOf(val));
-        } catch (Exception e) {
-            return defaultVal;
+    private boolean getBoolean(Map<String, Object> map, String... keys) {
+        for (String k : keys) {
+            if (map.containsKey(k)) {
+                Object val = map.get(k);
+                if (val instanceof Boolean b) return b;
+                if (val instanceof String s) return Boolean.parseBoolean(s) || "1".equals(s) || "yes".equalsIgnoreCase(s);
+                if (val instanceof Number n) return n.intValue() > 0;
+            }
         }
+        return false;
     }
 
-    private String getString(Map<String, Object> map, String key, String defaultVal) {
-        if (map == null || !map.containsKey(key)) return defaultVal;
-        return String.valueOf(map.get(key));
+    private int getInt(Map<String, Object> map, String key1, String key2, int defaultVal) {
+        if (map.containsKey(key1)) {
+            Object v = map.get(key1);
+            if (v instanceof Number n) return n.intValue();
+            if (v instanceof String s) {
+                try { return Integer.parseInt(s.replaceAll("[^0-9]", "")); } catch (Exception ignored) {}
+            }
+        }
+        if (map.containsKey(key2)) {
+            Object v = map.get(key2);
+            if (v instanceof Number n) return n.intValue();
+            if (v instanceof String s) {
+                try { return Integer.parseInt(s.replaceAll("[^0-9]", "")); } catch (Exception ignored) {}
+            }
+        }
+        return defaultVal;
+    }
+
+    private int getInt(Map<String, Object> map, String key1, String key2, String key3, int defaultVal) {
+        int v = getInt(map, key1, key2, -999);
+        if (v != -999) return v;
+        if (map.containsKey(key3)) {
+            Object val = map.get(key3);
+            if (val instanceof Number n) return n.intValue();
+            if (val instanceof String s) {
+                try { return Integer.parseInt(s.replaceAll("[^0-9]", "")); } catch (Exception ignored) {}
+            }
+        }
+        return defaultVal;
     }
 }

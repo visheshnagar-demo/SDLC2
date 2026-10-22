@@ -11,11 +11,11 @@ public record QuoteResponse(
     BigDecimal cedingCommissionPercentage,
     BigDecimal calculatedReinsurancePremium,
     BigDecimal netReinsurancePremium,
-    BigDecimal cedingCommissionAmount,
     String subjectivities,
     String conditions,
     String exclusions,
     String status,
     String createdBy,
-    Instant createdAt
+    Instant createdAt,
+    Instant updatedAt
 ) {}

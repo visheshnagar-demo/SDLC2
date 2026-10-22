@@ -5,32 +5,48 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "submission_documents")
+@Table(name = "submission_documents", indexes = {
+    @Index(name = "idx_doc_sub_id", columnList = "submission_id")
+})
 public class SubmissionDocumentEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "submission_id", nullable = false)
     private SubmissionEntity submission;
 
-    @Column(nullable = false)
-    private String documentType;
+    @Column(name = "document_type", nullable = false)
+    private String documentType; // APPLICATION, LOSS_RUNS, FINANCIAL_STATEMENTS, OTHER
 
-    @Column(nullable = false)
+    @Column(name = "file_name", nullable = false)
     private String fileName;
 
-    @Column(nullable = false)
+    @Column(name = "storage_url", nullable = false)
     private String storageUrl;
 
+    @Column(name = "mime_type")
     private String mimeType;
 
+    @Column(name = "file_size_bytes")
     private Long fileSizeBytes;
 
-    @Column(nullable = false, updatable = false)
-    private Instant createdAt = Instant.now();
+    @Column(name = "created_at", nullable = false, updatable = false)
+    private Instant createdAt;
+
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+        if (this.createdAt == null) {
+            this.createdAt = Instant.now();
+        }
+    }
+
+    public SubmissionDocumentEntity() {}
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }

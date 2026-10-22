@@ -11,13 +11,13 @@ import org.springframework.context.annotation.Configuration;
 public class OpenApiConfig {
 
     @Bean
-    public OpenAPI facultativePortalOpenAPI() {
+    public OpenAPI reinsurancePortalOpenAPI() {
         return new OpenAPI()
-                .info(new Info()
-                        .title("Facultative Reinsurance Submission & Underwriting API")
-                        .description("REST API for specialty facultative reinsurance risk intake, scoring, underwriting workflow, and dashboard analytics.")
-                        .version("1.0.0")
-                        .contact(new Contact().name("Underwriting Tech Team").email("underwriting-tech@reinsurance.com"))
-                        .license(new License().name("Apache 2.0").url("https://springdoc.org")));
+            .info(new Info()
+                .title("Facultative Reinsurance Submission & Underwriting API")
+                .description("REST API for specialty lines reinsurance submission intake, validation, rules-based risk scoring, underwriter review queue, quote builder, authority referral workflow, audit logging, and executive analytics.")
+                .version("1.0.0")
+                .contact(new Contact().name("Reinsurance Portal Team").email("underwriting@reinsurance-demo.com"))
+                .license(new License().name("Proprietary").url("https://reinsurance-demo.com/license")));
     }
 }

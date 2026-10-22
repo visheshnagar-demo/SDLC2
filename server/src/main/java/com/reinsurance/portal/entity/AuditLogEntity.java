@@ -5,42 +5,61 @@ import java.time.Instant;
 import java.util.UUID;
 
 @Entity
-@Table(name = "audit_logs")
+@Table(name = "audit_logs", indexes = {
+    @Index(name = "idx_audit_sub_id", columnList = "submission_id"),
+    @Index(name = "idx_audit_timestamp", columnList = "timestamp")
+})
 public class AuditLogEntity {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "submission_id", nullable = false)
-    private SubmissionEntity submission;
+    @Column(name = "submission_id", nullable = false)
+    private UUID submissionId;
 
-    @Column(nullable = false)
-    private String actionType;
+    @Column(name = "action_type", nullable = false)
+    private String actionType; // INTAKE, STATUS_CHANGE, SCORING, QUOTE_CREATED, REFERRAL_DECISION, DOCUMENT_UPLOAD
 
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private String userId;
 
+    @Column(name = "user_role")
     private String userRole;
 
-    @Column(columnDefinition = "TEXT")
+    @Lob
+    @Column(name = "change_summary", nullable = false)
     private String changeSummary;
 
-    @Column(columnDefinition = "TEXT")
-    private String previousState;
+    @Column(name = "timestamp", nullable = false, updatable = false)
+    private Instant timestamp;
 
-    @Column(columnDefinition = "TEXT")
-    private String newState;
+    @PrePersist
+    public void prePersist() {
+        if (this.id == null) {
+            this.id = UUID.randomUUID();
+        }
+        if (this.timestamp == null) {
+            this.timestamp = Instant.now();
+        }
+    }
 
-    @Column(nullable = false, updatable = false)
-    private Instant timestamp = Instant.now();
+    public AuditLogEntity() {}
+
+    public AuditLogEntity(UUID submissionId, String actionType, String userId, String userRole, String changeSummary) {
+        this.submissionId = submissionId;
+        this.actionType = actionType;
+        this.userId = userId;
+        this.userRole = userRole;
+        this.changeSummary = changeSummary;
+        this.timestamp = Instant.now();
+    }
 
     public UUID getId() { return id; }
     public void setId(UUID id) { this.id = id; }
 
-    public SubmissionEntity getSubmission() { return submission; }
-    public void setSubmission(SubmissionEntity submission) { this.submission = submission; }
+    public UUID getSubmissionId() { return submissionId; }
+    public void setSubmissionId(UUID submissionId) { this.submissionId = submissionId; }
 
     public String getActionType() { return actionType; }
     public void setActionType(String actionType) { this.actionType = actionType; }
@@ -53,12 +72,6 @@ public class AuditLogEntity {
 
     public String getChangeSummary() { return changeSummary; }
     public void setChangeSummary(String changeSummary) { this.changeSummary = changeSummary; }
-
-    public String getPreviousState() { return previousState; }
-    public void setPreviousState(String previousState) { this.previousState = previousState; }
-
-    public String getNewState() { return newState; }
-    public void setNewState(String newState) { this.newState = newState; }
 
     public Instant getTimestamp() { return timestamp; }
     public void setTimestamp(Instant timestamp) { this.timestamp = timestamp; }
