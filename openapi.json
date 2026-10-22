@@ -1,0 +1,1256 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "SDLC Lifecycle Management Platform API",
+    "description": "Centralized automated SDLC orchestration, tracking, and governance platform.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/sdlc/projects": {
+      "post": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "Create Project",
+        "description": "Initialize a new SDLC project lifecycle instance.",
+        "operationId": "create_project_api_v1_sdlc_projects_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ProjectCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "List Projects",
+        "description": "List all SDLC projects with pagination.",
+        "operationId": "list_projects_api_v1_sdlc_projects_get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 100,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ProjectResponse"
+                  },
+                  "title": "Response List Projects Api V1 Sdlc Projects Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sdlc/projects/{project_id}": {
+      "get": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "Get Project",
+        "description": "Retrieve full project metadata, current stage, and stage completion summary.",
+        "operationId": "get_project_api_v1_sdlc_projects__project_id__get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sdlc/projects/{project_id}/requirements": {
+      "post": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "Ingest Requirements",
+        "description": "Ingest, parse, and validate requirement content; transition status to READY_FOR_DESIGN.",
+        "operationId": "ingest_requirements_api_v1_sdlc_projects__project_id__requirements_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RequirementCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RequirementResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sdlc/projects/{project_id}/designs/generate": {
+      "post": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "Generate Design",
+        "description": "Trigger automated HLD generation based on ingested requirements.",
+        "operationId": "generate_design_api_v1_sdlc_projects__project_id__designs_generate_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesignGenerateResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sdlc/projects/{project_id}/designs/{design_id}/approve": {
+      "post": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "Approve Design",
+        "description": "Approve generated HLD, transition stage to DESIGN_APPROVED, and publish to Confluence.",
+        "operationId": "approve_design_api_v1_sdlc_projects__project_id__designs__design_id__approve_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          },
+          {
+            "name": "design_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Design Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DesignApproveRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DesignApproveResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sdlc/projects/{project_id}/development/sync": {
+      "post": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "Sync Development",
+        "description": "Synchronize repository branches and commits; update development status.",
+        "operationId": "sync_development_api_v1_sdlc_projects__project_id__development_sync_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DevelopmentSyncRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DevelopmentSyncResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sdlc/projects/{project_id}/testing/execute": {
+      "post": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "Execute Testing",
+        "description": "Trigger automated QA test suites against the staging branch.",
+        "operationId": "execute_testing_api_v1_sdlc_projects__project_id__testing_execute_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TestingExecuteRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TestingExecuteResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sdlc/projects/{project_id}/deployment/deploy": {
+      "post": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "Deploy Environment",
+        "description": "Initiate container build and cloud deployment; blocked unless QA is QA_PASSED.",
+        "operationId": "deploy_environment_api_v1_sdlc_projects__project_id__deployment_deploy_post",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeploymentDeployRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DeploymentDeployResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sdlc/projects/{project_id}/audit-logs": {
+      "get": {
+        "tags": [
+          "SDLC Lifecycle"
+        ],
+        "summary": "Get Audit Logs",
+        "description": "Retrieve chronological immutable audit records for the project.",
+        "operationId": "get_audit_logs_api_v1_sdlc_projects__project_id__audit_logs_get",
+        "parameters": [
+          {
+            "name": "project_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Project Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditLogResponse"
+                  },
+                  "title": "Response Get Audit Logs Api V1 Sdlc Projects  Project Id  Audit Logs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "description": "Liveness and readiness health probe.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Check Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Api Health Check",
+        "description": "API health check endpoint.",
+        "operationId": "api_health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Api Health Check Api V1 Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "Root"
+        ],
+        "summary": "Root",
+        "description": "Root platform metadata endpoint.",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Root  Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AuditLogResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "action": {
+            "type": "string",
+            "title": "Action"
+          },
+          "actor": {
+            "type": "string",
+            "title": "Actor"
+          },
+          "details": {
+            "type": "string",
+            "title": "Details"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "stage",
+          "action",
+          "actor",
+          "details",
+          "timestamp"
+        ],
+        "title": "AuditLogResponse"
+      },
+      "DeploymentDeployRequest": {
+        "properties": {
+          "environment": {
+            "type": "string",
+            "title": "Environment",
+            "default": "STAGING"
+          },
+          "image_tag": {
+            "type": "string",
+            "title": "Image Tag",
+            "default": "v1.0.0-SCRUM-462"
+          }
+        },
+        "type": "object",
+        "title": "DeploymentDeployRequest"
+      },
+      "DeploymentDeployResponse": {
+        "properties": {
+          "deployment_id": {
+            "type": "string",
+            "title": "Deployment Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "environment": {
+            "type": "string",
+            "title": "Environment"
+          },
+          "service_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Service Url"
+          },
+          "health_check_status": {
+            "type": "string",
+            "title": "Health Check Status"
+          },
+          "health_check_latency_ms": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Health Check Latency Ms"
+          },
+          "deployed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Deployed At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "deployment_id",
+          "status",
+          "environment",
+          "health_check_status",
+          "deployed_at"
+        ],
+        "title": "DeploymentDeployResponse"
+      },
+      "DesignApproveRequest": {
+        "properties": {
+          "approved_by": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Approved By"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "approved_by"
+        ],
+        "title": "DesignApproveRequest"
+      },
+      "DesignApproveResponse": {
+        "properties": {
+          "design_id": {
+            "type": "string",
+            "title": "Design Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "confluence_page_url": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confluence Page Url"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "design_id",
+          "status"
+        ],
+        "title": "DesignApproveResponse"
+      },
+      "DesignGenerateResponse": {
+        "properties": {
+          "design_id": {
+            "type": "string",
+            "title": "Design Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "design_id",
+          "status",
+          "message"
+        ],
+        "title": "DesignGenerateResponse"
+      },
+      "DevelopmentSyncRequest": {
+        "properties": {
+          "branch_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Branch Name"
+          },
+          "target_repo": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Target Repo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "branch_name"
+        ],
+        "title": "DevelopmentSyncRequest"
+      },
+      "DevelopmentSyncResponse": {
+        "properties": {
+          "sync_id": {
+            "type": "string",
+            "title": "Sync Id"
+          },
+          "branch_name": {
+            "type": "string",
+            "title": "Branch Name"
+          },
+          "latest_commit_sha": {
+            "type": "string",
+            "title": "Latest Commit Sha"
+          },
+          "commit_count": {
+            "type": "integer",
+            "title": "Commit Count"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "synced_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Synced At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "sync_id",
+          "branch_name",
+          "latest_commit_sha",
+          "commit_count",
+          "status",
+          "synced_at"
+        ],
+        "title": "DevelopmentSyncResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ProjectCreate": {
+        "properties": {
+          "project_name": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Project Name"
+          },
+          "jira_issue_key": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Jira Issue Key"
+          },
+          "confluence_space_key": {
+            "type": "string",
+            "maxLength": 50,
+            "minLength": 1,
+            "title": "Confluence Space Key"
+          },
+          "github_repo": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Github Repo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "project_name",
+          "jira_issue_key",
+          "confluence_space_key",
+          "github_repo"
+        ],
+        "title": "ProjectCreate"
+      },
+      "ProjectDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_name": {
+            "type": "string",
+            "title": "Project Name"
+          },
+          "jira_issue_key": {
+            "type": "string",
+            "title": "Jira Issue Key"
+          },
+          "confluence_space_key": {
+            "type": "string",
+            "title": "Confluence Space Key"
+          },
+          "github_repo": {
+            "type": "string",
+            "title": "Github Repo"
+          },
+          "current_stage": {
+            "type": "string",
+            "title": "Current Stage"
+          },
+          "stage_status": {
+            "type": "string",
+            "title": "Stage Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/StageSummary"
+            },
+            "type": "array",
+            "title": "Stages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_name",
+          "jira_issue_key",
+          "confluence_space_key",
+          "github_repo",
+          "current_stage",
+          "stage_status",
+          "created_at",
+          "updated_at",
+          "stages"
+        ],
+        "title": "ProjectDetailResponse"
+      },
+      "ProjectResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "project_name": {
+            "type": "string",
+            "title": "Project Name"
+          },
+          "jira_issue_key": {
+            "type": "string",
+            "title": "Jira Issue Key"
+          },
+          "confluence_space_key": {
+            "type": "string",
+            "title": "Confluence Space Key"
+          },
+          "github_repo": {
+            "type": "string",
+            "title": "Github Repo"
+          },
+          "current_stage": {
+            "type": "string",
+            "title": "Current Stage"
+          },
+          "stage_status": {
+            "type": "string",
+            "title": "Stage Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "project_name",
+          "jira_issue_key",
+          "confluence_space_key",
+          "github_repo",
+          "current_stage",
+          "stage_status",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ProjectResponse"
+      },
+      "RequirementCreate": {
+        "properties": {
+          "title": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Title"
+          },
+          "format": {
+            "type": "string",
+            "title": "Format",
+            "default": "MARKDOWN"
+          },
+          "raw_content": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Raw Content"
+          },
+          "functional_goals": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Functional Goals"
+          }
+        },
+        "type": "object",
+        "required": [
+          "title",
+          "raw_content"
+        ],
+        "title": "RequirementCreate"
+      },
+      "RequirementResponse": {
+        "properties": {
+          "requirement_id": {
+            "type": "string",
+            "title": "Requirement Id"
+          },
+          "project_id": {
+            "type": "string",
+            "title": "Project Id"
+          },
+          "tracking_code": {
+            "type": "string",
+            "title": "Tracking Code"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "extracted_goals_count": {
+            "type": "integer",
+            "title": "Extracted Goals Count"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "requirement_id",
+          "project_id",
+          "tracking_code",
+          "status",
+          "extracted_goals_count",
+          "created_at"
+        ],
+        "title": "RequirementResponse"
+      },
+      "StageSummary": {
+        "properties": {
+          "stage": {
+            "type": "string",
+            "title": "Stage"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "updated_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage",
+          "status"
+        ],
+        "title": "StageSummary"
+      },
+      "TestingExecuteRequest": {
+        "properties": {
+          "suite_type": {
+            "type": "string",
+            "title": "Suite Type",
+            "default": "ALL"
+          },
+          "timeout_seconds": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Timeout Seconds",
+            "default": 600
+          }
+        },
+        "type": "object",
+        "title": "TestingExecuteRequest"
+      },
+      "TestingExecuteResponse": {
+        "properties": {
+          "test_run_id": {
+            "type": "string",
+            "title": "Test Run Id"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "total_tests": {
+            "type": "integer",
+            "title": "Total Tests"
+          },
+          "passed_tests": {
+            "type": "integer",
+            "title": "Passed Tests"
+          },
+          "failed_tests": {
+            "type": "integer",
+            "title": "Failed Tests"
+          },
+          "skipped_tests": {
+            "type": "integer",
+            "title": "Skipped Tests"
+          },
+          "execution_duration_ms": {
+            "type": "integer",
+            "title": "Execution Duration Ms"
+          },
+          "completed_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Completed At"
+          },
+          "report_summary": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Report Summary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "test_run_id",
+          "status",
+          "total_tests",
+          "passed_tests",
+          "failed_tests",
+          "skipped_tests",
+          "execution_duration_ms",
+          "completed_at"
+        ],
+        "title": "TestingExecuteResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
