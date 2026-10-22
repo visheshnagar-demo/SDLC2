@@ -1,0 +1,1631 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Gen Re Quote-to-Bind (QTB) Mock Service",
+    "description": "Backend API and Agentic Orchestration Engine for Reinsurance QTB Prototype",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "description": "System health check endpoint.",
+        "operationId": "health_check_api_v1_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Check Api V1 Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health Check",
+        "description": "System health check endpoint.",
+        "operationId": "health_check_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "type": "object",
+                  "title": "Response Health Check Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/scenarios": {
+      "get": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "List Scenarios",
+        "description": "List all available synthetic demonstration scenarios.",
+        "operationId": "list_scenarios_api_v1_qtb_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DemoScenario"
+                  },
+                  "type": "array",
+                  "title": "Response List Scenarios Api V1 Qtb Scenarios Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/scenarios/{scenario_id}/load": {
+      "post": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "Load Scenario",
+        "description": "Load and reset active case state to chosen scenario.",
+        "operationId": "load_scenario_api_v1_qtb_scenarios__scenario_id__load_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetailDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "List Cases",
+        "description": "Retrieve all active cases.",
+        "operationId": "list_cases_api_v1_qtb_cases_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CaseDetailDTO"
+                  },
+                  "type": "array",
+                  "title": "Response List Cases Api V1 Qtb Cases Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Case",
+        "description": "Get current case details, stage, and artifacts.",
+        "operationId": "get_case_api_v1_qtb_cases__case_id__get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetailDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}/stages": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Case Stages",
+        "description": "Retrieve status of all 12 workflow stages for a case.",
+        "operationId": "get_case_stages_api_v1_qtb_cases__case_id__stages_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StageStatusDTO"
+                  },
+                  "title": "Response Get Case Stages Api V1 Qtb Cases  Case Id  Stages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}/stages/{stage_key}/execute": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Execute Stage",
+        "description": "Trigger simulated agent processing for a specific workflow stage.",
+        "operationId": "execute_stage_api_v1_qtb_cases__case_id__stages__stage_key__execute_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "stage_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Stage Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteStageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StageExecutionResultDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}/overrides": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Record Override",
+        "description": "Record human-in-the-loop exception override.",
+        "operationId": "record_override_api_v1_qtb_cases__case_id__overrides_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OverrideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogEntryDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}/pricing/calculate": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Calculate Pricing",
+        "description": "Run actuarial pricing scenario calculations.",
+        "operationId": "calculate_pricing_api_v1_qtb_cases__case_id__pricing_calculate_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PricingInputDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingResultDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}/quotes": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Create Quote",
+        "description": "Create or update structured quote terms.",
+        "operationId": "create_quote_api_v1_qtb_cases__case_id__quotes_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteCreateDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}/approvals/{approval_id}": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Submit Approval",
+        "description": "Submit human governance approval or rejection.",
+        "operationId": "submit_approval_api_v1_qtb_cases__case_id__approvals__approval_id__post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "approval_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Approval Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalDecisionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Submit Approval Api V1 Qtb Cases  Case Id  Approvals  Approval Id  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}/bind-readiness": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Bind Readiness",
+        "description": "Verify 6-point bind readiness checklist status.",
+        "operationId": "get_bind_readiness_api_v1_qtb_cases__case_id__bind_readiness_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindReadinessDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}/bind": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Execute Bind",
+        "description": "Execute final policy binding and generate contract binder certificate.",
+        "operationId": "execute_bind_api_v1_qtb_cases__case_id__bind_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindExecutionDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindConfirmationDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/cases/{case_id}/audit-logs": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Audit Logs",
+        "description": "Fetch chronologically sorted audit trail.",
+        "operationId": "get_audit_logs_api_v1_qtb_cases__case_id__audit_logs_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional stage filter",
+              "title": "Stage"
+            },
+            "description": "Optional stage filter"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditLogEntryDTO"
+                  },
+                  "title": "Response Get Audit Logs Api V1 Qtb Cases  Case Id  Audit Logs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApprovalDecisionDTO": {
+        "properties": {
+          "decision": {
+            "type": "string",
+            "title": "Decision"
+          },
+          "actor_persona": {
+            "type": "string",
+            "title": "Actor Persona"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision",
+          "actor_persona",
+          "rationale"
+        ],
+        "title": "ApprovalDecisionDTO"
+      },
+      "AuditLogEntryDTO": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "stage_key": {
+            "type": "string",
+            "title": "Stage Key"
+          },
+          "agent_name": {
+            "type": "string",
+            "title": "Agent Name"
+          },
+          "action_type": {
+            "type": "string",
+            "title": "Action Type"
+          },
+          "confidence_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Score"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "actor_persona": {
+            "type": "string",
+            "title": "Actor Persona"
+          },
+          "timestamp": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Timestamp"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "stage_key",
+          "agent_name",
+          "action_type",
+          "rationale",
+          "actor_persona",
+          "timestamp"
+        ],
+        "title": "AuditLogEntryDTO"
+      },
+      "BindConfirmationDTO": {
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "case_number": {
+            "type": "string",
+            "title": "Case Number"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "binder_certificate_hash": {
+            "type": "string",
+            "title": "Binder Certificate Hash"
+          },
+          "bound_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Bound At"
+          },
+          "bound_by": {
+            "type": "string",
+            "title": "Bound By"
+          },
+          "pas_payload": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Pas Payload"
+          }
+        },
+        "type": "object",
+        "required": [
+          "case_id",
+          "case_number",
+          "status",
+          "binder_certificate_hash",
+          "bound_at",
+          "bound_by",
+          "pas_payload"
+        ],
+        "title": "BindConfirmationDTO"
+      },
+      "BindExecutionDTO": {
+        "properties": {
+          "actor_persona": {
+            "type": "string",
+            "title": "Actor Persona"
+          },
+          "signoff_notes": {
+            "type": "string",
+            "title": "Signoff Notes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "actor_persona",
+          "signoff_notes"
+        ],
+        "title": "BindExecutionDTO"
+      },
+      "BindReadinessDTO": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "case_id": {
+            "type": "string",
+            "title": "Case Id"
+          },
+          "sanctions_cleared": {
+            "type": "boolean",
+            "title": "Sanctions Cleared"
+          },
+          "pricing_hurdle_cleared": {
+            "type": "boolean",
+            "title": "Pricing Hurdle Cleared"
+          },
+          "capacity_approved": {
+            "type": "boolean",
+            "title": "Capacity Approved"
+          },
+          "financial_rating_confirmed": {
+            "type": "boolean",
+            "title": "Financial Rating Confirmed"
+          },
+          "wording_approved": {
+            "type": "boolean",
+            "title": "Wording Approved"
+          },
+          "hitl_signed_off": {
+            "type": "boolean",
+            "title": "Hitl Signed Off"
+          },
+          "is_ready_to_bind": {
+            "type": "boolean",
+            "title": "Is Ready To Bind"
+          },
+          "binder_certificate_hash": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binder Certificate Hash"
+          },
+          "bound_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bound At"
+          },
+          "bound_by": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Bound By"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "case_id",
+          "sanctions_cleared",
+          "pricing_hurdle_cleared",
+          "capacity_approved",
+          "financial_rating_confirmed",
+          "wording_approved",
+          "hitl_signed_off",
+          "is_ready_to_bind"
+        ],
+        "title": "BindReadinessDTO"
+      },
+      "CaseDetailDTO": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "case_number": {
+            "type": "string",
+            "title": "Case Number"
+          },
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "cedent_name": {
+            "type": "string",
+            "title": "Cedent Name"
+          },
+          "line_of_business": {
+            "type": "string",
+            "title": "Line Of Business"
+          },
+          "treaty_type": {
+            "type": "string",
+            "title": "Treaty Type"
+          },
+          "requested_limit": {
+            "type": "number",
+            "title": "Requested Limit"
+          },
+          "retention_amount": {
+            "type": "number",
+            "title": "Retention Amount"
+          },
+          "historical_loss_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Historical Loss Ratio"
+          },
+          "current_stage": {
+            "type": "string",
+            "title": "Current Stage"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "completeness_score": {
+            "type": "number",
+            "title": "Completeness Score"
+          },
+          "overall_confidence": {
+            "type": "number",
+            "title": "Overall Confidence"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "extracted_fields": {
+            "items": {
+              "$ref": "#/components/schemas/ExtractedFieldDTO"
+            },
+            "type": "array",
+            "title": "Extracted Fields",
+            "default": []
+          },
+          "quotes": {
+            "items": {
+              "$ref": "#/components/schemas/QuoteDTO"
+            },
+            "type": "array",
+            "title": "Quotes",
+            "default": []
+          },
+          "stages": {
+            "items": {
+              "$ref": "#/components/schemas/StageStatusDTO"
+            },
+            "type": "array",
+            "title": "Stages",
+            "default": []
+          },
+          "audit_logs": {
+            "items": {
+              "$ref": "#/components/schemas/AuditLogEntryDTO"
+            },
+            "type": "array",
+            "title": "Audit Logs",
+            "default": []
+          },
+          "bind_checklist": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/BindReadinessDTO"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "pricing_scenarios": {
+            "items": {
+              "$ref": "#/components/schemas/PricingScenarioDTO"
+            },
+            "type": "array",
+            "title": "Pricing Scenarios",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "case_number",
+          "scenario_id",
+          "cedent_name",
+          "line_of_business",
+          "treaty_type",
+          "requested_limit",
+          "retention_amount",
+          "historical_loss_ratio",
+          "current_stage",
+          "status",
+          "completeness_score",
+          "overall_confidence",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CaseDetailDTO"
+      },
+      "DemoScenario": {
+        "properties": {
+          "scenario_id": {
+            "type": "string",
+            "title": "Scenario Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "cedent_name": {
+            "type": "string",
+            "title": "Cedent Name"
+          },
+          "line_of_business": {
+            "type": "string",
+            "title": "Line Of Business"
+          },
+          "treaty_type": {
+            "type": "string",
+            "title": "Treaty Type"
+          },
+          "requested_limit": {
+            "type": "number",
+            "title": "Requested Limit"
+          },
+          "expected_behavior": {
+            "type": "string",
+            "title": "Expected Behavior"
+          },
+          "tags": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Tags"
+          }
+        },
+        "type": "object",
+        "required": [
+          "scenario_id",
+          "name",
+          "description",
+          "cedent_name",
+          "line_of_business",
+          "treaty_type",
+          "requested_limit",
+          "expected_behavior",
+          "tags"
+        ],
+        "title": "DemoScenario"
+      },
+      "ExecuteStageRequest": {
+        "properties": {
+          "actor_persona": {
+            "type": "string",
+            "title": "Actor Persona"
+          },
+          "parameters": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Parameters",
+            "default": {}
+          }
+        },
+        "type": "object",
+        "required": [
+          "actor_persona"
+        ],
+        "title": "ExecuteStageRequest"
+      },
+      "ExtractedFieldDTO": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "field_name": {
+            "type": "string",
+            "title": "Field Name"
+          },
+          "extracted_value": {
+            "type": "string",
+            "title": "Extracted Value"
+          },
+          "confidence_score": {
+            "type": "number",
+            "title": "Confidence Score"
+          },
+          "source_document": {
+            "type": "string",
+            "title": "Source Document"
+          },
+          "source_citation_page": {
+            "type": "integer",
+            "title": "Source Citation Page"
+          },
+          "is_overridden": {
+            "type": "boolean",
+            "title": "Is Overridden"
+          },
+          "overridden_value": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overridden Value"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "field_name",
+          "extracted_value",
+          "confidence_score",
+          "source_document",
+          "source_citation_page",
+          "is_overridden"
+        ],
+        "title": "ExtractedFieldDTO"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "OverrideRequest": {
+        "properties": {
+          "stage_key": {
+            "type": "string",
+            "title": "Stage Key"
+          },
+          "field_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field Name"
+          },
+          "override_value": {
+            "type": "string",
+            "title": "Override Value"
+          },
+          "rationale": {
+            "type": "string",
+            "title": "Rationale"
+          },
+          "actor_persona": {
+            "type": "string",
+            "title": "Actor Persona"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage_key",
+          "override_value",
+          "rationale",
+          "actor_persona"
+        ],
+        "title": "OverrideRequest"
+      },
+      "PricingInputDTO": {
+        "properties": {
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "expected_loss": {
+            "type": "number",
+            "title": "Expected Loss"
+          },
+          "risk_load": {
+            "type": "number",
+            "title": "Risk Load"
+          },
+          "expense_load": {
+            "type": "number",
+            "title": "Expense Load"
+          },
+          "target_combined_ratio": {
+            "type": "number",
+            "title": "Target Combined Ratio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "model_name",
+          "expected_loss",
+          "risk_load",
+          "expense_load",
+          "target_combined_ratio"
+        ],
+        "title": "PricingInputDTO"
+      },
+      "PricingResultDTO": {
+        "properties": {
+          "technical_premium": {
+            "type": "number",
+            "title": "Technical Premium"
+          },
+          "recommended_rate": {
+            "type": "number",
+            "title": "Recommended Rate"
+          },
+          "expected_loss": {
+            "type": "number",
+            "title": "Expected Loss"
+          },
+          "combined_ratio": {
+            "type": "number",
+            "title": "Combined Ratio"
+          },
+          "loss_distribution": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Loss Distribution"
+          }
+        },
+        "type": "object",
+        "required": [
+          "technical_premium",
+          "recommended_rate",
+          "expected_loss",
+          "combined_ratio",
+          "loss_distribution"
+        ],
+        "title": "PricingResultDTO"
+      },
+      "PricingScenarioDTO": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "model_name": {
+            "type": "string",
+            "title": "Model Name"
+          },
+          "technical_premium": {
+            "type": "number",
+            "title": "Technical Premium"
+          },
+          "recommended_rate": {
+            "type": "number",
+            "title": "Recommended Rate"
+          },
+          "expected_loss": {
+            "type": "number",
+            "title": "Expected Loss"
+          },
+          "combined_ratio": {
+            "type": "number",
+            "title": "Combined Ratio"
+          },
+          "loss_distribution": {
+            "items": {
+              "additionalProperties": true,
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Loss Distribution",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "model_name",
+          "technical_premium",
+          "recommended_rate",
+          "expected_loss",
+          "combined_ratio"
+        ],
+        "title": "PricingScenarioDTO"
+      },
+      "QuoteCreateDTO": {
+        "properties": {
+          "option_name": {
+            "type": "string",
+            "title": "Option Name"
+          },
+          "structure_type": {
+            "type": "string",
+            "title": "Structure Type"
+          },
+          "limit_amount": {
+            "type": "number",
+            "title": "Limit Amount"
+          },
+          "retention_amount": {
+            "type": "number",
+            "title": "Retention Amount"
+          },
+          "ceded_premium": {
+            "type": "number",
+            "title": "Ceded Premium"
+          },
+          "commission_rate": {
+            "type": "number",
+            "title": "Commission Rate"
+          },
+          "expected_loss_ratio": {
+            "type": "number",
+            "title": "Expected Loss Ratio"
+          },
+          "combined_ratio": {
+            "type": "number",
+            "title": "Combined Ratio"
+          }
+        },
+        "type": "object",
+        "required": [
+          "option_name",
+          "structure_type",
+          "limit_amount",
+          "retention_amount",
+          "ceded_premium",
+          "commission_rate",
+          "expected_loss_ratio",
+          "combined_ratio"
+        ],
+        "title": "QuoteCreateDTO"
+      },
+      "QuoteDTO": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "option_name": {
+            "type": "string",
+            "title": "Option Name"
+          },
+          "structure_type": {
+            "type": "string",
+            "title": "Structure Type"
+          },
+          "limit_amount": {
+            "type": "number",
+            "title": "Limit Amount"
+          },
+          "retention_amount": {
+            "type": "number",
+            "title": "Retention Amount"
+          },
+          "ceded_premium": {
+            "type": "number",
+            "title": "Ceded Premium"
+          },
+          "rate_on_line": {
+            "type": "number",
+            "title": "Rate On Line"
+          },
+          "commission_rate": {
+            "type": "number",
+            "title": "Commission Rate"
+          },
+          "expected_loss_ratio": {
+            "type": "number",
+            "title": "Expected Loss Ratio"
+          },
+          "combined_ratio": {
+            "type": "number",
+            "title": "Combined Ratio"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "is_selected": {
+            "type": "boolean",
+            "title": "Is Selected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "option_name",
+          "structure_type",
+          "limit_amount",
+          "retention_amount",
+          "ceded_premium",
+          "rate_on_line",
+          "commission_rate",
+          "expected_loss_ratio",
+          "combined_ratio",
+          "status",
+          "is_selected"
+        ],
+        "title": "QuoteDTO"
+      },
+      "StageExecutionResultDTO": {
+        "properties": {
+          "stage_key": {
+            "type": "string",
+            "title": "Stage Key"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "agent_reasoning": {
+            "type": "string",
+            "title": "Agent Reasoning"
+          },
+          "confidence_score": {
+            "type": "number",
+            "title": "Confidence Score"
+          },
+          "updated_case": {
+            "$ref": "#/components/schemas/CaseDetailDTO"
+          }
+        },
+        "type": "object",
+        "required": [
+          "stage_key",
+          "status",
+          "agent_reasoning",
+          "confidence_score",
+          "updated_case"
+        ],
+        "title": "StageExecutionResultDTO"
+      },
+      "StageStatusDTO": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "stage_key": {
+            "type": "string",
+            "title": "Stage Key"
+          },
+          "stage_name": {
+            "type": "string",
+            "title": "Stage Name"
+          },
+          "stage_order": {
+            "type": "integer",
+            "title": "Stage Order"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "agent_name": {
+            "type": "string",
+            "title": "Agent Name"
+          },
+          "agent_reasoning": {
+            "type": "string",
+            "title": "Agent Reasoning"
+          },
+          "confidence_score": {
+            "type": "number",
+            "title": "Confidence Score"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "stage_key",
+          "stage_name",
+          "stage_order",
+          "status",
+          "agent_name",
+          "agent_reasoning",
+          "confidence_score",
+          "updated_at"
+        ],
+        "title": "StageStatusDTO"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
