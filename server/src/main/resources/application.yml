@@ -1,0 +1,36 @@
+server:
+  port: ${SERVER_PORT:8000}
+
+spring:
+  application:
+    name: reinsurance-portal
+  datasource:
+    url: ${DATABASE_URL:jdbc:h2:mem:reinsurancedb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE;MODE=PostgreSQL}
+    driverClassName: org.h2.Driver
+    username: sa
+    password: ""
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+
+app:
+  security:
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000}
+  underwriting:
+    default-authority-limit: 5000000.00
+    manager-authority-limit: 25000000.00
+    sla:
+      green-hours: 24
+      yellow-hours: 48
+
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    operationsSorter: method
+  api-docs:
+    path: /v3/api-docs
