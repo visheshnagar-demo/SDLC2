@@ -1,0 +1,14 @@
+<div class="breadcrumbs-bar" *ngIf="currentRoute$ | async as url">
+  <div class="breadcrumbs-container">
+    <div class="breadcrumb-trail">
+      <a routerLink="/govern" class="trail-root">CitiDirect Migration</a>
+      <span class="separator" aria-hidden="true">/</span>
+      <span class="trail-active">{{ getModuleTitle(url) }}</span>
+    </div>
+
+    <div class="module-header-info">
+      <h1 class="page-title">{{ getModuleTitle(url) }}</h1>
+      <p class="page-subtitle">{{ getModuleDescription(url) }}</p>
+    </div>
+  </div>
+</div>

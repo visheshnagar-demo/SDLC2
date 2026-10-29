@@ -1,0 +1,16 @@
+<div class="citi-progress-container">
+  <div class="progress-bar-track" [style.height.px]="height">
+    <div
+      class="progress-bar-fill"
+      [ngClass]="'fill-' + computedVariant"
+      [style.width.%]="clampedPercentage"
+      role="progressbar"
+      [attr.aria-valuenow]="clampedPercentage"
+      aria-valuemin="0"
+      aria-valuemax="100"
+    ></div>
+  </div>
+  <div class="progress-label" *ngIf="showLabel">
+    <span class="label-text">{{ clampedPercentage | number:'1.1-1' }}%</span>
+  </div>
+</div>

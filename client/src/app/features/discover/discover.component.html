@@ -1,0 +1,161 @@
+<div class="discover-container">
+  <!-- Discover Filter Toolbar -->
+  <section class="citi-card filter-toolbar">
+    <div class="filter-group">
+      <label for="bu-filter">Business Unit</label>
+      <select id="bu-filter" [(ngModel)]="selectedBU">
+        <option value="ALL">All Business Units</option>
+        <option value="Markets">Markets</option>
+        <option value="Treasury & Trade">Treasury & Trade Solutions</option>
+        <option value="Securities Services">Securities Services</option>
+        <option value="Global Wealth">Global Wealth Management</option>
+        <option value="Corporate Lending">Corporate Lending & Risk</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="complexity-filter">Complexity Rating</label>
+      <select id="complexity-filter" [(ngModel)]="selectedComplexity">
+        <option value="ALL">All Complexities</option>
+        <option value="LOW">LOW</option>
+        <option value="MEDIUM">MEDIUM</option>
+        <option value="HIGH">HIGH</option>
+        <option value="CRITICAL">CRITICAL</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label for="status-filter">Migration Status</label>
+      <select id="status-filter" [(ngModel)]="selectedStatus">
+        <option value="ALL">All Lifecycle States</option>
+        <option value="DISCOVERED">DISCOVERED</option>
+        <option value="TRANSFORMED">TRANSFORMED</option>
+        <option value="VALIDATED">VALIDATED</option>
+        <option value="PENDING_APPROVAL">PENDING_APPROVAL</option>
+        <option value="MIGRATED">MIGRATED</option>
+      </select>
+    </div>
+
+    <div class="filter-actions">
+      <button
+        type="button"
+        class="citi-btn citi-btn-secondary"
+        (click)="selectedBU = 'ALL'; selectedComplexity = 'ALL'; selectedStatus = 'ALL'"
+      >
+        Reset Filters
+      </button>
+    </div>
+  </section>
+
+  <!-- Report Catalog Data Table -->
+  <section class="catalog-table-section">
+    <app-data-table
+      [columns]="columns"
+      [data]="filteredReports"
+      [pageSize]="8"
+      searchPlaceholder="Search by Report ID, title, or system..."
+      (rowClick)="onSelectReport($event)"
+      (actionClick)="onTableAction($event)"
+    ></app-data-table>
+  </section>
+
+  <!-- Report Detail & Dependency Graph Slide Drawer -->
+  <app-slide-drawer
+    [isOpen]="drawerOpen"
+    [title]="selectedReportDetail ? selectedReportDetail.title : 'Report Details'"
+    [subtitle]="selectedReportDetail ? selectedReportDetail.id + ' • ' + selectedReportDetail.businessUnit : ''"
+    width="680px"
+    (close)="closeDrawer()"
+  >
+    <div class="drawer-content-body" *ngIf="selectedReportDetail">
+      <!-- Metadata Strip -->
+      <div class="detail-section meta-strip">
+        <div class="meta-item">
+          <span class="meta-label">Source System</span>
+          <span class="meta-value citi-mono">{{ selectedReportDetail.sourceSystem }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Target System</span>
+          <span class="meta-value citi-mono">{{ selectedReportDetail.targetSystem }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Owner</span>
+          <span class="meta-value">{{ selectedReportDetail.owner }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Readiness</span>
+          <div class="readiness-wrap">
+            <app-readiness-score [score]="selectedReportDetail.readinessScore" [size]="32"></app-readiness-score>
+            <span>{{ selectedReportDetail.readinessScore }}% Grade</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div class="detail-section">
+        <h4 class="section-title">Functional Description</h4>
+        <p class="section-desc">{{ selectedReportDetail.description }}</p>
+      </div>
+
+      <!-- Interactive Dependency Graph Panel -->
+      <div class="detail-section dependency-graph-panel">
+        <h4 class="section-title">Report Dependency Graph</h4>
+        <p class="citi-caption mb-3">Upstream data sources and downstream consumer systems mapped in CitiDirect topology</p>
+
+        <!-- Upstream Feeds -->
+        <div class="dep-tier">
+          <div class="dep-tier-title">▲ UPSTREAM DATA FEEDS ({{ selectedReportDetail.upstreamFeeds.length }})</div>
+          <div class="dep-nodes-list">
+            <div class="dep-node-card" *ngFor="let node of selectedReportDetail.upstreamFeeds">
+              <div class="node-header">
+                <span class="node-name citi-mono">{{ node.name }}</span>
+                <app-status-badge [status]="node.status" size="sm"></app-status-badge>
+              </div>
+              <span class="node-details">{{ node.details }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Center Migration Core Node -->
+        <div class="dep-center-node">
+          <div class="center-box">
+            <span class="core-label">MIGRATION TARGET CORE</span>
+            <span class="core-title">{{ selectedReportDetail.id }}: CitiDirect CDM v4.2</span>
+          </div>
+        </div>
+
+        <!-- Downstream Consumers -->
+        <div class="dep-tier">
+          <div class="dep-tier-title">▼ DOWNSTREAM CONSUMERS ({{ selectedReportDetail.downstreamConsumers.length }})</div>
+          <div class="dep-nodes-list">
+            <div class="dep-node-card" *ngFor="let node of selectedReportDetail.downstreamConsumers">
+              <div class="node-header">
+                <span class="node-name citi-mono">{{ node.name }}</span>
+                <app-status-badge [status]="node.status" size="sm"></app-status-badge>
+              </div>
+              <span class="node-details">{{ node.details }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- SQL Query View -->
+      <div class="detail-section code-viewer">
+        <div class="code-header">
+          <h4 class="section-title">Legacy Sybase SQL Query</h4>
+          <span class="citi-caption">Extracted from CitiVelocity AST</span>
+        </div>
+        <pre class="code-box"><code>{{ selectedReportDetail.sqlQuery }}</code></pre>
+      </div>
+
+      <!-- Generated CDM Schema -->
+      <div class="detail-section code-viewer">
+        <div class="code-header">
+          <h4 class="section-title">Generated CitiDirect CDM Interface</h4>
+          <span class="citi-caption">TypeScript AST Model</span>
+        </div>
+        <pre class="code-box cdm-box"><code>{{ selectedReportDetail.generatedCdmSchema }}</code></pre>
+      </div>
+    </div>
+  </app-slide-drawer>
+</div>

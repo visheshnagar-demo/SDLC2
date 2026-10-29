@@ -1,0 +1,98 @@
+.citi-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+  border: 1px solid transparent;
+
+  &.size-sm {
+    padding: 0.1rem 0.4rem;
+    font-size: 0.6875rem;
+    gap: 0.25rem;
+  }
+
+  .status-indicator-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+  }
+
+  /* Discovered (Neutral Gray/Blue) */
+  &.badge-discovered {
+    background-color: #E2E8F0;
+    color: #334155;
+    border-color: #CBD5E1;
+    .status-indicator-dot { background-color: #64748B; }
+  }
+
+  /* Transformed (Purple) */
+  &.badge-transformed {
+    background-color: var(--citi-purple-bg);
+    color: var(--citi-purple);
+    border-color: #E0C4EC;
+    .status-indicator-dot { background-color: var(--citi-purple); }
+  }
+
+  /* Validated (Green) */
+  &.badge-validated {
+    background-color: var(--citi-success-bg);
+    color: var(--citi-success);
+    border-color: var(--citi-success-border);
+    .status-indicator-dot { background-color: var(--citi-success); }
+  }
+
+  /* Migrated (Citi Blue) */
+  &.badge-migrated {
+    background-color: var(--citi-info-bg);
+    color: var(--citi-blue-accent);
+    border-color: var(--citi-info-border);
+    .status-indicator-dot { background-color: var(--citi-blue-accent); }
+  }
+
+  /* In Progress (Orange/Blue Pulse) */
+  &.badge-progress {
+    background-color: #E0F2FE;
+    color: #0369A1;
+    border-color: #BAE6FD;
+    .status-indicator-dot {
+      background-color: #0284C7;
+      animation: pulse-dot 1.5s infinite;
+    }
+  }
+
+  /* Warning / Pending (Amber) */
+  &.badge-warning {
+    background-color: var(--citi-warning-bg);
+    color: var(--citi-warning);
+    border-color: var(--citi-warning-border);
+    .status-indicator-dot { background-color: var(--citi-warning); }
+  }
+
+  /* Failed / Critical (Red) */
+  &.badge-failed {
+    background-color: var(--citi-error-bg);
+    color: var(--citi-error);
+    border-color: var(--citi-error-border);
+    .status-indicator-dot { background-color: var(--citi-error); }
+  }
+
+  /* Default */
+  &.badge-default {
+    background-color: #F1F5F9;
+    color: #475569;
+    border-color: #E2E8F0;
+    .status-indicator-dot { background-color: #94A3B8; }
+  }
+}
+
+@keyframes pulse-dot {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  50% { transform: scale(1.2); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.7; }
+}

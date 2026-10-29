@@ -1,0 +1,153 @@
+<div class="transform-container">
+  <!-- Report Selector & AI Header Strip -->
+  <section class="citi-card selector-bar">
+    <div class="selector-controls">
+      <div class="form-group-inline">
+        <label for="report-select">Target Report Model:</label>
+        <select id="report-select" [(ngModel)]="selectedReportId" (ngModelChange)="onReportChange()">
+          <option *ngFor="let rep of reports" [value]="rep.id">
+            [{{ rep.id }}] {{ rep.title }} — ({{ rep.businessUnit }})
+          </option>
+        </select>
+      </div>
+
+      <div class="ai-status-indicator" *ngIf="workspaceData">
+        <span class="ai-chip">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+            <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm1 15h-2v-6h2zm0-8h-2V7h2z"/>
+          </svg>
+          AST Engine: {{ workspaceData.aiConfidence }}% AI Confidence Grade
+        </span>
+      </div>
+    </div>
+
+    <div class="action-buttons">
+      <button type="button" class="citi-btn citi-btn-primary" (click)="onSaveMappings()">
+        Save CDM Mapping Definitions
+      </button>
+    </div>
+  </section>
+
+  <!-- Save Alert Feedback -->
+  <div class="save-alert" *ngIf="saveMessage">
+    <span class="save-icon">✓</span>
+    <span>{{ saveMessage }}</span>
+  </div>
+
+  <!-- Side-by-Side Metadata Generation Workspace -->
+  <section class="citi-card workspace-card" *ngIf="workspaceData">
+    <div class="citi-card-header">
+      <div>
+        <h3>Metadata Generation Workspace</h3>
+        <span class="citi-caption">Side-by-side legacy Sybase SQL AST vs. generated CitiDirect TypeScript CDM definition</span>
+      </div>
+      <span class="citi-status-badge badge-transformed size-sm">
+        <span class="status-indicator-dot"></span>
+        Auto-Generated Schema v4.2
+      </span>
+    </div>
+
+    <div class="workspace-split-view">
+      <!-- Left: Legacy SQL AST Source -->
+      <div class="editor-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <span class="lang-tag sql-tag">SQL</span>
+            <span>Legacy CitiVelocity Sybase AST Source</span>
+          </div>
+          <span class="citi-caption">Read-Only Source</span>
+        </div>
+        <div class="code-container">
+          <pre><code>{{ workspaceData.sourceSql }}</code></pre>
+        </div>
+      </div>
+
+      <!-- Right: Generated CitiDirect TypeScript CDM Schema -->
+      <div class="editor-pane">
+        <div class="pane-header">
+          <div class="pane-title">
+            <span class="lang-tag ts-tag">TS</span>
+            <span>Generated CitiDirect Common Data Model (CDM) Interface</span>
+          </div>
+          <span class="citi-caption">Target Model</span>
+        </div>
+        <div class="code-container cdm-pane">
+          <pre><code>{{ workspaceData.generatedTypeScriptSchema }}</code></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CDM Field Mapping Table -->
+  <section class="citi-card mapping-table-card" *ngIf="workspaceData">
+    <div class="citi-card-header">
+      <div>
+        <h3>CDM Attribute Mapping Table</h3>
+        <span class="citi-caption">Fine-grained field type conversions, transformation rules, and confidence grades</span>
+      </div>
+      <span class="citi-caption">Total Fields: {{ workspaceData.mappings.length }}</span>
+    </div>
+
+    <div class="table-responsive-container">
+      <table class="citi-data-table mapping-table">
+        <thead>
+          <tr>
+            <th style="width: 90px;">Field ID</th>
+            <th>Source Field</th>
+            <th>Source Type</th>
+            <th>Target CDM Field</th>
+            <th>Target Type</th>
+            <th>Transformation Rule</th>
+            <th style="width: 120px;">AI Confidence</th>
+            <th style="width: 140px;">Status</th>
+            <th style="width: 100px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of workspaceData.mappings">
+            <td><code class="cell-code">{{ m.fieldId }}</code></td>
+            <td><strong>{{ m.sourceField }}</strong></td>
+            <td><span class="type-pill">{{ m.sourceType }}</span></td>
+            <td>
+              <input type="text" class="mapping-input" [(ngModel)]="m.targetCdmField" />
+            </td>
+            <td><span class="type-pill target-pill">{{ m.targetType }}</span></td>
+            <td>
+              <select class="rule-select" [(ngModel)]="m.transformationRule">
+                <option value="LOWERCASE_TRIM_UUID">LOWERCASE_TRIM_UUID</option>
+                <option value="TO_ISO_DATE_STRING">TO_ISO_DATE_STRING</option>
+                <option value="UPPER_ISO_PAIR">UPPER_ISO_PAIR</option>
+                <option value="PARSE_BIGDECIMAL_ROUND2">PARSE_BIGDECIMAL_ROUND2</option>
+                <option value="VALIDATE_LEI_CHECKSUM">VALIDATE_LEI_CHECKSUM</option>
+                <option value="NORMALIZE_RATING_SCALE">NORMALIZE_RATING_SCALE</option>
+                <option value="DIRECT_COPY">DIRECT_COPY</option>
+              </select>
+            </td>
+            <td>
+              <div class="confidence-bar-wrap">
+                <span class="conf-num citi-mono">{{ m.confidenceScore }}%</span>
+                <div class="conf-bar-track">
+                  <div class="conf-bar-fill" [style.width.%]="m.confidenceScore"></div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <app-status-badge [status]="m.status" size="sm"></app-status-badge>
+            </td>
+            <td>
+              <button
+                type="button"
+                class="citi-btn citi-btn-sm citi-btn-secondary"
+                *ngIf="m.status !== 'VERIFIED'"
+                (click)="verifyMapping(m)"
+              >
+                Verify
+              </button>
+              <span class="verified-check" *ngIf="m.status === 'VERIFIED'">✓ OK</span>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,272 @@
+/* ==========================================================================
+   CITIGROUP ICGDS (LUMEN UI THEME) DESIGN SYSTEM TOKENS
+   ========================================================================== */
+
+:root {
+  /* Color Palette */
+  --citi-navy-primary: #0F203D;
+  --citi-navy-dark: #091528;
+  --citi-navy-light: #1A3460;
+  --citi-blue-accent: #0076D6;
+  --citi-blue-hover: #005FA8;
+  --citi-blue-light: #EBF5FE;
+  
+  --citi-bg-main: #F4F6F9;
+  --citi-surface: #FFFFFF;
+  --citi-surface-alt: #F8FAFC;
+  --citi-surface-highlight: #EAEFF5;
+
+  --citi-text-primary: #1C2B39;
+  --citi-text-secondary: #5C6F84;
+  --citi-text-muted: #8E9FAA;
+  --citi-text-inverse: #FFFFFF;
+
+  --citi-border-light: #E2E8F0;
+  --citi-border-default: #D1D9E2;
+  --citi-border-dark: #A0B2C6;
+
+  /* Status Colors */
+  --citi-success: #107C41;
+  --citi-success-bg: #E6F4EA;
+  --citi-success-border: #A3D9B1;
+
+  --citi-warning: #D83B01;
+  --citi-warning-bg: #FDF3EB;
+  --citi-warning-border: #F9C3A0;
+
+  --citi-error: #C42B1C;
+  --citi-error-bg: #FDE7E9;
+  --citi-error-border: #F5A9B0;
+
+  --citi-info: #0076D6;
+  --citi-info-bg: #EBF5FE;
+  --citi-info-border: #B2DAFA;
+
+  --citi-purple: #6B2995;
+  --citi-purple-bg: #F4EBF9;
+
+  /* Elevation / Shadows */
+  --citi-shadow-sm: 0 1px 2px rgba(15, 32, 61, 0.05);
+  --citi-shadow-md: 0 4px 6px -1px rgba(15, 32, 61, 0.08), 0 2px 4px -1px rgba(15, 32, 61, 0.04);
+  --citi-shadow-lg: 0 10px 15px -3px rgba(15, 32, 61, 0.1), 0 4px 6px -2px rgba(15, 32, 61, 0.05);
+  --citi-shadow-drawer: -4px 0 24px rgba(15, 32, 61, 0.15);
+
+  /* Typography */
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-family-mono: 'JetBrains Mono', Consolas, Monaco, monospace;
+
+  /* Border Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.25s ease-in-out;
+}
+
+/* Base Resets */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: var(--font-family-base);
+  background-color: var(--citi-bg-main);
+  color: var(--citi-text-primary);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  min-width: 1280px;
+}
+
+/* Typography styles */
+h1, .citi-h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--citi-navy-primary);
+  letter-spacing: -0.02em;
+}
+
+h2, .citi-h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--citi-navy-primary);
+  letter-spacing: -0.01em;
+}
+
+h3, .citi-h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--citi-navy-primary);
+}
+
+h4, .citi-h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--citi-text-primary);
+}
+
+p, .citi-body {
+  font-size: 0.875rem;
+  color: var(--citi-text-primary);
+}
+
+.citi-caption {
+  font-size: 0.75rem;
+  color: var(--citi-text-secondary);
+}
+
+.citi-mono {
+  font-family: var(--font-family-mono);
+}
+
+/* Utility Containers & Cards */
+.citi-card {
+  background: var(--citi-surface);
+  border: 1px solid var(--citi-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--citi-shadow-sm);
+  padding: 1.25rem;
+  transition: box-shadow var(--transition-fast);
+
+  &:hover {
+    box-shadow: var(--citi-shadow-md);
+  }
+}
+
+.citi-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--citi-border-light);
+
+  h3 {
+    margin: 0;
+  }
+}
+
+/* Button Component Standards */
+.citi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-family-base);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+  outline: none;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &.citi-btn-primary {
+    background-color: var(--citi-blue-accent);
+    color: var(--citi-text-inverse);
+
+    &:hover:not(:disabled) {
+      background-color: var(--citi-blue-hover);
+    }
+  }
+
+  &.citi-btn-secondary {
+    background-color: var(--citi-surface);
+    color: var(--citi-text-primary);
+    border-color: var(--citi-border-default);
+
+    &:hover:not(:disabled) {
+      background-color: var(--citi-surface-highlight);
+      border-color: var(--citi-border-dark);
+    }
+  }
+
+  &.citi-btn-navy {
+    background-color: var(--citi-navy-primary);
+    color: var(--citi-text-inverse);
+
+    &:hover:not(:disabled) {
+      background-color: var(--citi-navy-light);
+    }
+  }
+
+  &.citi-btn-danger {
+    background-color: var(--citi-error);
+    color: var(--citi-text-inverse);
+
+    &:hover:not(:disabled) {
+      background-color: #A02012;
+    }
+  }
+
+  &.citi-btn-sm {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+  }
+}
+
+/* Forms & Inputs */
+.citi-form-group {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--citi-text-primary);
+    margin-bottom: 0.35rem;
+  }
+
+  input[type="text"],
+  input[type="search"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-family-base);
+    font-size: 0.875rem;
+    color: var(--citi-text-primary);
+    background-color: var(--citi-surface);
+    border: 1px solid var(--citi-border-default);
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+    &:focus {
+      border-color: var(--citi-blue-accent);
+      box-shadow: 0 0 0 2px rgba(0, 118, 214, 0.2);
+    }
+  }
+}
+
+/* Scrollbar customization */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--citi-surface-alt);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--citi-border-dark);
+  border-radius: var(--radius-sm);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--citi-text-secondary);
+}

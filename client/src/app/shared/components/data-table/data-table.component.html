@@ -1,0 +1,141 @@
+<div class="citi-table-wrapper">
+  <!-- Table Header Controls -->
+  <div class="table-controls" *ngIf="showSearch">
+    <div class="search-box">
+      <svg class="search-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+      </svg>
+      <input
+        type="search"
+        [(ngModel)]="searchQuery"
+        (ngModelChange)="onSearchChange()"
+        [placeholder]="searchPlaceholder"
+        aria-label="Filter records"
+      />
+    </div>
+
+    <div class="table-summary-info">
+      <span class="record-count">Showing <strong>{{ paginatedData.length }}</strong> of <strong>{{ filteredData.length }}</strong> records</span>
+    </div>
+  </div>
+
+  <!-- Table Element -->
+  <div class="table-responsive-container">
+    <table class="citi-data-table" role="table">
+      <thead>
+        <tr>
+          <th
+            *ngFor="let col of columns"
+            [style.width]="col.width"
+            [class.sortable-th]="col.sortable"
+            (click)="onSort(col)"
+          >
+            <div class="th-content">
+              <span>{{ col.label }}</span>
+              <span class="sort-arrows" *ngIf="col.sortable">
+                <span class="sort-indicator" *ngIf="sortKey === col.key">{{ sortDirection === 'asc' ? '▲' : '▼' }}</span>
+                <span class="sort-neutral" *ngIf="sortKey !== col.key">⇅</span>
+              </span>
+            </div>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          *ngFor="let row of paginatedData"
+          (click)="onRowSelect(row)"
+          [class.clickable-row]="true"
+        >
+          <td *ngFor="let col of columns" [style.width]="col.width">
+            <!-- Text Column -->
+            <ng-container *ngIf="!col.type || col.type === 'text'">
+              <span class="cell-text">{{ row[col.key] }}</span>
+            </ng-container>
+
+            <!-- Code / Mono Column -->
+            <ng-container *ngIf="col.type === 'code'">
+              <code class="cell-code">{{ row[col.key] }}</code>
+            </ng-container>
+
+            <!-- Status Badge Column -->
+            <ng-container *ngIf="col.type === 'badge'">
+              <app-status-badge [status]="row[col.key]"></app-status-badge>
+            </ng-container>
+
+            <!-- Score Column -->
+            <ng-container *ngIf="col.type === 'score'">
+              <div class="score-cell">
+                <app-readiness-score [score]="row[col.key]" [size]="34" [strokeWidth]="3"></app-readiness-score>
+                <span class="score-val">{{ row[col.key] }}%</span>
+              </div>
+            </ng-container>
+
+            <!-- Date Column -->
+            <ng-container *ngIf="col.type === 'date'">
+              <span class="cell-date">{{ row[col.key] }}</span>
+            </ng-container>
+
+            <!-- Action Column -->
+            <ng-container *ngIf="col.type === 'action'">
+              <button
+                type="button"
+                class="citi-btn citi-btn-sm citi-btn-secondary"
+                (click)="onTriggerAction('view', row, $event)"
+              >
+                Inspect
+              </button>
+            </ng-container>
+          </td>
+        </tr>
+
+        <!-- Empty State -->
+        <tr *ngIf="paginatedData.length === 0">
+          <td [attr.colspan]="columns.length" class="empty-table-cell">
+            <div class="empty-state">
+              <span class="empty-title">No matching records found</span>
+              <span class="empty-desc">Try refining your search filter</span>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination Bar -->
+  <div class="pagination-bar" *ngIf="totalPages > 1">
+    <div class="page-info">
+      Page {{ currentPage }} of {{ totalPages }}
+    </div>
+    <div class="pagination-buttons">
+      <button
+        type="button"
+        class="citi-btn citi-btn-sm citi-btn-secondary"
+        [disabled]="currentPage === 1"
+        (click)="goToPage(currentPage - 1)"
+      >
+        Previous
+      </button>
+
+      <span class="page-pills">
+        <button
+          *ngFor="let p of [].constructor(totalPages); let i = index"
+          type="button"
+          class="page-pill-btn"
+          [class.active-pill]="currentPage === (i + 1)"
+          (click)="goToPage(i + 1)"
+        >
+          {{ i + 1 }}
+        </button>
+      </span>
+
+      <button
+        type="button"
+        class="citi-btn citi-btn-sm citi-btn-secondary"
+        [disabled]="currentPage === totalPages"
+        (click)="goToPage(currentPage + 1)"
+      >
+        Next
+      </button>
+    </div>
+  </div>
+</div>

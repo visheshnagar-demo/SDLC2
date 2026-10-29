@@ -1,0 +1,223 @@
+<div class="govern-container">
+  <!-- Executive KPI Strip -->
+  <section class="kpi-strip-grid" *ngIf="kpis" aria-label="Executive Migration KPIs">
+    <app-stat-card
+      title="Total Legacy Reports"
+      [value]="kpis.totalReports | number"
+      subtitle="Cataloged in CitiVelocity"
+      changeDelta="100% In-Scope"
+      [isPositiveChange]="true"
+      variant="default"
+      iconType="reports"
+    ></app-stat-card>
+
+    <app-stat-card
+      title="Transformed Schemas"
+      [value]="kpis.transformedCount | number"
+      subtitle="Generated CitiDirect CDM"
+      changeDelta="69.4% Transformed"
+      [isPositiveChange]="true"
+      variant="primary"
+      iconType="transform"
+    ></app-stat-card>
+
+    <app-stat-card
+      title="Validated & Approved"
+      [value]="kpis.validatedCount | number"
+      subtitle="Passed 4-Tier Gate Checks"
+      changeDelta="48.2% Gate Pass"
+      [isPositiveChange]="true"
+      variant="success"
+      iconType="validate"
+    ></app-stat-card>
+
+    <app-stat-card
+      title="Migrated into CitiDirect"
+      [value]="kpis.migratedCount | number"
+      subtitle="Live in Production"
+      changeDelta="+1,450 / day"
+      [isPositiveChange]="true"
+      variant="primary"
+      iconType="migrate"
+    ></app-stat-card>
+
+    <app-stat-card
+      title="Critical Exceptions"
+      [value]="kpis.criticalExceptions"
+      subtitle="Require Team Triage"
+      changeDelta="-4 This Week"
+      [isPositiveChange]="true"
+      variant="error"
+      iconType="exceptions"
+    ></app-stat-card>
+  </section>
+
+  <!-- Overall Progress Banner -->
+  <section class="citi-card progress-banner" *ngIf="kpis">
+    <div class="banner-content">
+      <div class="banner-text">
+        <span class="banner-eyebrow">Enterprise Migration Trajectory</span>
+        <h2 class="banner-title">CitiVelocity to CitiDirect Modernization Progress</h2>
+        <p class="banner-desc">Target completion date: <strong>{{ kpis.targetDate }}</strong> • Current migration velocity: <strong>{{ kpis.migrationVelocityDaily | number }} reports / business day</strong></p>
+      </div>
+      <div class="banner-gauge">
+        <div class="gauge-display">
+          <span class="gauge-val">{{ kpis.overallCompletionPercentage }}%</span>
+          <span class="gauge-label">Completed</span>
+        </div>
+      </div>
+    </div>
+    <div class="banner-progress-bar">
+      <app-progress-bar [percentage]="kpis.overallCompletionPercentage" [height]="12" variant="primary"></app-progress-bar>
+    </div>
+  </section>
+
+  <!-- Grid: Status Breakdown & Validation Status Visualizer -->
+  <div class="two-col-grid">
+    <!-- Status Breakdown by Business Unit -->
+    <section class="citi-card bu-breakdown-card">
+      <div class="citi-card-header">
+        <div>
+          <h3>Migration Status by Business Unit</h3>
+          <span class="citi-caption">Track migration velocity across all core Citigroup divisions</span>
+        </div>
+        <a routerLink="/discover" class="citi-btn citi-btn-sm citi-btn-secondary">Explore Reports →</a>
+      </div>
+
+      <div class="bu-table-container">
+        <table class="citi-data-table" role="table">
+          <thead>
+            <tr>
+              <th>Business Unit</th>
+              <th>Total</th>
+              <th>Transformed</th>
+              <th>Migrated</th>
+              <th style="width: 140px;">Completion</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let bu of statusBreakdown">
+              <td><strong>{{ bu.businessUnit }}</strong></td>
+              <td class="citi-mono">{{ bu.total | number }}</td>
+              <td class="citi-mono">{{ bu.transformed | number }}</td>
+              <td class="citi-mono" style="color: var(--citi-success); font-weight: 600;">{{ bu.migrated | number }}</td>
+              <td>
+                <app-progress-bar [percentage]="bu.percentage" [height]="6"></app-progress-bar>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Validation Status & Gate Distribution -->
+    <section class="citi-card validation-chart-card">
+      <div class="citi-card-header">
+        <div>
+          <h3>Validation Gate Distribution</h3>
+          <span class="citi-caption">Automated gate check results across 200k+ reports</span>
+        </div>
+        <a routerLink="/validate" class="citi-btn citi-btn-sm citi-btn-secondary">View Queue →</a>
+      </div>
+
+      <div class="gate-status-summary">
+        <div class="gate-row">
+          <div class="gate-info">
+            <span class="gate-name">Tier 1: Schema Conformance (CDM v4.2)</span>
+            <span class="gate-stat">192,400 Passed (97.0%)</span>
+          </div>
+          <app-progress-bar [percentage]="97.0" [height]="6" variant="success"></app-progress-bar>
+        </div>
+
+        <div class="gate-row">
+          <div class="gate-info">
+            <span class="gate-name">Tier 2: Business & Regulatory Rule Checks</span>
+            <span class="gate-stat">168,200 Passed (84.8%)</span>
+          </div>
+          <app-progress-bar [percentage]="84.8" [height]="6" variant="primary"></app-progress-bar>
+        </div>
+
+        <div class="gate-row">
+          <div class="gate-info">
+            <span class="gate-name">Tier 3: Dependency Graph & Feed Integrity</span>
+            <span class="gate-stat">142,100 Passed (71.6%)</span>
+          </div>
+          <app-progress-bar [percentage]="71.6" [height]="6" variant="primary"></app-progress-bar>
+        </div>
+
+        <div class="gate-row">
+          <div class="gate-info">
+            <span class="gate-name">Tier 4: Live Data Parity & Preview Test</span>
+            <span class="gate-stat">98,650 Passed (49.7%)</span>
+          </div>
+          <app-progress-bar [percentage]="49.7" [height]="6" variant="warning"></app-progress-bar>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- Exception Dashboard Panel -->
+  <section class="citi-card exceptions-section">
+    <div class="citi-card-header">
+      <div>
+        <h3>Active Migration Exception Triage</h3>
+        <span class="citi-caption">Reports requiring governance intervention or manual mapping adjustments</span>
+      </div>
+      <span class="citi-status-badge badge-failed size-sm">
+        <span class="status-indicator-dot"></span>
+        {{ exceptions.length }} Items Requiring Action
+      </span>
+    </div>
+
+    <div class="exceptions-grid">
+      <div class="exception-card" *ngFor="let ex of exceptions" [ngClass]="'severity-' + ex.severity.toLowerCase()">
+        <div class="ex-header">
+          <span class="ex-id citi-mono">{{ ex.id }}</span>
+          <app-status-badge [status]="ex.severity" size="sm"></app-status-badge>
+        </div>
+        <h4 class="ex-report-title">{{ ex.reportTitle }}</h4>
+        <p class="ex-message">{{ ex.message }}</p>
+        <div class="ex-meta">
+          <span>Assigned: <strong>{{ ex.assignedTo }}</strong></span>
+          <span>Logged: <span class="citi-mono">{{ ex.occurredAt }}</span></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Platform Capability Comparison Table -->
+  <section class="citi-card capabilities-section">
+    <div class="citi-card-header">
+      <div>
+        <h3>Platform Capability Modernization Matrix</h3>
+        <span class="citi-caption">Parity and enhancements: CitiVelocity Legacy vs. CitiDirect Next-Gen</span>
+      </div>
+      <a routerLink="/transform" class="citi-btn citi-btn-sm citi-btn-navy">Transform Workspace →</a>
+    </div>
+
+    <div class="table-responsive-container">
+      <table class="citi-data-table">
+        <thead>
+          <tr>
+            <th style="width: 240px;">Capability Dimension</th>
+            <th>CitiVelocity Legacy Architecture</th>
+            <th>CitiDirect Next-Gen CDM Platform</th>
+            <th style="width: 140px;">Readiness</th>
+            <th>Migration Notes</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cap of capabilities">
+            <td><strong>{{ cap.capability }}</strong></td>
+            <td><code class="cell-code">{{ cap.citiVelocity }}</code></td>
+            <td><code class="cell-code" style="color: var(--citi-blue-accent);">{{ cap.citiDirect }}</code></td>
+            <td>
+              <app-status-badge [status]="cap.migrationReadiness === 'FULL' ? 'VALIDATED' : 'WARNING'" size="sm"></app-status-badge>
+            </td>
+            <td class="citi-caption">{{ cap.notes }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+</div>

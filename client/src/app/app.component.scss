@@ -1,0 +1,34 @@
+.citi-app-layout {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: var(--citi-bg-main);
+}
+
+.main-content-viewport {
+  flex: 1;
+  width: 100%;
+}
+
+.citi-footer {
+  background-color: var(--citi-surface);
+  border-top: 1px solid var(--citi-border-light);
+  padding: 1.25rem 0;
+  margin-top: auto;
+
+  .footer-container {
+    max-width: 1680px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--citi-text-muted);
+  }
+
+  .footer-status {
+    font-weight: 600;
+    color: var(--citi-text-secondary);
+  }
+}

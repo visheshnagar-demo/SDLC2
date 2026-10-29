@@ -1,0 +1,53 @@
+.breadcrumbs-bar {
+  background-color: var(--citi-surface);
+  border-bottom: 1px solid var(--citi-border-light);
+  padding: 1rem 0 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.breadcrumbs-container {
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}
+
+.breadcrumb-trail {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.8125rem;
+  margin-bottom: 0.5rem;
+
+  .trail-root {
+    color: var(--citi-blue-accent);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  .separator {
+    color: var(--citi-text-muted);
+  }
+
+  .trail-active {
+    color: var(--citi-text-secondary);
+    font-weight: 600;
+  }
+}
+
+.module-header-info {
+  .page-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--citi-navy-primary);
+    margin-bottom: 0.25rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.875rem;
+    color: var(--citi-text-secondary);
+  }
+}

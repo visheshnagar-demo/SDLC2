@@ -1,0 +1,115 @@
+.migrate-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  max-width: 1680px;
+  margin: 0 auto;
+  padding: 0 1.5rem 3rem;
+}
+
+.scheduler-panel {
+  background: linear-gradient(135deg, #FFFFFF, var(--citi-surface-alt));
+  border-left: 4px solid var(--citi-navy-primary);
+
+  .scheduler-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    .scheduler-title-wrap {
+      .scheduler-pill {
+        display: inline-block;
+        font-size: 0.65rem;
+        font-weight: 800;
+        letter-spacing: 0.05em;
+        color: var(--citi-blue-accent);
+        background-color: var(--citi-info-bg);
+        border: 1px solid var(--citi-info-border);
+        padding: 0.15rem 0.45rem;
+        border-radius: var(--radius-xs);
+        margin-bottom: 0.35rem;
+      }
+
+      h3 {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: var(--citi-navy-primary);
+        margin-bottom: 0.2rem;
+      }
+    }
+
+    .scheduler-status-boxes {
+      display: flex;
+      gap: 1rem;
+
+      .status-box {
+        background-color: var(--citi-surface);
+        border: 1px solid var(--citi-border-light);
+        padding: 0.65rem 1rem;
+        border-radius: var(--radius-sm);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 120px;
+
+        .box-num {
+          font-size: 1.35rem;
+          font-weight: 800;
+          color: var(--citi-navy-primary);
+        }
+
+        .box-label {
+          font-size: 0.6875rem;
+          color: var(--citi-text-muted);
+          text-transform: uppercase;
+        }
+      }
+    }
+  }
+}
+
+.streaming-section {
+  width: 100%;
+}
+
+.priority-tag {
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.45rem;
+  border-radius: var(--radius-xs);
+  display: inline-block;
+
+  &.prio-p1 {
+    background-color: var(--citi-error-bg);
+    color: var(--citi-error);
+    border: 1px solid var(--citi-error-border);
+  }
+
+  &.prio-p2 {
+    background-color: var(--citi-info-bg);
+    color: var(--citi-blue-accent);
+    border: 1px solid var(--citi-info-border);
+  }
+
+  &.prio-p3 {
+    background-color: #F1F5F9;
+    color: #475569;
+    border: 1px solid #CBD5E1;
+  }
+}
+
+.job-progress-cell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+
+  .record-stat {
+    font-size: 0.7rem;
+    color: var(--citi-text-secondary);
+  }
+}
+
+.action-btn-group {
+  display: flex;
+  gap: 0.4rem;
+}

@@ -1,0 +1,106 @@
+.citi-stat-card {
+  background: var(--citi-surface);
+  border: 1px solid var(--citi-border-light);
+  border-radius: var(--radius-md);
+  padding: 1.15rem 1.25rem;
+  box-shadow: var(--citi-shadow-sm);
+  display: flex;
+  flex-direction: column;
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+  border-top: 3px solid var(--citi-blue-accent);
+
+  &:hover {
+    box-shadow: var(--citi-shadow-md);
+    transform: translateY(-2px);
+  }
+
+  &.variant-primary {
+    border-top-color: var(--citi-blue-accent);
+  }
+
+  &.variant-success {
+    border-top-color: var(--citi-success);
+  }
+
+  &.variant-warning {
+    border-top-color: var(--citi-warning);
+  }
+
+  &.variant-error {
+    border-top-color: var(--citi-error);
+  }
+}
+
+.card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.65rem;
+
+  .stat-title {
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--citi-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .stat-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--citi-surface-alt);
+    color: var(--citi-blue-accent);
+
+    &.icon-exceptions {
+      color: var(--citi-error);
+      background-color: var(--citi-error-bg);
+    }
+
+    &.icon-validate {
+      color: var(--citi-success);
+      background-color: var(--citi-success-bg);
+    }
+  }
+}
+
+.stat-value-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+
+  .stat-value {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--citi-navy-primary);
+    line-height: 1.1;
+    font-family: var(--font-family-mono);
+  }
+
+  .stat-delta {
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.15rem 0.4rem;
+    border-radius: var(--radius-xs);
+
+    &.delta-pos {
+      color: var(--citi-success);
+      background-color: var(--citi-success-bg);
+    }
+
+    &.delta-neg {
+      color: var(--citi-error);
+      background-color: var(--citi-error-bg);
+    }
+  }
+}
+
+.stat-subtitle {
+  font-size: 0.75rem;
+  color: var(--citi-text-muted);
+}

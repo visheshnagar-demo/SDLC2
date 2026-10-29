@@ -1,0 +1,183 @@
+<div class="validate-container">
+  <!-- Validation Queue & Master-Detail Layout -->
+  <div class="validate-grid">
+    <!-- Left: Validation Queue List -->
+    <section class="citi-card queue-card">
+      <div class="citi-card-header">
+        <div>
+          <h3>4-Tier Validation Queue</h3>
+          <span class="citi-caption">Automated verification gate checks</span>
+        </div>
+        <span class="citi-caption">Total: {{ queue.length }}</span>
+      </div>
+
+      <div class="queue-list">
+        <div
+          class="queue-item"
+          *ngFor="let item of queue"
+          [class.active-queue-item]="selectedItem?.reportId === item.reportId"
+          (click)="selectReport(item)"
+        >
+          <div class="queue-top">
+            <span class="rep-id citi-mono">{{ item.reportId }}</span>
+            <app-status-badge [status]="item.overallPassed ? 'VALIDATED' : 'WARNING'" size="sm"></app-status-badge>
+          </div>
+          <h4 class="rep-title">{{ item.reportTitle }}</h4>
+          <div class="queue-bottom">
+            <div class="score-display">
+              <app-readiness-score [score]="item.score" [size]="28" [strokeWidth]="3"></app-readiness-score>
+              <span class="score-text">Pass Score: {{ item.score }}%</span>
+            </div>
+            <span class="exception-pill" *ngIf="item.exceptionCount > 0">
+              {{ item.exceptionCount }} Exception(s)
+            </span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right: 4-Tab Validation Detail Panel -->
+    <section class="citi-card detail-panel-card" *ngIf="selectedItem">
+      <!-- Panel Header -->
+      <div class="detail-header">
+        <div class="header-main">
+          <span class="rep-code citi-mono">{{ selectedItem.reportId }}</span>
+          <h3 class="detail-title">{{ selectedItem.reportTitle }}</h3>
+        </div>
+        <div class="header-badges">
+          <app-status-badge [status]="selectedItem.overallPassed ? 'VALIDATED' : 'PENDING_APPROVAL'"></app-status-badge>
+          <div class="overall-score-pill">
+            <span>Overall Score: <strong>{{ selectedItem.score }}%</strong></span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tab Navigation Navigation Header -->
+      <div class="tab-nav-bar" role="tablist">
+        <button
+          type="button"
+          class="tab-btn"
+          role="tab"
+          [class.active-tab]="activeTab === 'metadata'"
+          [attr.aria-selected]="activeTab === 'metadata'"
+          (click)="setTab('metadata')"
+        >
+          Metadata Checks ({{ selectedItem.metadataChecks.length }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          role="tab"
+          [class.active-tab]="activeTab === 'rules'"
+          [attr.aria-selected]="activeTab === 'rules'"
+          (click)="setTab('rules')"
+        >
+          Rule Checks ({{ selectedItem.ruleChecks.length }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          role="tab"
+          [class.active-tab]="activeTab === 'dependencies'"
+          [attr.aria-selected]="activeTab === 'dependencies'"
+          (click)="setTab('dependencies')"
+        >
+          Dependencies ({{ selectedItem.dependencyChecks.length }})
+        </button>
+        <button
+          type="button"
+          class="tab-btn"
+          role="tab"
+          [class.active-tab]="activeTab === 'preview'"
+          [attr.aria-selected]="activeTab === 'preview'"
+          (click)="setTab('preview')"
+        >
+          Live Preview
+        </button>
+      </div>
+
+      <!-- Tab Contents -->
+      <div class="tab-content-area">
+        <!-- Tab 1: Metadata Checks -->
+        <div class="checks-list" *ngIf="activeTab === 'metadata'">
+          <div class="check-card" *ngFor="let chk of selectedItem.metadataChecks" [class.check-failed]="!chk.passed">
+            <div class="chk-status-icon">
+              <span *ngIf="chk.passed" class="icon-pass">✓</span>
+              <span *ngIf="!chk.passed" class="icon-fail">!</span>
+            </div>
+            <div class="chk-info">
+              <div class="chk-header-row">
+                <span class="chk-name">{{ chk.name }}</span>
+                <span class="chk-time citi-mono">{{ chk.timestamp }}</span>
+              </div>
+              <p class="chk-msg">{{ chk.message }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 2: Rule Checks -->
+        <div class="checks-list" *ngIf="activeTab === 'rules'">
+          <div class="check-card" *ngFor="let chk of selectedItem.ruleChecks" [class.check-failed]="!chk.passed">
+            <div class="chk-status-icon">
+              <span *ngIf="chk.passed" class="icon-pass">✓</span>
+              <span *ngIf="!chk.passed" class="icon-fail">!</span>
+            </div>
+            <div class="chk-info">
+              <div class="chk-header-row">
+                <span class="chk-name">{{ chk.name }}</span>
+                <span class="chk-time citi-mono">{{ chk.timestamp }}</span>
+              </div>
+              <p class="chk-msg">{{ chk.message }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 3: Dependencies Checks -->
+        <div class="checks-list" *ngIf="activeTab === 'dependencies'">
+          <div class="check-card" *ngFor="let chk of selectedItem.dependencyChecks" [class.check-failed]="!chk.passed">
+            <div class="chk-status-icon">
+              <span *ngIf="chk.passed" class="icon-pass">✓</span>
+              <span *ngIf="!chk.passed" class="icon-fail">!</span>
+            </div>
+            <div class="chk-info">
+              <div class="chk-header-row">
+                <span class="chk-name">{{ chk.name }}</span>
+                <span class="chk-time citi-mono">{{ chk.timestamp }}</span>
+              </div>
+              <p class="chk-msg">{{ chk.message }}</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab 4: Live Preview -->
+        <div class="preview-area" *ngIf="activeTab === 'preview'">
+          <div class="preview-header">
+            <h4>CitiDirect CDM Live Sample Payload</h4>
+            <span class="citi-caption">Verified against target schema</span>
+          </div>
+
+          <div class="table-responsive-container" *ngIf="selectedItem.previewData && selectedItem.previewData.length > 0">
+            <table class="citi-data-table preview-table">
+              <thead>
+                <tr>
+                  <th *ngFor="let key of getPreviewKeys(selectedItem)">{{ key }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngFor="let row of selectedItem.previewData">
+                  <td *ngFor="let key of getPreviewKeys(selectedItem)">
+                    <span class="citi-mono">{{ row[key] }}</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="empty-preview" *ngIf="!selectedItem.previewData || selectedItem.previewData.length === 0">
+            <span>No preview records available for this report.</span>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

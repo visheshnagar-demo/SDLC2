@@ -1,0 +1,127 @@
+<div class="migrate-container">
+  <!-- Scheduler Migration Panel -->
+  <section class="citi-card scheduler-panel">
+    <div class="scheduler-header">
+      <div class="scheduler-title-wrap">
+        <span class="scheduler-pill">AUTOMATED ORCHESTRATOR</span>
+        <h3>Batch Migration Scheduler & Engine</h3>
+        <p class="citi-caption">Manages high-throughput ingestion of 200,000+ reports from CitiVelocity Sybase clusters to CitiDirect Cloud Datastore</p>
+      </div>
+
+      <div class="scheduler-status-boxes">
+        <div class="status-box">
+          <span class="box-num citi-mono">4</span>
+          <span class="box-label">Active Worker Nodes</span>
+        </div>
+        <div class="status-box">
+          <span class="box-num citi-mono" style="color: var(--citi-success);">1,450/day</span>
+          <span class="box-label">Migration Velocity</span>
+        </div>
+        <div class="status-box">
+          <span class="box-num citi-mono" style="color: var(--citi-blue-accent);">0</span>
+          <span class="box-label">Deadlock Events</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Live Migration Progress (AGUI Streaming Log Panel) -->
+  <section class="streaming-section">
+    <app-log-stream
+      [logs]="logs"
+      [batchId]="activeBatchId"
+      [isStreaming]="isStreaming"
+      (clearLogs)="clearLogs()"
+      (downloadLogs)="downloadLogs()"
+    ></app-log-stream>
+  </section>
+
+  <!-- Migration Queue Table Section -->
+  <section class="citi-card queue-table-section">
+    <div class="citi-card-header">
+      <div>
+        <h3>Migration Execution Queue</h3>
+        <span class="citi-caption">Scheduled batch jobs, approval states, and live worker progress</span>
+      </div>
+      <span class="citi-caption">Total Jobs in Queue: {{ jobs.length }}</span>
+    </div>
+
+    <div class="table-responsive-container">
+      <table class="citi-data-table">
+        <thead>
+          <tr>
+            <th style="width: 100px;">Job ID</th>
+            <th style="width: 110px;">Report ID</th>
+            <th>Report Title</th>
+            <th style="width: 140px;">Scheduled Time</th>
+            <th style="width: 110px;">Priority</th>
+            <th style="width: 150px;">Approval Gate</th>
+            <th style="width: 130px;">Status</th>
+            <th style="width: 160px;">Progress</th>
+            <th style="width: 180px;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let job of jobs">
+            <td><code class="cell-code">{{ job.jobId }}</code></td>
+            <td><code class="cell-code" style="color: var(--citi-blue-accent);">{{ job.reportId }}</code></td>
+            <td><strong>{{ job.reportTitle }}</strong></td>
+            <td class="citi-mono cell-date">{{ job.scheduledTime }}</td>
+            <td>
+              <span class="priority-tag" [ngClass]="'prio-' + job.priority.slice(0, 2).toLowerCase()">
+                {{ job.priority }}
+              </span>
+            </td>
+            <td>
+              <app-status-badge [status]="job.approvalStatus" size="sm"></app-status-badge>
+            </td>
+            <td>
+              <app-status-badge [status]="job.executionStatus" size="sm"></app-status-badge>
+            </td>
+            <td>
+              <div class="job-progress-cell">
+                <app-progress-bar [percentage]="job.progressPercentage" [height]="6"></app-progress-bar>
+                <span class="record-stat citi-mono">{{ job.recordsMigrated | number }} / {{ job.totalRecords | number }}</span>
+              </div>
+            </td>
+            <td>
+              <div class="action-btn-group">
+                <!-- HITL Approval Button -->
+                <button
+                  type="button"
+                  class="citi-btn citi-btn-sm citi-btn-primary"
+                  *ngIf="job.approvalStatus === 'PENDING_APPROVAL'"
+                  (click)="openApprovalModal(job)"
+                >
+                  Review & Approve
+                </button>
+
+                <!-- Stream Logs Button -->
+                <button
+                  type="button"
+                  class="citi-btn citi-btn-sm citi-btn-navy"
+                  (click)="triggerLiveStream(job.jobId)"
+                >
+                  Stream Logs
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- Human-in-the-Loop (HITL) Approval Gate Modal -->
+  <app-confirm-modal
+    [isOpen]="approvalModalOpen"
+    title="Human-in-the-Loop (HITL) Migration Approval Gate"
+    message="You are about to authorize the production execution and commit of this financial reporting migration job into the CitiDirect Common Data Model (CDM). This action is audited under Citigroup Data Governance Policy."
+    confirmText="Sign-off & Start Job"
+    cancelText="Decline / Hold"
+    variant="primary"
+    [details]="getApprovalModalDetails()"
+    (confirm)="onConfirmApproval()"
+    (cancel)="closeApprovalModal()"
+  ></app-confirm-modal>
+</div>

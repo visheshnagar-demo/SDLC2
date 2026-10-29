@@ -1,0 +1,31 @@
+<div class="citi-drawer-backdrop" *ngIf="isOpen" (click)="onClose()" aria-hidden="true"></div>
+
+<aside
+  class="citi-slide-drawer"
+  [class.drawer-open]="isOpen"
+  [style.width]="width"
+  role="dialog"
+  [attr.aria-hidden]="!isOpen"
+  aria-modal="true"
+>
+  <!-- Drawer Header -->
+  <div class="drawer-header">
+    <div class="header-titles">
+      <h2 class="drawer-title">{{ title }}</h2>
+      <span class="drawer-subtitle" *ngIf="subtitle">{{ subtitle }}</span>
+    </div>
+    <button
+      type="button"
+      class="close-btn"
+      (click)="onClose()"
+      aria-label="Close details drawer"
+    >
+      ✕
+    </button>
+  </div>
+
+  <!-- Drawer Body Content -->
+  <div class="drawer-body">
+    <ng-content></ng-content>
+  </div>
+</aside>

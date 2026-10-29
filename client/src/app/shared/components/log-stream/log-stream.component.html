@@ -1,0 +1,60 @@
+<div class="citi-terminal-panel">
+  <!-- Terminal Header -->
+  <div class="terminal-header">
+    <div class="terminal-title-area">
+      <div class="terminal-dots">
+        <span class="dot dot-red"></span>
+        <span class="dot dot-yellow"></span>
+        <span class="dot dot-green"></span>
+      </div>
+      <span class="terminal-title">AGUI Live Telemetry Stream — [{{ batchId }}]</span>
+      <span class="stream-badge" *ngIf="isStreaming">
+        <span class="pulse-indicator"></span> LIVE STREAMING
+      </span>
+    </div>
+
+    <div class="terminal-actions">
+      <button
+        type="button"
+        class="terminal-btn"
+        [class.active-btn]="autoScroll"
+        (click)="toggleAutoScroll()"
+        title="Toggle Auto-Scroll"
+      >
+        Auto-Scroll: {{ autoScroll ? 'ON' : 'OFF' }}
+      </button>
+      <button
+        type="button"
+        class="terminal-btn"
+        (click)="onClear()"
+        title="Clear Console Output"
+      >
+        Clear
+      </button>
+      <button
+        type="button"
+        class="terminal-btn"
+        (click)="onDownload()"
+        title="Download Logs"
+      >
+        Export Logs
+      </button>
+    </div>
+  </div>
+
+  <!-- Terminal Output -->
+  <div class="terminal-body" #logContainer>
+    <div class="terminal-log-row" *ngFor="let log of logs" [ngClass]="'log-level-' + log.level.toLowerCase()">
+      <span class="log-time">[{{ log.timestamp }}]</span>
+      <span class="log-level-tag">[{{ log.level }}]</span>
+      <span class="log-phase-tag" *ngIf="log.phase">[{{ log.phase }}]</span>
+      <span class="log-message">{{ log.message }}</span>
+      <span class="log-details" *ngIf="log.details">{{ log.details }}</span>
+    </div>
+
+    <!-- Empty Output State -->
+    <div class="empty-logs" *ngIf="logs.length === 0">
+      <span>No live logs captured. Trigger a migration batch to view streaming AGUI events.</span>
+    </div>
+  </div>
+</div>

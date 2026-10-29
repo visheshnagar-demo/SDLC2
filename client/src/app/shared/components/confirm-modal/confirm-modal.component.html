@@ -1,0 +1,43 @@
+<div class="citi-modal-backdrop" *ngIf="isOpen" (click)="onCancel()" aria-hidden="true"></div>
+
+<div
+  class="citi-modal-dialog"
+  *ngIf="isOpen"
+  role="dialog"
+  aria-modal="true"
+  [attr.aria-labelledby]="'modal-title'"
+>
+  <div class="modal-header" [ngClass]="'header-' + variant">
+    <div class="modal-icon-badge">
+      <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+      </svg>
+    </div>
+    <h3 id="modal-title" class="modal-title">{{ title }}</h3>
+  </div>
+
+  <div class="modal-body">
+    <p class="modal-message">{{ message }}</p>
+
+    <div class="modal-details-grid" *ngIf="details && details.length > 0">
+      <div class="detail-row" *ngFor="let item of details">
+        <span class="detail-label">{{ item.label }}:</span>
+        <span class="detail-value">{{ item.value }}</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-footer">
+    <button type="button" class="citi-btn citi-btn-secondary" (click)="onCancel()">
+      {{ cancelText }}
+    </button>
+    <button
+      type="button"
+      class="citi-btn"
+      [ngClass]="variant === 'danger' ? 'citi-btn-danger' : 'citi-btn-primary'"
+      (click)="onConfirm()"
+    >
+      {{ confirmText }}
+    </button>
+  </div>
+</div>

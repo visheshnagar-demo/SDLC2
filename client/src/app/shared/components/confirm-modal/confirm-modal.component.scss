@@ -1,0 +1,111 @@
+.citi-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 32, 61, 0.6);
+  backdrop-filter: blur(3px);
+  z-index: 2000;
+  animation: fadeIn 0.15s ease-out;
+}
+
+.citi-modal-dialog {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 500px;
+  max-width: 90vw;
+  background-color: var(--citi-surface);
+  border-radius: var(--radius-md);
+  box-shadow: var(--citi-shadow-lg);
+  z-index: 2050;
+  overflow: hidden;
+  animation: scaleUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem;
+  background-color: var(--citi-navy-primary);
+  color: #FFFFFF;
+
+  &.header-danger {
+    background-color: var(--citi-error);
+  }
+
+  &.header-warning {
+    background-color: #B25900;
+  }
+
+  .modal-icon-badge {
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+  }
+
+  .modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #FFFFFF;
+  }
+}
+
+.modal-body {
+  padding: 1.5rem;
+
+  .modal-message {
+    font-size: 0.9375rem;
+    color: var(--citi-text-primary);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+  }
+
+  .modal-details-grid {
+    background-color: var(--citi-surface-alt);
+    border: 1px solid var(--citi-border-light);
+    border-radius: var(--radius-sm);
+    padding: 0.85rem 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.8125rem;
+
+      .detail-label {
+        font-weight: 600;
+        color: var(--citi-text-secondary);
+      }
+
+      .detail-value {
+        font-family: var(--font-family-mono);
+        color: var(--citi-navy-primary);
+      }
+    }
+  }
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background-color: var(--citi-surface-alt);
+  border-top: 1px solid var(--citi-border-light);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); }
+  to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+}

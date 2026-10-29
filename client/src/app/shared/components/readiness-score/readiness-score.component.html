@@ -1,0 +1,26 @@
+<div class="readiness-gauge-container" [style.width.px]="size" [style.height.px]="size" [title]="'Migration Readiness: ' + clampedScore + '% (Grade: ' + grade + ')'">
+  <svg [attr.width]="size" [attr.height]="size" class="gauge-svg">
+    <!-- Background Circle -->
+    <circle
+      class="gauge-bg"
+      [attr.cx]="size / 2"
+      [attr.cy]="size / 2"
+      [attr.r]="radius"
+      [attr.stroke-width]="strokeWidth"
+    />
+    <!-- Progress Stroke -->
+    <circle
+      class="gauge-progress"
+      [attr.cx]="size / 2"
+      [attr.cy]="size / 2"
+      [attr.r]="radius"
+      [attr.stroke-width]="strokeWidth"
+      [attr.stroke]="scoreColor"
+      [attr.stroke-dasharray]="circumference"
+      [attr.stroke-dashoffset]="strokeDashoffset"
+    />
+  </svg>
+  <div class="score-text-overlay">
+    <span class="score-number">{{ clampedScore }}%</span>
+  </div>
+</div>
