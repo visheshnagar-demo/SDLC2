@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { MockHttpService } from '../../core/services/mock-http.service';
+import { GovernService } from '../../core/services/govern.service';
 import {
   ExecutiveKPIs,
   StatusBreakdownItem,
@@ -34,7 +34,7 @@ export class GovernComponent implements OnInit {
   loading = true;
 
   constructor(
-    private mockHttp: MockHttpService,
+    private governService: GovernService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -44,22 +44,22 @@ export class GovernComponent implements OnInit {
 
   loadDashboardData(): void {
     this.loading = true;
-    this.mockHttp.getExecutiveKPIs().subscribe(data => {
+    this.governService.getExecutiveKPIs().subscribe(data => {
       this.kpis = data;
       this.cdr.markForCheck();
     });
 
-    this.mockHttp.getStatusBreakdown().subscribe(data => {
+    this.governService.getStatusBreakdown().subscribe(data => {
       this.statusBreakdown = data;
       this.cdr.markForCheck();
     });
 
-    this.mockHttp.getPlatformCapabilities().subscribe(data => {
+    this.governService.getPlatformCapabilities().subscribe(data => {
       this.capabilities = data;
       this.cdr.markForCheck();
     });
 
-    this.mockHttp.getExceptions().subscribe(data => {
+    this.governService.getExceptions().subscribe(data => {
       this.exceptions = data;
       this.loading = false;
       this.cdr.markForCheck();

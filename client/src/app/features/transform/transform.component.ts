@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MockHttpService } from '../../core/services/mock-http.service';
+import { TransformService } from '../../core/services/transform.service';
 import { TransformWorkspaceData, CdmFieldMapping, LegacyReport } from '../../core/models/models';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 
@@ -21,12 +21,12 @@ export class TransformComponent implements OnInit {
   saveMessage = '';
 
   constructor(
-    private mockHttp: MockHttpService,
+    private transformService: TransformService,
     private cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
-    this.mockHttp.getReportCatalog().subscribe(reps => {
+    this.transformService.getReportCatalog().subscribe(reps => {
       this.reports = reps;
       this.loadWorkspace(this.selectedReportId);
     });
@@ -37,7 +37,7 @@ export class TransformComponent implements OnInit {
     this.saveMessage = '';
     this.selectedReportId = reportId;
 
-    this.mockHttp.getTransformWorkspace(reportId).subscribe(data => {
+    this.transformService.getTransformWorkspace(reportId).subscribe(data => {
       this.workspaceData = data;
       this.loading = false;
       this.cdr.markForCheck();
@@ -50,7 +50,7 @@ export class TransformComponent implements OnInit {
 
   onSaveMappings(): void {
     if (!this.workspaceData) return;
-    this.mockHttp.saveCdmMappings(this.selectedReportId, this.workspaceData.mappings).subscribe(res => {
+    this.transformService.saveCdmMappings(this.selectedReportId, this.workspaceData.mappings).subscribe(res => {
       this.saveMessage = res.message;
       this.cdr.markForCheck();
       setTimeout(() => {

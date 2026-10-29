@@ -2,7 +2,7 @@ import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, ChangeDetectorRe
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Subscription } from 'rxjs';
-import { MockHttpService } from '../../core/services/mock-http.service';
+import { MigrateService } from '../../core/services/migrate.service';
 import { MigrationJob, MigrationLogEntry } from '../../core/models/models';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { ProgressBarComponent } from '../../shared/components/progress-bar/progress-bar.component';
@@ -34,7 +34,7 @@ export class MigrateComponent implements OnInit, OnDestroy {
   private streamSub?: Subscription;
 
   constructor(
-    private mockHttp: MockHttpService,
+    private migrateService: MigrateService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -50,7 +50,7 @@ export class MigrateComponent implements OnInit, OnDestroy {
   }
 
   loadJobs(): void {
-    this.mockHttp.getMigrationJobs().subscribe(jobs => {
+    this.migrateService.getMigrationJobs().subscribe(jobs => {
       this.jobs = jobs;
       this.cdr.markForCheck();
     });
@@ -58,7 +58,7 @@ export class MigrateComponent implements OnInit, OnDestroy {
 
   loadInitialLogs(batchId: string): void {
     this.activeBatchId = batchId;
-    this.mockHttp.getMigrationLogs(batchId).subscribe(logs => {
+    this.migrateService.getMigrationLogs(batchId).subscribe(logs => {
       this.logs = logs;
       this.cdr.markForCheck();
     });
@@ -79,7 +79,7 @@ export class MigrateComponent implements OnInit, OnDestroy {
   onConfirmApproval(): void {
     if (!this.selectedJobForApproval) return;
     const jobId = this.selectedJobForApproval.jobId;
-    this.mockHttp.approveMigrationJob(jobId, 'Citi Lead Architect (HITL Gate)').subscribe(() => {
+    this.migrateService.approveMigrationJob(jobId, 'Citi Lead Architect (HITL Gate)').subscribe(() => {
       this.closeApprovalModal();
       this.loadJobs();
       this.triggerLiveStream(jobId);
@@ -95,7 +95,7 @@ export class MigrateComponent implements OnInit, OnDestroy {
       this.streamSub.unsubscribe();
     }
 
-    this.streamSub = this.mockHttp.streamLiveLogs(batchId).subscribe({
+    this.streamSub = this.migrateService.streamLiveLogs(batchId).subscribe({
       next: (log) => {
         this.logs = [...this.logs, log];
         this.cdr.markForCheck();

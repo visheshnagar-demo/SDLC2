@@ -1,0 +1,89 @@
+/* ==========================================================================
+   CITIGROUP ICGDS (LUMEN UI THEME) - DESIGN SYSTEM DESIGN TOKENS
+   ========================================================================== */
+
+:root {
+  /* Primary & Brand Colors */
+  --citi-navy-primary: #0F203D;
+  --citi-navy-dark: #091528;
+  --citi-navy-light: #1A3460;
+  --citi-navy-deep: #050E1A;
+  --citi-blue-accent: #0076D6;
+  --citi-blue-hover: #005FA8;
+  --citi-blue-light: #EBF5FE;
+  --citi-blue-subtle: #F0F7FF;
+
+  /* Neutrals & Surfaces */
+  --citi-bg-main: #F4F6F9;
+  --citi-surface: #FFFFFF;
+  --citi-surface-alt: #F8FAFC;
+  --citi-surface-highlight: #EAEFF5;
+  --citi-surface-hover: #F1F5F9;
+
+  /* Typography Colors */
+  --citi-text-primary: #1C2B39;
+  --citi-text-secondary: #5C6F84;
+  --citi-text-muted: #8E9FAA;
+  --citi-text-inverse: #FFFFFF;
+
+  /* Borders & Dividers */
+  --citi-border-light: #E2E8F0;
+  --citi-border-default: #D1D9E2;
+  --citi-border-dark: #A0B2C6;
+  --citi-border-focus: #0076D6;
+
+  /* Status Colors */
+  --citi-success: #107C41;
+  --citi-success-bg: #E6F4EA;
+  --citi-success-border: #A3D9B1;
+
+  --citi-warning: #D83B01;
+  --citi-warning-bg: #FDF3EB;
+  --citi-warning-border: #F9C3A0;
+
+  --citi-error: #C42B1C;
+  --citi-error-bg: #FDE7E9;
+  --citi-error-border: #F5A9B0;
+
+  --citi-info: #0076D6;
+  --citi-info-bg: #EBF5FE;
+  --citi-info-border: #B2DAFA;
+
+  --citi-purple: #6B2995;
+  --citi-purple-bg: #F4EBF9;
+  --citi-purple-border: #D8BCE6;
+
+  /* Elevation / Shadows */
+  --citi-shadow-xs: 0 1px 2px rgba(15, 32, 61, 0.04);
+  --citi-shadow-sm: 0 1px 3px rgba(15, 32, 61, 0.06);
+  --citi-shadow-md: 0 4px 6px -1px rgba(15, 32, 61, 0.08), 0 2px 4px -1px rgba(15, 32, 61, 0.04);
+  --citi-shadow-lg: 0 10px 15px -3px rgba(15, 32, 61, 0.1), 0 4px 6px -2px rgba(15, 32, 61, 0.05);
+  --citi-shadow-drawer: -4px 0 24px rgba(15, 32, 61, 0.15);
+  --citi-shadow-modal: 0 20px 25px -5px rgba(15, 32, 61, 0.2), 0 10px 10px -5px rgba(15, 32, 61, 0.04);
+
+  /* Typography */
+  --font-family-base: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  --font-family-mono: 'JetBrains Mono', Consolas, Monaco, monospace;
+
+  /* Border Radius */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 12px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s ease-in-out;
+  --transition-normal: 0.25s ease-in-out;
+  --transition-slow: 0.35s ease-in-out;
+
+  /* Spacing */
+  --spacing-1: 0.25rem;
+  --spacing-2: 0.5rem;
+  --spacing-3: 0.75rem;
+  --spacing-4: 1rem;
+  --spacing-5: 1.25rem;
+  --spacing-6: 1.5rem;
+  --spacing-8: 2rem;
+}

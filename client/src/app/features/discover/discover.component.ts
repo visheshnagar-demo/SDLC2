@@ -1,8 +1,8 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { MockHttpService } from '../../core/services/mock-http.service';
-import { LegacyReport, ReportDetail, ComplexityLevel, MigrationStatus } from '../../core/models/models';
+import { DiscoverService } from '../../core/services/discover.service';
+import { LegacyReport, ReportDetail } from '../../core/models/models';
 import { DataTableComponent, ColumnDef } from '../../shared/components/data-table/data-table.component';
 import { SlideDrawerComponent } from '../../shared/components/slide-drawer/slide-drawer.component';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
@@ -45,7 +45,7 @@ export class DiscoverComponent implements OnInit {
   ];
 
   constructor(
-    private mockHttp: MockHttpService,
+    private discoverService: DiscoverService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -54,7 +54,7 @@ export class DiscoverComponent implements OnInit {
   }
 
   loadReports(): void {
-    this.mockHttp.getReportCatalog().subscribe(data => {
+    this.discoverService.getReportCatalog().subscribe(data => {
       this.reports = data;
       this.cdr.markForCheck();
     });
@@ -70,7 +70,7 @@ export class DiscoverComponent implements OnInit {
   }
 
   onSelectReport(report: LegacyReport): void {
-    this.mockHttp.getReportDetail(report.id).subscribe(detail => {
+    this.discoverService.getReportDetail(report.id).subscribe(detail => {
       this.selectedReportDetail = detail;
       this.drawerOpen = true;
       this.cdr.markForCheck();

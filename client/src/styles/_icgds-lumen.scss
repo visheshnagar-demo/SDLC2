@@ -1,0 +1,200 @@
+/* ==========================================================================
+   CITIGROUP ICGDS (LUMEN UI THEME) - COMPONENT AND UTILITY STYLES
+   ========================================================================== */
+
+/* Typography classes */
+.citi-h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--citi-navy-primary);
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+}
+
+.citi-h2 {
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: var(--citi-navy-primary);
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.citi-h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--citi-navy-primary);
+  line-height: 1.35;
+}
+
+.citi-h4 {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--citi-text-primary);
+}
+
+.citi-body {
+  font-size: 0.875rem;
+  color: var(--citi-text-primary);
+  line-height: 1.5;
+}
+
+.citi-body-sm {
+  font-size: 0.8125rem;
+  color: var(--citi-text-secondary);
+}
+
+.citi-caption {
+  font-size: 0.75rem;
+  color: var(--citi-text-secondary);
+}
+
+.citi-mono {
+  font-family: var(--font-family-mono);
+}
+
+/* Card components */
+.citi-card {
+  background: var(--citi-surface);
+  border: 1px solid var(--citi-border-light);
+  border-radius: var(--radius-md);
+  box-shadow: var(--citi-shadow-sm);
+  padding: 1.25rem;
+  transition: box-shadow var(--transition-fast);
+
+  &:hover {
+    box-shadow: var(--citi-shadow-md);
+  }
+}
+
+.citi-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid var(--citi-border-light);
+
+  h3 {
+    margin: 0;
+  }
+}
+
+/* Standard Buttons */
+.citi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-family: var(--font-family-base);
+  font-size: 0.875rem;
+  font-weight: 600;
+  padding: 0.5rem 1rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  border: 1px solid transparent;
+  outline: none;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  &.citi-btn-primary {
+    background-color: var(--citi-blue-accent);
+    color: var(--citi-text-inverse);
+
+    &:hover:not(:disabled) {
+      background-color: var(--citi-blue-hover);
+    }
+  }
+
+  &.citi-btn-secondary {
+    background-color: var(--citi-surface);
+    color: var(--citi-text-primary);
+    border-color: var(--citi-border-default);
+
+    &:hover:not(:disabled) {
+      background-color: var(--citi-surface-highlight);
+      border-color: var(--citi-border-dark);
+    }
+  }
+
+  &.citi-btn-navy {
+    background-color: var(--citi-navy-primary);
+    color: var(--citi-text-inverse);
+
+    &:hover:not(:disabled) {
+      background-color: var(--citi-navy-light);
+    }
+  }
+
+  &.citi-btn-danger {
+    background-color: var(--citi-error);
+    color: var(--citi-text-inverse);
+
+    &:hover:not(:disabled) {
+      background-color: #A02012;
+    }
+  }
+
+  &.citi-btn-sm {
+    padding: 0.25rem 0.6rem;
+    font-size: 0.75rem;
+  }
+
+  &.citi-btn-lg {
+    padding: 0.625rem 1.25rem;
+    font-size: 1rem;
+  }
+}
+
+/* Forms & Inputs */
+.citi-form-group {
+  margin-bottom: 1rem;
+
+  label {
+    display: block;
+    font-size: 0.8125rem;
+    font-weight: 600;
+    color: var(--citi-text-primary);
+    margin-bottom: 0.35rem;
+  }
+
+  input[type="text"],
+  input[type="search"],
+  input[type="number"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 0.5rem 0.75rem;
+    font-family: var(--font-family-base);
+    font-size: 0.875rem;
+    color: var(--citi-text-primary);
+    background-color: var(--citi-surface);
+    border: 1px solid var(--citi-border-default);
+    border-radius: var(--radius-sm);
+    outline: none;
+    transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+
+    &:focus {
+      border-color: var(--citi-blue-accent);
+      box-shadow: 0 0 0 2px rgba(0, 118, 214, 0.2);
+    }
+  }
+}
+
+/* Status Pill Helpers */
+.citi-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.2rem 0.6rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}

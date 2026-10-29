@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MockHttpService } from '../../core/services/mock-http.service';
+import { ValidateService } from '../../core/services/validate.service';
 import { ValidationReportItem, ValidationCheckItem } from '../../core/models/models';
 import { StatusBadgeComponent } from '../../shared/components/status-badge/status-badge.component';
 import { ReadinessScoreComponent } from '../../shared/components/readiness-score/readiness-score.component';
@@ -24,7 +24,7 @@ export class ValidateComponent implements OnInit {
   loading = false;
 
   constructor(
-    private mockHttp: MockHttpService,
+    private validateService: ValidateService,
     private cdr: ChangeDetectorRef
   ) {}
 
@@ -34,7 +34,7 @@ export class ValidateComponent implements OnInit {
 
   loadValidationQueue(): void {
     this.loading = true;
-    this.mockHttp.getValidationQueue().subscribe(items => {
+    this.validateService.getValidationQueue().subscribe(items => {
       this.queue = items;
       if (items.length > 0) {
         this.selectedItem = items[0];
