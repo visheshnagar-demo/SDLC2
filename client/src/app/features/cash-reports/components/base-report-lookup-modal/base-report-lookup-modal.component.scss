@@ -1,0 +1,46 @@
+.base-lookup-window {
+  max-width: 750px;
+  width: 90%;
+  height: 75vh;
+}
+
+.lookup-filter-toolbar {
+  padding: 12px 16px;
+  background-color: var(--citi-surface-sub);
+  border-bottom: 1px solid var(--citi-border-subtle);
+
+  .filter-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 150px;
+
+      &.keyword-group {
+        flex: 1;
+        min-width: 200px;
+      }
+    }
+
+    .toolbar-btn-group {
+      display: flex;
+      gap: 8px;
+    }
+  }
+}
+
+.catalog-row {
+  cursor: pointer;
+}
+
+.empty-msg {
+  text-align: center;
+  padding: 30px !important;
+  color: var(--citi-text-muted);
+  font-style: italic;
+}

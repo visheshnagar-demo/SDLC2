@@ -1,0 +1,14 @@
+<div class="citi-fx-select-wrap">
+  <span class="citi-fx-prefix" title="Comparison Operator">fx</span>
+  <select
+    class="citi-fx-dropdown"
+    [value]="value"
+    [disabled]="disabled"
+    (change)="onSelect($event)"
+    aria-label="Filter Operator"
+  >
+    @for (op of operators; track op) {
+      <option [value]="op">{{ op }}</option>
+    }
+  </select>
+</div>

@@ -1,0 +1,243 @@
+<div class="cash-statements-page">
+  <!-- Page Header -->
+  <div class="page-header-row">
+    <div class="header-titles">
+      <h3 class="citi-h3">Cash Statements Reports</h3>
+      <span class="header-desc">Generate, customize, and view statement and transaction reports across accounts.</span>
+    </div>
+    <div class="header-tools">
+      <button type="button" class="citi-btn citi-btn-outline" (click)="showMeHow()">
+        <span class="info-circle">&#9432;</span> Show Me How
+      </button>
+    </div>
+  </div>
+
+  <!-- Collapsible Applied Search Criteria Panel -->
+  <div class="citi-card search-criteria-panel">
+    <div class="search-panel-header" (click)="toggleSearchCriteria()">
+      <div class="panel-title-left">
+        <span class="chevron-icon">{{ isSearchCriteriaCollapsed ? '&#9654;' : '&#9660;' }}</span>
+        <strong>{{ isSearchCriteriaCollapsed ? 'Show Applied Search Criteria' : 'Hide Applied Search Criteria' }}</strong>
+      </div>
+      <div class="panel-summary-tags">
+        <span class="filter-pill">Category: <em>{{ searchCategory }}</em></span>
+        <span class="filter-pill">Type: <em>{{ searchReportType }}</em></span>
+        @if (searchBaseReportName) {
+          <span class="filter-pill">Report: <em>{{ searchBaseReportName }}</em></span>
+        }
+      </div>
+    </div>
+
+    @if (!isSearchCriteriaCollapsed) {
+      <div class="search-panel-body">
+        <div class="search-form-grid">
+          <div class="citi-form-group">
+            <label for="searchCategorySelect" class="citi-label">Report Category</label>
+            <select id="searchCategorySelect" class="citi-select" [(ngModel)]="searchCategory">
+              <option value="Cash Statements Reports">Cash Statements Reports</option>
+              <option value="Cash Balances Reports">Cash Balances Reports</option>
+              <option value="Cash Transaction Initiation Reports">Cash Transaction Initiation Reports</option>
+              <option value="All Categories">All Categories</option>
+            </select>
+          </div>
+
+          <div class="citi-form-group">
+            <label for="searchTypeSelect" class="citi-label">Report Type</label>
+            <select id="searchTypeSelect" class="citi-select" [(ngModel)]="searchReportType">
+              <option value="All Reports">All Reports</option>
+              <option value="Standard">Standard</option>
+              <option value="Derived">Derived</option>
+              <option value="Custom">Custom</option>
+            </select>
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label">Base Report Name</label>
+            <app-binocular-lookup-input
+              [(ngModel)]="searchBaseReportName"
+              placeholder="Select or enter base report..."
+              [hasClear]="true"
+              (lookupClick)="openBaseReportLookup()"
+              (clearClick)="searchBaseReportName = ''"
+            ></app-binocular-lookup-input>
+          </div>
+        </div>
+
+        <div class="search-panel-actions">
+          <button type="button" class="citi-btn citi-btn-utility" (click)="onResetSearch()">
+            Reset
+          </button>
+          <button type="button" class="citi-btn citi-btn-primary" (click)="refreshTimestamp()">
+            Search
+          </button>
+        </div>
+      </div>
+    }
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="citi-tabs-container">
+    <div class="citi-tab-bar">
+      <button
+        type="button"
+        class="citi-tab-btn"
+        [class.active]="activeTab === 'GENERATE'"
+        (click)="activeTab = 'GENERATE'"
+      >
+        Generate Reports
+      </button>
+      <button
+        type="button"
+        class="citi-tab-btn"
+        [class.active]="activeTab === 'VIEW_AVAILABLE'"
+        (click)="activeTab = 'VIEW_AVAILABLE'"
+      >
+        View Available Reports
+      </button>
+    </div>
+  </div>
+
+  <!-- Search Results Grid -->
+  <div class="citi-card grid-card">
+    <div class="grid-card-header">
+      <div class="grid-title">
+        <h6 class="citi-h6">
+          Search Results – Generate Reports (1–{{ paginatedReports.length }} of {{ filteredReports.length }})
+        </h6>
+        <span class="selected-count">
+          Selected Items: <strong>{{ selectedReports.size }}</strong>
+        </span>
+      </div>
+      <div class="grid-meta-right">
+        <span class="timestamp-label">As of {{ asOfTimestamp }}</span>
+        <button type="button" class="refresh-icon-btn" (click)="refreshTimestamp(); loadReports()" title="Refresh Grid">&#8635;</button>
+      </div>
+    </div>
+
+    <div class="citi-table-container">
+      <table class="citi-table report-results-table">
+        <thead>
+          <tr>
+            <th style="width: 36px; text-align: center;">
+              <input type="checkbox" class="citi-checkbox" [checked]="isAllSelected" (change)="toggleSelectAll($event)" aria-label="Select all" />
+            </th>
+            <th style="width: 36px; text-align: center;">&#9733;</th>
+            <th (click)="sortBy('reportName')" class="sortable-header">
+              Report Name
+              <span class="sort-indicator">{{ sortField === 'reportName' ? (sortAsc ? '▲' : '▼') : '↕' }}</span>
+            </th>
+            <th (click)="sortBy('baseReportName')" class="sortable-header">
+              Base Report Name
+              <span class="sort-indicator">{{ sortField === 'baseReportName' ? (sortAsc ? '▲' : '▼') : '↕' }}</span>
+            </th>
+            <th (click)="sortBy('isBase')" class="sortable-header" style="width: 110px;">
+              Base / Derived
+            </th>
+            <th (click)="sortBy('category')" class="sortable-header">
+              Report Category
+            </th>
+            <th (click)="sortBy('reportType')" class="sortable-header" style="width: 110px;">
+              Report Type
+            </th>
+            <th style="width: 160px; text-align: right;">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (report of paginatedReports; track report.id) {
+            <tr
+              [class.selected-row]="selectedReports.has(report.id)"
+              (click)="navigateToCriteria(report)"
+              class="clickable-row"
+            >
+              <td style="text-align: center;" (click)="$event.stopPropagation()">
+                <input
+                  type="checkbox"
+                  class="citi-checkbox"
+                  [checked]="selectedReports.has(report.id)"
+                  (change)="toggleSelectReport(report.id, $event)"
+                  aria-label="Select report"
+                />
+              </td>
+              <td style="text-align: center;" (click)="toggleFavorite(report, $event)">
+                <span class="star-icon" [class.favorite]="report.isFavorite">&#9733;</span>
+              </td>
+              <td>
+                <a [routerLink]="['/reports/criteria', report.id]" class="report-name-link" (click)="$event.stopPropagation()">
+                  <strong>{{ report.reportName }}</strong>
+                </a>
+              </td>
+              <td>{{ report.baseReportName }}</td>
+              <td>
+                <span class="citi-badge" [class.citi-badge-info]="report.isBase" [class.citi-badge-neutral]="!report.isBase">
+                  {{ report.isBase ? 'Base' : 'Derived' }}
+                </span>
+              </td>
+              <td>{{ report.category }}</td>
+              <td>{{ report.reportType }}</td>
+              <td style="text-align: right;" (click)="$event.stopPropagation()">
+                <div class="row-actions">
+                  <button type="button" class="citi-btn citi-btn-primary row-btn" (click)="onQuickRun(report, $event)" title="Run Report">
+                    Run
+                  </button>
+                  <button type="button" class="citi-btn citi-btn-outline row-btn" (click)="onQuickSchedule(report, $event)" title="Schedule Report">
+                    Schedule
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+          @if (paginatedReports.length === 0) {
+            <tr>
+              <td colspan="8" class="empty-table-msg">
+                No reports found matching criteria.
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination Footer -->
+    <div class="grid-pagination-bar">
+      <div class="pagination-info">
+        Showing 1 to {{ paginatedReports.length }} of {{ filteredReports.length }} entries
+      </div>
+      <div class="pagination-controls">
+        <button
+          type="button"
+          class="citi-btn citi-btn-utility page-btn"
+          [disabled]="currentPage === 1"
+          (click)="currentPage = currentPage - 1"
+        >
+          Previous
+        </button>
+        <span class="page-indicator">Page {{ currentPage }} of {{ totalPages }}</span>
+        <button
+          type="button"
+          class="citi-btn citi-btn-utility page-btn"
+          [disabled]="currentPage === totalPages"
+          (click)="currentPage = currentPage + 1"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Base Report Lookup Modal Dialog -->
+@if (showLookupModal) {
+  <app-base-report-lookup-modal
+    (selectReport)="onBaseReportSelected($event)"
+    (close)="showLookupModal = false"
+  ></app-base-report-lookup-modal>
+}
+
+<!-- Report Viewer Modal Preview -->
+@if (showViewerModal && activeReportData) {
+  <app-report-viewer-modal
+    [data]="activeReportData"
+    [criteria]="activeCriteria"
+    (close)="showViewerModal = false"
+  ></app-report-viewer-modal>
+}

@@ -1,0 +1,50 @@
+<div class="citi-card">
+  <div class="citi-card-header">
+    <h6>Quartz Scheduled Execution Audit Trail</h6>
+  </div>
+
+  <div class="citi-table-container">
+    <table class="citi-table">
+      <thead>
+        <tr>
+          <th>Execution Time (GMT)</th>
+          <th>Schedule Name</th>
+          <th>Event Name</th>
+          <th>Status</th>
+          <th style="width: 80px; text-align: center;">Records</th>
+          <th>Delivery Status</th>
+          <th>Recipients</th>
+          <th style="width: 100px; text-align: right;">Duration</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of history; track item.id) {
+          <tr>
+            <td style="font-family: var(--citi-font-mono); font-size: 11px;">
+              <strong>{{ item.executionTimeGmt }}</strong>
+            </td>
+            <td>{{ item.scheduleName }}</td>
+            <td>{{ item.eventName }}</td>
+            <td>
+              <span class="citi-badge"
+                [class.citi-badge-success]="item.status === 'COMPLETED'"
+                [class.citi-badge-warning]="item.status === 'RUNNING'"
+                [class.citi-badge-danger]="item.status === 'FAILED'">
+                {{ item.status }}
+              </span>
+            </td>
+            <td style="text-align: center;">{{ item.recordsProcessed }}</td>
+            <td><span class="delivery-status-text">{{ item.deliveryStatus }}</span></td>
+            <td style="font-size: 11px;">{{ item.recipients }}</td>
+            <td style="text-align: right; font-family: var(--citi-font-mono);">{{ item.durationMs }} ms</td>
+          </tr>
+        }
+        @if (history.length === 0) {
+          <tr>
+            <td colspan="8" class="empty-msg">No execution history recorded yet.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</div>

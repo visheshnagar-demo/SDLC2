@@ -1,0 +1,34 @@
+.citi-lookup-toolbar {
+  padding: 10px 16px;
+  background-color: var(--citi-surface-sub);
+  border-bottom: 1px solid var(--citi-border-subtle);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+
+  .search-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    max-width: 450px;
+
+    .citi-label {
+      white-space: nowrap;
+    }
+  }
+
+  .count-badge {
+    font-size: 11px;
+    color: var(--citi-text-secondary);
+    font-weight: 600;
+  }
+}
+
+.empty-text {
+  text-align: center;
+  color: var(--citi-text-muted);
+  padding: 24px 0 !important;
+  font-style: italic;
+}

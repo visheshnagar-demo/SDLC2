@@ -1,0 +1,260 @@
+<div class="delivery-options-page">
+  <!-- Page Header -->
+  <div class="page-header-row">
+    <div class="header-titles">
+      <h3 class="citi-h3">Library Maintenance &ndash; Delivery Options</h3>
+      <span class="service-class-badge">Service Class: <strong>Automated File and Report Delivery</strong></span>
+    </div>
+    <div class="header-toolbar">
+      <button type="button" class="citi-btn citi-btn-primary" (click)="openCreateModal()">
+        + Create Library
+      </button>
+      <button
+        type="button"
+        class="citi-btn citi-btn-outline"
+        [disabled]="!selectedOption"
+        (click)="selectedOption && onTestConnectivity(selectedOption)"
+      >
+        Test Connectivity
+      </button>
+      <button
+        type="button"
+        class="citi-btn citi-btn-utility"
+        [disabled]="!selectedOption"
+        (click)="selectedOption && onDelete(selectedOption)"
+      >
+        Delete
+      </button>
+      <button type="button" class="citi-btn citi-btn-utility" (click)="printLibrary()">
+        Print
+      </button>
+    </div>
+  </div>
+
+  @if (statusMessage) {
+    <div class="citi-alert" [class.alert-success]="statusType === 'success'" [class.alert-info]="statusType === 'info'">
+      {{ statusMessage }}
+    </div>
+  }
+
+  <!-- Counter Tabs -->
+  <div class="citi-tabs-container">
+    <div class="citi-tab-bar">
+      <button
+        type="button"
+        class="citi-tab-btn"
+        [class.active]="activeTab === 'ALL'"
+        (click)="selectTab('ALL')"
+      >
+        View All <span class="tab-count">({{ countAll }})</span>
+      </button>
+      <button
+        type="button"
+        class="citi-tab-btn"
+        [class.active]="activeTab === 'TO_SUBMIT'"
+        (click)="selectTab('TO_SUBMIT')"
+      >
+        To Submit/Modify <span class="tab-count">({{ countToSubmit }})</span>
+      </button>
+      <button
+        type="button"
+        class="citi-tab-btn"
+        [class.active]="activeTab === 'TO_AUTHORIZE'"
+        (click)="selectTab('TO_AUTHORIZE')"
+      >
+        To Authorize <span class="tab-count alert-count">({{ countToAuthorize }})</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Delivery Options Grid -->
+  <div class="citi-card">
+    <div class="citi-table-container">
+      <table class="citi-table">
+        <thead>
+          <tr>
+            <th style="width: 36px; text-align: center;">#</th>
+            <th>Delivery Option Name</th>
+            <th>Description</th>
+            <th style="width: 100px;">Type</th>
+            <th>Security Method</th>
+            <th style="width: 180px;">Status</th>
+            <th style="width: 120px;">Maker User</th>
+            <th style="width: 140px; text-align: right;">Action</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (opt of displayedOptions; track opt.id) {
+            <tr
+              [class.selected-row]="selectedOptionId === opt.id"
+              (click)="onSelectRow(opt)"
+              class="clickable-row"
+            >
+              <td style="text-align: center;">
+                <input
+                  type="radio"
+                  class="citi-radio"
+                  name="selectedOptionRadio"
+                  [checked]="selectedOptionId === opt.id"
+                  (change)="onSelectRow(opt)"
+                  aria-label="Select delivery option"
+                />
+              </td>
+              <td><strong>{{ opt.name }}</strong></td>
+              <td>{{ opt.description }}</td>
+              <td>{{ opt.deliveryType }}</td>
+              <td>{{ opt.securityMethod }}</td>
+              <td>
+                <span class="citi-badge"
+                  [class.citi-badge-success]="opt.authStatus === 'AUTHORIZED'"
+                  [class.citi-badge-warning]="opt.authStatus === 'PENDING_AUTHORIZATION'"
+                  [class.citi-badge-danger]="opt.authStatus === 'REJECTED'"
+                  [class.citi-badge-info]="opt.authStatus === 'PENDING_REPAIR'">
+                  {{ opt.authLevel || opt.authStatus }}
+                </span>
+              </td>
+              <td>{{ opt.makerName }}</td>
+              <td style="text-align: right;" (click)="$event.stopPropagation()">
+                @if (opt.authStatus === 'PENDING_AUTHORIZATION') {
+                  <button
+                    type="button"
+                    class="citi-btn citi-btn-warning row-action-btn"
+                    (click)="openAuthorizePanel(opt)"
+                  >
+                    Authorize
+                  </button>
+                } @else {
+                  <button
+                    type="button"
+                    class="citi-btn citi-btn-outline row-action-btn"
+                    (click)="openAuthorizePanel(opt)"
+                  >
+                    View Details
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+          @if (displayedOptions.length === 0) {
+            <tr>
+              <td colspan="8" class="empty-msg">No delivery options in this queue.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Help & Support Callout Banner -->
+  <div class="citi-card help-callout-card">
+    <div class="help-header">
+      <span class="help-icon">&#9432;</span>
+      <strong>Citi Secure E-Mail Support &amp; Configuration</strong>
+    </div>
+    <p class="help-body">
+      Help for external secure email is available 24/7, 365 days a year.
+      <strong>Phone:</strong> 866.535.2504 (inside U.S.) or +001.904.954.6181.
+      <strong>Email (response within 24 hours):</strong> <a href="mailto:secure.emailhelp&#64;citi.com">secure.emailhelp&#64;citi.com</a>.
+      Simulated local SMTP Sink (MailHog) is active on port 1025 / 8025.
+    </p>
+  </div>
+</div>
+
+<!-- Create Delivery Option Modal -->
+@if (showCreateModal) {
+  <div class="citi-modal-backdrop" (click)="closeCreateModal()">
+    <div class="citi-modal-window create-delivery-window" (click)="$event.stopPropagation()">
+      <div class="citi-modal-header">
+        <h4>Create Delivery Option &ndash; E-Mail Profile</h4>
+        <button type="button" class="citi-modal-close" (click)="closeCreateModal()">&times;</button>
+      </div>
+
+      <div class="citi-modal-body">
+        <form [formGroup]="createForm" class="create-delivery-form">
+          <div class="form-grid-2">
+            <div class="citi-form-group">
+              <label class="citi-label" for="deliveryOptName">
+                Delivery Option Name<span class="citi-required-asterisk">*</span>
+              </label>
+              <input id="deliveryOptName" type="text" class="citi-input" formControlName="name" placeholder="e.g. DAILY_TREASURY_EMAIL" />
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label" for="deliveryOptType">
+                Delivery Option Type<span class="citi-required-asterisk">*</span>
+              </label>
+              <input id="deliveryOptType" type="text" class="citi-input" formControlName="deliveryType" readonly />
+            </div>
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="deliveryOptDesc">
+              Delivery Option Description<span class="citi-required-asterisk">*</span>
+            </label>
+            <input id="deliveryOptDesc" type="text" class="citi-input" formControlName="description" placeholder="Description of report recipient group..." />
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="deliveryOptSec">
+              Security Method<span class="citi-required-asterisk">*</span>
+            </label>
+            <select id="deliveryOptSec" class="citi-select" formControlName="securityMethod">
+              <option value="Citi Secure E-Mail">Citi Secure E-Mail</option>
+              <option value="Encrypted Email with Digital Certificates (S/MIME)">Encrypted Email with Digital Certificates (S/MIME)</option>
+            </select>
+          </div>
+
+          <div class="section-divider">
+            <span class="divider-text">Email and Format Detail</span>
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="deliveryOptEmails">
+              Email Address(es)<span class="citi-required-asterisk">*</span>
+              <span class="field-hint">(Multiple emails separated by semicolons)</span>
+            </label>
+            <input id="deliveryOptEmails" type="text" class="citi-input" formControlName="emailRecipients" placeholder="ops@company.com; finance@company.com" />
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="deliveryOptSubject">
+              Message Subject<span class="citi-required-asterisk">*</span>
+            </label>
+            <input id="deliveryOptSubject" type="text" class="citi-input" formControlName="emailSubject" placeholder="CitiDirect Cash Statement Notification" />
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="deliveryOptMessage">Message Body</label>
+            <textarea id="deliveryOptMessage" class="citi-form-control textarea-ctrl" formControlName="messageText" rows="3" placeholder="Enter optional email message body text..."></textarea>
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="deliveryOptFile">
+              File Name<span class="citi-required-asterisk">*</span>
+              <span class="field-hint">(Validated: no spaces allowed)</span>
+            </label>
+            <input id="deliveryOptFile" type="text" class="citi-input" formControlName="fileName" placeholder="Statement_Comprehensive.pdf" />
+          </div>
+        </form>
+      </div>
+
+      <div class="citi-modal-footer">
+        <button type="button" class="citi-btn citi-btn-utility" (click)="closeCreateModal()">Cancel</button>
+        <button type="button" class="citi-btn citi-btn-primary" (click)="submitCreate()">
+          Submit for Level 1 Authorization
+        </button>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Maker-Checker Authorizer Panel Modal -->
+@if (showAuthorizeModal && optionToAuthorize) {
+  <app-maker-checker-panel
+    [itemType]="'DELIVERY_OPTION'"
+    [itemData]="optionToAuthorize"
+    [currentUser]="currentUser"
+    (actionTriggered)="onAuthorizeAction($event)"
+    (close)="showAuthorizeModal = false; optionToAuthorize = null"
+  ></app-maker-checker-panel>
+}

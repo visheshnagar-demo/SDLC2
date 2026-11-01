@@ -1,0 +1,22 @@
+<div class="citi-subnav-bar">
+  <div class="citi-subnav-inner">
+    <nav class="breadcrumb-trail" aria-label="Breadcrumb">
+      @for (crumb of breadcrumbs; track crumb.label; let last = $last) {
+        <span class="crumb-item" [class.current]="last">
+          @if (!last && crumb.url) {
+            <a [routerLink]="crumb.url" class="crumb-link">{{ crumb.label }}</a>
+          } @else {
+            <span class="crumb-text">{{ crumb.label }}</span>
+          }
+          @if (!last) {
+            <span class="crumb-separator">&#9656;</span>
+          }
+        </span>
+      }
+    </nav>
+    <div class="subnav-status-badge">
+      <span class="status-dot"></span>
+      <span class="status-label">System Online (London)</span>
+    </div>
+  </div>
+</div>

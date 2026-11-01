@@ -1,0 +1,287 @@
+<div class="schedule-management-page">
+  <!-- Page Header -->
+  <div class="page-header-row">
+    <div class="header-titles">
+      <h3 class="citi-h3">Schedule Reports &amp; Authorizations</h3>
+      <span class="header-desc">Automate statement report generation and configure maker-checker approvals.</span>
+    </div>
+  </div>
+
+  @if (statusMessage) {
+    <div class="citi-alert" [class.alert-success]="statusType === 'success'" [class.alert-info]="statusType === 'info'">
+      {{ statusMessage }}
+    </div>
+  }
+
+  <!-- Tab Bar -->
+  <div class="citi-tabs-container">
+    <div class="citi-tab-bar">
+      <button
+        type="button"
+        class="citi-tab-btn"
+        [class.active]="activeTab === 'CREATE'"
+        (click)="activeTab = 'CREATE'"
+      >
+        Create Schedule
+      </button>
+      <button
+        type="button"
+        class="citi-tab-btn"
+        [class.active]="activeTab === 'VIEW_ALL'"
+        (click)="activeTab = 'VIEW_ALL'"
+      >
+        View All Schedules ({{ schedules.length }})
+      </button>
+      <button
+        type="button"
+        class="citi-tab-btn"
+        [class.active]="activeTab === 'TO_AUTHORIZE'"
+        (click)="activeTab = 'TO_AUTHORIZE'"
+      >
+        To Authorize <span class="tab-badge-alert">({{ pendingAuthorizationSchedules.length }})</span>
+      </button>
+      <button
+        type="button"
+        class="citi-tab-btn"
+        [class.active]="activeTab === 'HISTORY'"
+        (click)="activeTab = 'HISTORY'"
+      >
+        Execution History
+      </button>
+    </div>
+  </div>
+
+  <!-- TAB 1: CREATE SCHEDULE FORM -->
+  @if (activeTab === 'CREATE') {
+    <div class="citi-card">
+      <form [formGroup]="scheduleForm" class="schedule-form" (ngSubmit)="submitSchedule()">
+        <div class="citi-card-header">
+          <h6>Schedule Definition</h6>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="citi-form-group">
+            <label class="citi-label" for="scheduleName">
+              Schedule Name<span class="citi-required-asterisk">*</span>
+            </label>
+            <input id="scheduleName" type="text" class="citi-input" formControlName="scheduleName" placeholder="e.g. DAILY_GBP_COMPREHENSIVE_STATEMENT" />
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="eventType">Event Type<span class="citi-required-asterisk">*</span></label>
+            <input id="eventType" type="text" class="citi-input" formControlName="eventType" readonly />
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="eventName">Event Name<span class="citi-required-asterisk">*</span></label>
+            <input id="eventName" type="text" class="citi-input" formControlName="eventName" />
+          </div>
+        </div>
+
+        <div class="form-grid-3">
+          <div class="citi-form-group">
+            <label class="citi-label" for="scheduleInterval">Schedule Interval<span class="citi-required-asterisk">*</span></label>
+            <select id="scheduleInterval" class="citi-select" formControlName="scheduleInterval">
+              @for (opt of intervalOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="holidayOption">Holiday Options<span class="citi-required-asterisk">*</span></label>
+            <select id="holidayOption" class="citi-select" formControlName="holidayOption">
+              @for (opt of holidayOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="scheduleReferenceId">Schedule Reference ID</label>
+            <input id="scheduleReferenceId" type="text" class="citi-input" formControlName="scheduleReferenceId" readonly />
+          </div>
+        </div>
+
+        <div class="form-grid-2">
+          <div class="citi-form-group">
+            <label class="citi-label" for="deliveryOptionSelect">
+              Delivery Option Profile<span class="citi-required-asterisk">*</span>
+              <span class="field-hint">(Authorized Profiles Only)</span>
+            </label>
+            <select id="deliveryOptionSelect" class="citi-select" formControlName="deliveryOptionId">
+              @for (opt of authorizedDeliveryOptions; track opt.id) {
+                <option [value]="opt.id">{{ opt.name }} &ndash; {{ opt.emailRecipients }}</option>
+              }
+              @if (authorizedDeliveryOptions.length === 0) {
+                <option value="">No authorized delivery options found (Create in Self Service first)</option>
+              }
+            </select>
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="runTimeUser">Run Time User (Optional)</label>
+            <input id="runTimeUser" type="text" class="citi-input" formControlName="runTimeUser" placeholder="Blank = Current User Profile" />
+          </div>
+        </div>
+
+        <!-- Frequency Section (Every 1 or More Days) -->
+        <div class="frequency-section">
+          <div class="section-title">Frequency &amp; Intraday Execution Parameters</div>
+          <div class="form-grid-3">
+            <div class="citi-form-group">
+              <label class="citi-label" for="runStartDate">Run Start Date<span class="citi-required-asterisk">*</span></label>
+              <input id="runStartDate" type="date" class="citi-input" formControlName="runStartDate" />
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label" for="runStartTime">Run Start Time<span class="citi-required-asterisk">*</span></label>
+              <input id="runStartTime" type="time" class="citi-input" formControlName="runStartTime" />
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label" for="runEveryDays">Run Every (Number of Days)<span class="citi-required-asterisk">*</span></label>
+              <input id="runEveryDays" type="number" class="citi-input" formControlName="runEveryDays" min="1" />
+            </div>
+          </div>
+
+          <div class="intraday-box">
+            <label class="citi-checkbox-label">
+              <input type="checkbox" class="citi-checkbox" formControlName="isDailyIntraDay" />
+              <span>Enable Intra-Day Execution</span>
+            </label>
+
+            @if (scheduleForm.get('isDailyIntraDay')?.value) {
+              <div class="intraday-controls-grid">
+                <div class="citi-form-group">
+                  <label class="citi-label" for="intraDayInterval">Intra-day Interval (HH:MM:SS)</label>
+                  <input id="intraDayInterval" type="text" class="citi-input" formControlName="intraDayInterval" placeholder="01:00:00" />
+                </div>
+                <div class="citi-form-group">
+                  <label class="citi-label" for="intraDayEndTime">End Time</label>
+                  <input id="intraDayEndTime" type="time" class="citi-input" formControlName="intraDayEndTime" />
+                </div>
+              </div>
+            }
+          </div>
+        </div>
+
+        <div class="schedule-form-actions">
+          <button type="button" class="citi-btn citi-btn-utility" (click)="initForm()">Reset Form</button>
+          <button type="submit" class="citi-btn citi-btn-primary">
+            Submit Schedule for Level 1 Authorization
+          </button>
+        </div>
+      </form>
+    </div>
+  }
+
+  <!-- TAB 2: VIEW ALL SCHEDULES -->
+  @if (activeTab === 'VIEW_ALL') {
+    <div class="citi-card">
+      <div class="citi-table-container">
+        <table class="citi-table">
+          <thead>
+            <tr>
+              <th style="width: 140px;">Ref ID</th>
+              <th>Schedule Name</th>
+              <th>Event Name</th>
+              <th>Interval</th>
+              <th>Delivery Profile</th>
+              <th>Status</th>
+              <th>Next Run Time (GMT)</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of schedules; track s.id) {
+              <tr>
+                <td><strong>{{ s.scheduleReferenceId }}</strong></td>
+                <td>{{ s.scheduleName }}</td>
+                <td>{{ s.eventName }}</td>
+                <td>{{ s.scheduleInterval }} ({{ s.runStartTime }})</td>
+                <td>{{ s.deliveryOptionName }}</td>
+                <td>
+                  <span class="citi-badge"
+                    [class.citi-badge-success]="s.authStatus === 'AUTHORIZED'"
+                    [class.citi-badge-warning]="s.authStatus === 'PENDING_AUTHORIZATION'"
+                    [class.citi-badge-danger]="s.authStatus === 'REJECTED'">
+                    {{ s.authStatus }}
+                  </span>
+                </td>
+                <td style="font-family: var(--citi-font-mono); font-size: 11px;">{{ s.nextRunTime || '-' }}</td>
+              </tr>
+            }
+            @if (schedules.length === 0) {
+              <tr>
+                <td colspan="7" class="empty-msg">No schedules configured.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- TAB 3: TO AUTHORIZE QUEUE (MAKER-CHECKER) -->
+  @if (activeTab === 'TO_AUTHORIZE') {
+    <div class="citi-card">
+      <div class="citi-card-header">
+        <h6>Pending Schedule Authorizations Queue (File Services &rarr; Schedule Files &amp; Reports &rarr; To Authorize)</h6>
+      </div>
+
+      <div class="citi-table-container">
+        <table class="citi-table">
+          <thead>
+            <tr>
+              <th>Schedule Name</th>
+              <th>Event Type</th>
+              <th>Schedule Interval</th>
+              <th>Delivery Profile</th>
+              <th>Maker Submitter</th>
+              <th>Status</th>
+              <th style="width: 130px; text-align: right;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (s of pendingAuthorizationSchedules; track s.id) {
+              <tr>
+                <td><strong>{{ s.scheduleName }}</strong> ({{ s.scheduleReferenceId }})</td>
+                <td>{{ s.eventType }}</td>
+                <td>{{ s.scheduleInterval }}</td>
+                <td>{{ s.deliveryOptionName }}</td>
+                <td>{{ s.makerName }}</td>
+                <td><span class="citi-badge citi-badge-warning">{{ s.authStatus }}</span></td>
+                <td style="text-align: right;">
+                  <button type="button" class="citi-btn citi-btn-warning row-btn" (click)="openAuthorizeSchedule(s)">
+                    Authorize
+                  </button>
+                </td>
+              </tr>
+            }
+            @if (pendingAuthorizationSchedules.length === 0) {
+              <tr>
+                <td colspan="7" class="empty-msg">No schedules pending authorization.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+  }
+
+  <!-- TAB 4: EXECUTION HISTORY -->
+  @if (activeTab === 'HISTORY') {
+    <app-execution-history-log [history]="executionHistory"></app-execution-history-log>
+  }
+</div>
+
+<!-- Maker-Checker Authorizer Panel Modal for Schedule -->
+@if (showAuthorizeModal && scheduleToAuthorize) {
+  <app-maker-checker-panel
+    [itemType]="'SCHEDULE'"
+    [itemData]="scheduleToAuthorize"
+    [currentUser]="currentUser"
+    (actionTriggered)="onAuthorizeAction($event)"
+    (close)="showAuthorizeModal = false; scheduleToAuthorize = null"
+  ></app-maker-checker-panel>
+}
