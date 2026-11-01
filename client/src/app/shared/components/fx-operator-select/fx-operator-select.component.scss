@@ -1,0 +1,44 @@
+.citi-fx-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  height: var(--citi-input-height);
+  border: 1px solid var(--citi-border-input);
+  border-radius: var(--citi-border-radius);
+  background: var(--citi-surface-card);
+  overflow: hidden;
+  min-width: 100px;
+}
+
+.citi-fx-prefix {
+  padding: 0 6px;
+  background-color: var(--citi-surface-sub);
+  color: var(--citi-blue);
+  font-family: var(--citi-font-mono);
+  font-weight: 700;
+  font-size: 11px;
+  font-style: italic;
+  border-right: 1px solid var(--citi-border-input);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
+}
+
+.citi-fx-dropdown {
+  flex: 1;
+  height: 100%;
+  border: none;
+  background: transparent;
+  padding: 2px 4px;
+  font-family: var(--citi-font-sans);
+  font-size: 11px;
+  color: var(--citi-text-primary);
+  outline: none;
+  cursor: pointer;
+
+  &:disabled {
+    background-color: var(--citi-surface-disabled);
+    cursor: not-allowed;
+  }
+}

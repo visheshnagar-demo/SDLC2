@@ -1,0 +1,499 @@
+/* Official Citigroup ICGDS Lumen Theme CSS Root Tokens */
+:root {
+  /* Citi Brand & Corporate Blues */
+  --citi-blue: #002d72;
+  --citi-blue-dark: #0f203d;
+  --citi-blue-navy: #17355f;
+  --citi-blue-action: #0076d4;
+  --citi-blue-link: #005aa1;
+  --citi-blue-focus: #219dff;
+  --citi-red: #ff0000;
+  --citi-red-dark: #b60000;
+  --citi-cyan: #00bdf2;
+
+  /* Neutrals & Surfaces */
+  --citi-surface-canvas: #f6f8fa;
+  --citi-surface-card: #ffffff;
+  --citi-surface-sub: #f0f4f7;
+  --citi-surface-disabled: #e9eef3;
+  --citi-border-subtle: #d9e2ea;
+  --citi-border-grid: #c8d5e1;
+  --citi-border-input: #a8bbcf;
+
+  /* Status Tokens */
+  --citi-success: #00843d;
+  --citi-success-bg: #ccf1dd;
+  --citi-warning: #c99700;
+  --citi-warning-bg: #fff5cc;
+  --citi-danger: #b60000;
+  --citi-danger-bg: #ffdbda;
+  --citi-info: #007377;
+  --citi-info-bg: #cceff1;
+
+  /* Typography */
+  --citi-text-primary: #22303e;
+  --citi-text-secondary: #3d566f;
+  --citi-text-muted: #4f6f90;
+  --citi-text-white: #ffffff;
+  --citi-text-high-contrast: #000000;
+  --citi-font-sans: 'Overpass', 'Citi-Sans-Text-Regular', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --citi-font-mono: 'OverpassMono', 'JetBrains Mono', 'Consolas', monospace;
+
+  /* Component Dimensions */
+  --citi-border-radius: 2px;
+  --citi-input-height: 30px;
+  --citi-button-height: 32px;
+  --citi-row-height: 32px;
+
+  /* Shadow & Motion */
+  --citi-box-shadow: 0px 2px 5px 1px rgba(0, 65, 165, 0.12);
+  --citi-box-shadow-modal: 0px 5px 12px 1px rgba(0, 65, 165, 0.2);
+  --citi-transition: 200ms cubic-bezier(0.6, 0, 1, 1);
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--citi-font-sans);
+  background-color: var(--citi-surface-canvas);
+  color: var(--citi-text-primary);
+  font-size: 14px;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Headings */
+h1, .citi-h1 {
+  font-size: 42px;
+  line-height: 52px;
+  font-weight: 700;
+  color: var(--citi-blue);
+  margin: 0 0 12px;
+}
+
+h2, .citi-h2 {
+  font-size: 36px;
+  line-height: 46px;
+  font-weight: 600;
+  color: var(--citi-text-high-contrast);
+  margin: 0 0 10px;
+}
+
+h3, .citi-h3 {
+  font-size: 32px;
+  line-height: 40px;
+  font-weight: 600;
+  color: var(--citi-blue);
+  margin: 0 0 8px;
+}
+
+h5, .citi-h5 {
+  font-size: 24px;
+  line-height: 30px;
+  font-weight: 500;
+  color: var(--citi-text-primary);
+  margin: 0 0 6px;
+}
+
+h6, .citi-h6 {
+  font-size: 20px;
+  line-height: 26px;
+  font-weight: 600;
+  color: var(--citi-blue);
+  margin: 0 0 6px;
+}
+
+.citi-label {
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 500;
+  color: var(--citi-text-secondary);
+}
+
+.citi-required-asterisk {
+  color: var(--citi-red-dark);
+  font-weight: bold;
+  margin-left: 2px;
+}
+
+/* Button Variants */
+.citi-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  height: var(--citi-button-height);
+  padding: 0 16px;
+  font-family: var(--citi-font-sans);
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: var(--citi-border-radius);
+  cursor: pointer;
+  transition: all var(--citi-transition);
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:disabled {
+    background: var(--citi-surface-disabled) !important;
+    color: var(--citi-text-muted) !important;
+    border-color: var(--citi-border-subtle) !important;
+    cursor: not-allowed !important;
+    box-shadow: none !important;
+  }
+}
+
+.citi-btn-primary {
+  background-color: var(--citi-blue-action);
+  color: var(--citi-text-white);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: var(--citi-blue-link);
+  }
+
+  &:active:not(:disabled) {
+    background-color: var(--citi-blue-navy);
+  }
+}
+
+.citi-btn-secondary {
+  background-color: rgba(0, 118, 212, 0.1);
+  color: var(--citi-blue-link);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(0, 118, 212, 0.2);
+  }
+}
+
+.citi-btn-outline {
+  background-color: transparent;
+  color: var(--citi-blue-link);
+  border: 1px solid var(--citi-blue-action);
+
+  &:hover:not(:disabled) {
+    background-color: rgba(0, 118, 212, 0.08);
+  }
+}
+
+.citi-btn-utility {
+  background-color: var(--citi-surface-card);
+  color: var(--citi-text-secondary);
+  border: 1px solid var(--citi-border-subtle);
+
+  &:hover:not(:disabled) {
+    background-color: var(--citi-surface-canvas);
+  }
+}
+
+.citi-btn-destructive {
+  background-color: var(--citi-red-dark);
+  color: var(--citi-text-white);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: rgba(182, 0, 0, 0.85);
+  }
+}
+
+.citi-btn-success {
+  background-color: var(--citi-success);
+  color: var(--citi-text-white);
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: #006b31;
+  }
+}
+
+.citi-btn-warning {
+  background-color: var(--citi-warning);
+  color: #22303e;
+  border: none;
+
+  &:hover:not(:disabled) {
+    background-color: #b08400;
+  }
+}
+
+/* Form Controls */
+.citi-form-group {
+  margin-bottom: 12px;
+}
+
+.citi-form-control, .citi-input, .citi-select {
+  width: 100%;
+  height: var(--citi-input-height);
+  padding: 4px 8px;
+  font-family: var(--citi-font-sans);
+  font-size: 13px;
+  color: var(--citi-text-primary);
+  background-color: var(--citi-surface-card);
+  border: 1px solid var(--citi-border-input);
+  border-radius: var(--citi-border-radius);
+  transition: border-color var(--citi-transition), box-shadow var(--citi-transition);
+
+  &:focus {
+    border-color: var(--citi-blue-focus);
+    box-shadow: 0 0 0 2px rgba(33, 157, 255, 0.2);
+    outline: none;
+  }
+
+  &:disabled, &[readonly] {
+    background-color: var(--citi-surface-disabled);
+    cursor: default;
+  }
+}
+
+/* Radio & Checkboxes */
+.citi-checkbox-label, .citi-radio-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--citi-text-primary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.citi-checkbox, .citi-radio {
+  width: 14px;
+  height: 14px;
+  accent-color: var(--citi-blue-action);
+  cursor: pointer;
+}
+
+/* Cards & Containers */
+.citi-card {
+  background-color: var(--citi-surface-card);
+  border: 1px solid var(--citi-border-subtle);
+  border-radius: var(--citi-border-radius);
+  box-shadow: var(--citi-box-shadow);
+  padding: 16px;
+  margin-bottom: 16px;
+}
+
+.citi-card-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--citi-border-subtle);
+  margin-bottom: 14px;
+
+  h3, h6 {
+    margin: 0;
+  }
+}
+
+/* Financial Tables */
+.citi-table-container {
+  background: var(--citi-surface-card);
+  border: 1px solid var(--citi-border-subtle);
+  border-radius: var(--citi-border-radius);
+  overflow-x: auto;
+}
+
+.citi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+
+  thead tr {
+    background-color: var(--citi-surface-sub);
+    border-bottom: 2px solid var(--citi-blue);
+
+    th {
+      padding: 8px 10px;
+      text-align: left;
+      font-weight: 700;
+      color: var(--citi-blue);
+      white-space: nowrap;
+      user-select: none;
+    }
+  }
+
+  tbody tr {
+    height: var(--citi-row-height);
+    border-bottom: 1px solid var(--citi-border-subtle);
+    transition: background-color 150ms ease;
+
+    &:nth-child(even) {
+      background-color: #ffffff;
+    }
+
+    &:nth-child(odd) {
+      background-color: #fafbfc;
+    }
+
+    &:hover {
+      background-color: var(--citi-surface-sub);
+    }
+
+    &.selected-row {
+      background-color: #d9e7fd;
+      border-left: 3px solid var(--citi-blue-action);
+    }
+
+    td {
+      padding: 6px 10px;
+      color: var(--citi-text-primary);
+    }
+  }
+
+  .numeric-col {
+    text-align: right;
+    font-family: var(--citi-font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  tfoot tr {
+    background-color: var(--citi-surface-sub);
+    border-top: 1px solid var(--citi-blue);
+    border-bottom: 3px double var(--citi-blue);
+    font-weight: 700;
+
+    td {
+      padding: 8px 10px;
+      color: var(--citi-blue);
+    }
+  }
+}
+
+/* Modals */
+.citi-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(34, 48, 62, 0.7);
+  backdrop-filter: blur(2px);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: citiFadeEnter 0.2s cubic-bezier(0.6, 0, 1, 1) forwards;
+}
+
+.citi-modal-window {
+  background: var(--citi-surface-card);
+  border-radius: var(--citi-border-radius);
+  box-shadow: var(--citi-box-shadow-modal);
+  width: 90%;
+  max-width: 800px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.citi-modal-header {
+  background: var(--citi-blue);
+  color: var(--citi-text-white);
+  padding: 10px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  h4 {
+    margin: 0;
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .citi-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--citi-text-white);
+    font-size: 18px;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 2px;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+.citi-modal-body {
+  padding: 16px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.citi-modal-footer {
+  padding: 10px 16px;
+  background: var(--citi-surface-sub);
+  border-top: 1px solid var(--citi-border-subtle);
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+/* Status Badges */
+.citi-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 2px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.citi-badge-success {
+  color: var(--citi-success);
+  background: var(--citi-success-bg);
+}
+
+.citi-badge-warning {
+  color: #855c00;
+  background: var(--citi-warning-bg);
+}
+
+.citi-badge-danger {
+  color: var(--citi-danger);
+  background: var(--citi-danger-bg);
+}
+
+.citi-badge-info {
+  color: var(--citi-info);
+  background: var(--citi-info-bg);
+}
+
+.citi-badge-neutral {
+  color: var(--citi-text-secondary);
+  background: var(--citi-surface-sub);
+  border: 1px solid var(--citi-border-subtle);
+}
+
+/* Action Dock */
+.citi-action-dock {
+  position: sticky;
+  bottom: 0;
+  background: var(--citi-surface-card);
+  border-top: 1px solid var(--citi-border-subtle);
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  box-shadow: 0 -2px 6px rgba(0, 45, 114, 0.08);
+  z-index: 100;
+}
+
+/* Keyframes */
+@keyframes citiFadeEnter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes citiSlideInRight {
+  from { transform: translateX(280px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
