@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders, HttpParams } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 
@@ -41,6 +41,12 @@ export class ApiService {
 
   downloadFile(path: string, body: any): Observable<Blob> {
     return this.http.post(`${this.baseUrl}${path}`, body, {
+      responseType: 'blob'
+    });
+  }
+
+  getFile(path: string): Observable<Blob> {
+    return this.http.get(`${this.baseUrl}${path}`, {
       responseType: 'blob'
     });
   }

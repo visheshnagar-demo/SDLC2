@@ -8,6 +8,97 @@ export interface BaseReport {
   isFavorite?: boolean;
 }
 
+export interface CriteriaPayload {
+  branchNumber?: string;
+  customerNumber?: string;
+  accountSelectionType?: string;
+  accountNumber?: string;
+  accountGroup?: string;
+  bankReference?: string;
+  bankReferenceOperator?: string;
+  customerReference?: string;
+  customerReferenceOperator?: string;
+  amountFrom?: number | null;
+  amountTo?: number | null;
+  accountCurrency?: string;
+  transactionDescription?: string;
+  byOrderBeneficiary?: string;
+  transactionCode?: string;
+  cheques?: string;
+  baseCurrency?: string;
+  showEnhancedTransactionDetails?: boolean;
+  outputAccountSubTotals?: boolean;
+  outputGrandTotal?: boolean;
+  showAdditionalOrderingPartyDetails?: boolean;
+  statementDateRadio?: string;
+  statementDateFrom?: string;
+  statementDateTo?: string;
+  valueDateRadio?: string;
+  valueDateFrom?: string;
+  valueDateTo?: string;
+  pageBreaks?: boolean;
+  printChinaStamp?: boolean;
+  activityOnly?: boolean;
+  runInIncrementalMode?: boolean;
+  printSelectionCriteria?: boolean;
+  signWithCertificate?: boolean;
+  compressWithWinzip?: boolean;
+  csvSeparator?: string;
+  dateFormat?: string;
+}
+
+export interface DerivedReportRequest {
+  derivedReportName: string;
+  baseReportName?: string;
+  format?: string;
+  deliveryOptionId?: string;
+  designatedOwner?: string;
+  share?: string;
+  favorite?: boolean;
+  criteria: CriteriaPayload;
+}
+
+export interface DerivedReportResponse {
+  id: string;
+  derivedReportName: string;
+  baseReportName: string;
+  ownerUsername: string;
+  format: string;
+  sharedPublic: boolean;
+  favorite: boolean;
+  deliveryOptionId?: string;
+  criteria: CriteriaPayload;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface DefaultCriteriaResponse {
+  baseReportName: string;
+  derivedReportName: string;
+  format: string;
+  signWithCertificate: boolean;
+  compressWithWinzip: boolean;
+  designatedOwner: string;
+  share: string;
+  favorite: boolean;
+  accountSelectionType: string;
+  transactionCode: string;
+  cheques: string;
+  baseCurrency: string;
+  showEnhancedTransactionDetails: boolean;
+  outputAccountSubTotals: boolean;
+  outputGrandTotal: boolean;
+  showAdditionalOrderingPartyDetails: boolean;
+  statementDateRadio: string;
+  valueDateRadio: string;
+  pageBreaks: boolean;
+  printChinaStamp: boolean;
+  activityOnly: boolean;
+  runInIncrementalMode: boolean;
+  printSelectionCriteria: boolean;
+  criteriaPayload?: CriteriaPayload;
+}
+
 export interface ReportCriteria {
   id?: string;
   derivedReportName: string;
@@ -24,7 +115,7 @@ export interface ReportCriteria {
   // Specific Field Details
   branchNumberName?: string;
   customerNumberName?: string;
-  accountSelectionType: 'ACCOUNT' | 'ACCOUNT_GROUP';
+  accountSelectionType: 'ACCOUNT' | 'ACCOUNT_GROUP' | string;
   accountNumberName?: string;
   bankReferenceOperator?: string;
   bankReferenceValue?: string;
@@ -65,13 +156,14 @@ export interface ReportCriteria {
 export interface TransactionRecord {
   id: string;
   valueDate: string;
+  statementDate?: string;
   customerReference: string;
   bankReference: string;
   description: string;
   orderingPartyName: string;
   beneficiaryName: string;
   remittanceInformation?: string;
-  debitCredit: 'C' | 'D';
+  debitCredit: 'C' | 'D' | string;
   amount: number;
   runningBalance: number;
   productType?: string;
@@ -103,17 +195,44 @@ export interface StatementReportData {
   netTransactionAmount: number;
   branchSupportsRunningBalance: boolean;
   transactions: TransactionRecord[];
+  accounts?: any[];
+}
+
+export interface RunReportRequest {
+  derivedReportId?: string;
+  reportName?: string;
+  overrideFormat?: string;
+  criteria?: CriteriaPayload;
 }
 
 export interface ExecutionJob {
   id: string;
-  jobId: string;
+  jobId?: string;
   reportName: string;
   format: string;
-  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED';
-  requestedAt: string;
+  status: 'PENDING' | 'PROCESSING' | 'COMPLETED' | 'FAILED' | string;
+  requestedAt?: string;
+  executionTimeGmt?: string;
   completedAt?: string;
   recordCount?: number;
+  recordsCount?: number;
   downloadUrl?: string;
+  fileName?: string;
   errorMessage?: string;
+}
+
+export interface ExecutionResponse {
+  id: string;
+  jobId?: string;
+  derivedReportId?: string;
+  reportName: string;
+  executedByUserId?: string;
+  executionTimeGmt: string;
+  requestedAt?: string;
+  format: string;
+  status: string;
+  fileName: string;
+  recordsCount: number;
+  recordCount?: number;
+  downloadUrl: string;
 }

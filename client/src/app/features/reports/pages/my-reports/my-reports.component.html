@@ -11,6 +11,12 @@
     </div>
   </div>
 
+  @if (statusMessage) {
+    <div class="citi-alert" [class.alert-success]="statusType === 'success'" [class.alert-info]="statusType === 'info'" [class.alert-danger]="statusType === 'error'">
+      {{ statusMessage }}
+    </div>
+  }
+
   <div class="citi-card">
     <div class="citi-card-header">
       <h6>Generated Reports Queue &amp; History</h6>
@@ -20,11 +26,11 @@
       <table class="citi-table">
         <thead>
           <tr>
-            <th style="width: 140px;">Job ID</th>
+            <th style="width: 140px;">Execution ID</th>
             <th>Report Name</th>
             <th style="width: 140px;">Format</th>
             <th style="width: 120px;">Status</th>
-            <th style="width: 160px;">Requested At (GMT)</th>
+            <th style="width: 160px;">Execution Time (GMT)</th>
             <th style="width: 90px; text-align: center;">Records</th>
             <th style="width: 140px; text-align: right;">Action</th>
           </tr>
@@ -32,7 +38,7 @@
         <tbody>
           @for (job of jobs; track job.id) {
             <tr>
-              <td><strong>{{ job.jobId }}</strong></td>
+              <td><strong>{{ job.id }}</strong></td>
               <td>{{ job.reportName }}</td>
               <td>{{ job.format }}</td>
               <td>
@@ -43,8 +49,8 @@
                   {{ job.status }}
                 </span>
               </td>
-              <td style="font-family: var(--citi-font-mono); font-size: 11px;">{{ job.requestedAt }}</td>
-              <td style="text-align: center;">{{ job.recordCount || '-' }}</td>
+              <td style="font-family: var(--citi-font-mono); font-size: 11px;">{{ job.executionTimeGmt || job.requestedAt }}</td>
+              <td style="text-align: center;">{{ job.recordsCount ?? job.recordCount ?? '-' }}</td>
               <td style="text-align: right;">
                 @if (job.status === 'COMPLETED') {
                   <button type="button" class="citi-btn citi-btn-primary download-btn" (click)="downloadJobOutput(job)">

@@ -8,7 +8,7 @@
   </div>
 
   @if (statusMessage) {
-    <div class="citi-alert" [class.alert-success]="statusType === 'success'" [class.alert-info]="statusType === 'info'">
+    <div class="citi-alert" [class.alert-success]="statusType === 'success'" [class.alert-info]="statusType === 'info'" [class.alert-danger]="statusType === 'error'">
       {{ statusMessage }}
     </div>
   }
@@ -198,7 +198,7 @@
                 <td><strong>{{ s.scheduleReferenceId }}</strong></td>
                 <td>{{ s.scheduleName }}</td>
                 <td>{{ s.eventName }}</td>
-                <td>{{ s.scheduleInterval }} ({{ s.runStartTime }})</td>
+                <td>{{ s.intervalType || s.scheduleInterval }}</td>
                 <td>{{ s.deliveryOptionName }}</td>
                 <td>
                   <span class="citi-badge"
@@ -247,9 +247,9 @@
               <tr>
                 <td><strong>{{ s.scheduleName }}</strong> ({{ s.scheduleReferenceId }})</td>
                 <td>{{ s.eventType }}</td>
-                <td>{{ s.scheduleInterval }}</td>
+                <td>{{ s.intervalType || s.scheduleInterval }}</td>
                 <td>{{ s.deliveryOptionName }}</td>
-                <td>{{ s.makerName }}</td>
+                <td>{{ s.makerUsername || s.makerName || s.makerId }}</td>
                 <td><span class="citi-badge citi-badge-warning">{{ s.authStatus }}</span></td>
                 <td style="text-align: right;">
                   <button type="button" class="citi-btn citi-btn-warning row-btn" (click)="openAuthorizeSchedule(s)">
