@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { DeliveryOptionsService } from '../../../../core/services/delivery-options.service';
 import { LookupService } from '../../../../core/services/lookup.service';
-import { DeliveryOption, DeliveryOptionCreateRequest, MakerCheckerActionRequest } from '../../../../core/models/delivery.models';
+import { DeliveryOption, DeliveryOptionRequest, AuthorizationRequest } from '../../../../core/models/delivery.models';
 import { UserProfile } from '../../../../core/models/entitlement.models';
 import { MakerCheckerPanelComponent } from '../../components/maker-checker-panel/maker-checker-panel.component';
 
@@ -57,33 +57,43 @@ export class DeliveryOptionsMaintenanceComponent implements OnInit {
       securityMethod: ['Citi Secure E-Mail', Validators.required],
       emailRecipients: ['', [Validators.required]],
       emailSubject: ['', Validators.required],
-      messageText: [''],
+      emailMessage: [''],
       fileName: ['', [Validators.required, Validators.pattern(/^[A-Za-z0-9_\-\.]+$/)]]
     });
   }
 
   loadData(): void {
-    this.deliveryService.getDeliveryOptions('ALL').subscribe(all => {
-      this.deliveryOptions = all;
-      this.countAll = all.length;
-      this.countToSubmit = all.filter(d => d.authStatus === 'PENDING_REPAIR').length;
-      this.countToAuthorize = all.filter(d => d.authStatus === 'PENDING_AUTHORIZATION').length;
+    this.deliveryService.getDeliveryOptions(this.activeTab).subscribe({
+      next: (options) => {
+        this.deliveryOptions = options;
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Failed to load delivery options.';
+        this.statusType = 'error';
+      }
+    });
+
+    this.deliveryService.getTabCounts().subscribe({
+      next: (counts) => {
+        this.countAll = counts.all || 0;
+        this.countToAuthorize = counts.toAuthorize || 0;
+        this.countToSubmit = counts.toSubmit || 0;
+      },
+      error: () => {
+        // compute from loaded options if count endpoint fails
+        this.countAll = this.deliveryOptions.length;
+      }
     });
   }
 
   get displayedOptions(): DeliveryOption[] {
-    if (this.activeTab === 'TO_AUTHORIZE') {
-      return this.deliveryOptions.filter(d => d.authStatus === 'PENDING_AUTHORIZATION');
-    }
-    if (this.activeTab === 'TO_SUBMIT') {
-      return this.deliveryOptions.filter(d => d.authStatus === 'PENDING_REPAIR');
-    }
     return this.deliveryOptions;
   }
 
   selectTab(tab: 'ALL' | 'TO_SUBMIT' | 'TO_AUTHORIZE'): void {
     this.activeTab = tab;
     this.selectedOptionId = null;
+    this.loadData();
   }
 
   onSelectRow(opt: DeliveryOption): void {
@@ -113,13 +123,19 @@ export class DeliveryOptionsMaintenanceComponent implements OnInit {
       return;
     }
 
-    const payload: DeliveryOptionCreateRequest = this.createForm.value;
-    this.deliveryService.createDeliveryOption(payload).subscribe(created => {
-      this.statusMessage = `Delivery Option '${created.name}' created. Level 1 Authorization Required.`;
-      this.statusType = 'success';
-      this.closeCreateModal();
-      this.loadData();
-      setTimeout(() => this.statusMessage = '', 5000);
+    const payload: DeliveryOptionRequest = this.createForm.value;
+    this.deliveryService.createDeliveryOption(payload).subscribe({
+      next: (created) => {
+        this.statusMessage = `Delivery Option '${created.name}' created. Level 1 Authorization Required.`;
+        this.statusType = 'success';
+        this.closeCreateModal();
+        this.loadData();
+        setTimeout(() => this.statusMessage = '', 5000);
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Failed to create delivery option.';
+        this.statusType = 'error';
+      }
     });
   }
 
@@ -128,33 +144,51 @@ export class DeliveryOptionsMaintenanceComponent implements OnInit {
     this.showAuthorizeModal = true;
   }
 
-  onAuthorizeAction(actionReq: MakerCheckerActionRequest): void {
+  onAuthorizeAction(actionReq: AuthorizationRequest): void {
     if (!this.optionToAuthorize) return;
 
-    this.deliveryService.authorizeDeliveryOption(this.optionToAuthorize.id, actionReq).subscribe(res => {
-      this.statusMessage = res.message;
-      this.statusType = 'success';
-      this.showAuthorizeModal = false;
-      this.optionToAuthorize = null;
-      this.loadData();
-      setTimeout(() => this.statusMessage = '', 5000);
+    this.deliveryService.authorizeDeliveryOption(this.optionToAuthorize.id, actionReq).subscribe({
+      next: (res) => {
+        this.statusMessage = `Delivery option '${res.name}' status updated to ${res.authStatus}.`;
+        this.statusType = 'success';
+        this.showAuthorizeModal = false;
+        this.optionToAuthorize = null;
+        this.loadData();
+        setTimeout(() => this.statusMessage = '', 5000);
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Failed to authorize delivery option. Check segregation of duties.';
+        this.statusType = 'error';
+      }
     });
   }
 
   onTestConnectivity(opt: DeliveryOption): void {
-    this.deliveryService.testConnectivity(opt.id).subscribe(res => {
-      this.statusMessage = res.message;
-      this.statusType = 'success';
-      setTimeout(() => this.statusMessage = '', 5000);
+    this.deliveryService.testConnectivity(opt.id).subscribe({
+      next: (res) => {
+        this.statusMessage = res.message || 'SMTP Host connection test successful.';
+        this.statusType = 'success';
+        setTimeout(() => this.statusMessage = '', 5000);
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'SMTP Host connectivity test failed.';
+        this.statusType = 'error';
+      }
     });
   }
 
   onDelete(opt: DeliveryOption): void {
     if (confirm(`Are you sure you want to delete delivery option '${opt.name}'?`)) {
-      this.deliveryService.deleteDeliveryOption(opt.id).subscribe(() => {
-        this.statusMessage = `Delivery Option '${opt.name}' deleted.`;
-        this.statusType = 'info';
-        this.loadData();
+      this.deliveryService.deleteDeliveryOption(opt.id).subscribe({
+        next: () => {
+          this.statusMessage = `Delivery Option '${opt.name}' deleted.`;
+          this.statusType = 'info';
+          this.loadData();
+        },
+        error: (err) => {
+          this.statusMessage = err.error?.message || 'Failed to delete delivery option.';
+          this.statusType = 'error';
+        }
       });
     }
   }

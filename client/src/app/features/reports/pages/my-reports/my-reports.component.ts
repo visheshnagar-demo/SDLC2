@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReportService } from '../../../../core/services/report.service';
-import { ExecutionJob } from '../../../../core/models/report.models';
+import { ExecutionResponse } from '../../../../core/models/report.models';
 
 @Component({
   selector: 'app-my-reports',
@@ -11,8 +11,10 @@ import { ExecutionJob } from '../../../../core/models/report.models';
   styleUrl: './my-reports.component.scss'
 })
 export class MyReportsComponent implements OnInit {
-  jobs: ExecutionJob[] = [];
+  jobs: ExecutionResponse[] = [];
   isLoading = false;
+  statusMessage = '';
+  statusType: 'success' | 'error' | 'info' = 'info';
 
   constructor(private reportService: ReportService) {}
 
@@ -27,20 +29,44 @@ export class MyReportsComponent implements OnInit {
         this.jobs = jobs;
         this.isLoading = false;
       },
-      error: () => {
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Failed to load execution history';
+        this.statusType = 'error';
         this.isLoading = false;
       }
     });
   }
 
-  downloadJobOutput(job: ExecutionJob): void {
-    const dummyContent = `CITIDIRECT - Report Output\nJob ID: ${job.jobId}\nReport: ${job.reportName}\nFormat: ${job.format}\nStatus: ${job.status}`;
-    const blob = new Blob([dummyContent], { type: 'text/plain' });
-    const url = window.URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${job.jobId}_Output.txt`;
-    a.click();
-    window.URL.revokeObjectURL(url);
+  downloadJobOutput(job: ExecutionResponse): void {
+    this.statusMessage = `Downloading ${job.fileName || job.reportName}...`;
+    this.statusType = 'info';
+
+    this.reportService.downloadReport(job.id).subscribe({
+      next: (blob) => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = job.fileName || `${job.reportName.replace(/[^a-zA-Z0-9_\-]/g, '_')}.${this.getFileExtension(job.format)}`;
+        a.click();
+        window.URL.revokeObjectURL(url);
+        this.statusMessage = 'Download completed successfully.';
+        this.statusType = 'success';
+        setTimeout(() => this.statusMessage = '', 4000);
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Failed to download report output.';
+        this.statusType = 'error';
+      }
+    });
+  }
+
+  private getFileExtension(format?: string): string {
+    if (!format) return 'pdf';
+    const f = format.toLowerCase();
+    if (f.includes('excel') || f.includes('xls')) return 'xlsx';
+    if (f.includes('csv')) return 'csv';
+    if (f.includes('dhtml') || f.includes('html')) return 'html';
+    if (f.includes('rtf')) return 'rtf';
+    return 'pdf';
   }
 }

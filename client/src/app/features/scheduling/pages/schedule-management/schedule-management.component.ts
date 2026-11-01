@@ -5,8 +5,8 @@ import { ActivatedRoute } from '@angular/router';
 import { ScheduleService } from '../../../../core/services/schedule.service';
 import { DeliveryOptionsService } from '../../../../core/services/delivery-options.service';
 import { LookupService } from '../../../../core/services/lookup.service';
-import { ReportSchedule, ScheduleHistory } from '../../../../core/models/schedule.models';
-import { DeliveryOption, MakerCheckerActionRequest } from '../../../../core/models/delivery.models';
+import { ScheduleRequest, ScheduleResponse, ScheduleHistory } from '../../../../core/models/schedule.models';
+import { DeliveryOption, AuthorizationRequest } from '../../../../core/models/delivery.models';
 import { UserProfile } from '../../../../core/models/entitlement.models';
 import { MakerCheckerPanelComponent } from '../../../library/components/maker-checker-panel/maker-checker-panel.component';
 import { ExecutionHistoryLogComponent } from '../../components/execution-history-log/execution-history-log.component';
@@ -28,14 +28,14 @@ export class ScheduleManagementComponent implements OnInit {
   activeTab: 'CREATE' | 'VIEW_ALL' | 'TO_AUTHORIZE' | 'HISTORY' = 'CREATE';
 
   scheduleForm!: FormGroup;
-  schedules: ReportSchedule[] = [];
+  schedules: ScheduleResponse[] = [];
   authorizedDeliveryOptions: DeliveryOption[] = [];
   executionHistory: ScheduleHistory[] = [];
   currentUser!: UserProfile;
 
   // Authorize Modal
   showAuthorizeModal = false;
-  scheduleToAuthorize: ReportSchedule | null = null;
+  scheduleToAuthorize: ScheduleResponse | null = null;
 
   // Status
   statusMessage = '';
@@ -43,9 +43,9 @@ export class ScheduleManagementComponent implements OnInit {
 
   intervalOptions = [
     { label: 'Once', value: 'ONCE' },
-    { label: 'Every 1 or More Days', value: 'EVERY_1_OR_MORE_DAYS' },
-    { label: 'Every 1 or More Weeks', value: 'EVERY_1_OR_MORE_WEEKS' },
-    { label: 'Every 1 or More Months', value: 'EVERY_1_OR_MORE_MONTHS' },
+    { label: 'Every 1 or More Days', value: 'DAILY' },
+    { label: 'Every 1 or More Weeks', value: 'WEEKLY' },
+    { label: 'Every 1 or More Months', value: 'MONTHLY' },
     { label: 'Event Based', value: 'EVENT_BASED' }
   ];
 
@@ -89,7 +89,7 @@ export class ScheduleManagementComponent implements OnInit {
       eventType: [{ value: 'Report', disabled: true }],
       eventName: ['Account Statement – Comprehensive', Validators.required],
       serviceClassId: [{ value: 'Cash Statements Reports', disabled: true }],
-      scheduleInterval: ['EVERY_1_OR_MORE_DAYS', Validators.required],
+      scheduleInterval: ['DAILY', Validators.required],
       holidayOption: ['RUN_NEXT_BUSINESS_DAY', Validators.required],
       scheduleReferenceId: [{ value: refId, disabled: true }],
       runTimeUser: [''],
@@ -106,25 +106,37 @@ export class ScheduleManagementComponent implements OnInit {
   }
 
   loadData(): void {
-    this.scheduleService.getSchedules().subscribe(schedules => {
-      this.schedules = schedules;
-    });
-
-    this.deliveryService.getDeliveryOptions('ALL').subscribe(options => {
-      this.authorizedDeliveryOptions = options.filter(o => o.authStatus === 'AUTHORIZED');
-      if (this.authorizedDeliveryOptions.length > 0 && !this.scheduleForm.get('deliveryOptionId')?.value) {
-        this.scheduleForm.patchValue({
-          deliveryOptionId: this.authorizedDeliveryOptions[0].id
-        });
+    this.scheduleService.getSchedules().subscribe({
+      next: (schedules) => {
+        this.schedules = schedules;
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Failed to load schedules.';
+        this.statusType = 'error';
       }
     });
 
-    this.scheduleService.getExecutionHistory().subscribe(history => {
-      this.executionHistory = history;
+    this.deliveryService.getDeliveryOptions('ALL').subscribe({
+      next: (options) => {
+        this.authorizedDeliveryOptions = options.filter(o => o.authStatus === 'AUTHORIZED');
+        if (this.authorizedDeliveryOptions.length > 0 && !this.scheduleForm.get('deliveryOptionId')?.value) {
+          this.scheduleForm.patchValue({
+            deliveryOptionId: this.authorizedDeliveryOptions[0].id
+          });
+        }
+      },
+      error: () => {}
+    });
+
+    this.scheduleService.getScheduleHistory().subscribe({
+      next: (history) => {
+        this.executionHistory = history;
+      },
+      error: () => {}
     });
   }
 
-  get pendingAuthorizationSchedules(): ReportSchedule[] {
+  get pendingAuthorizationSchedules(): ScheduleResponse[] {
     return this.schedules.filter(s => s.authStatus === 'PENDING_AUTHORIZATION');
   }
 
@@ -134,36 +146,61 @@ export class ScheduleManagementComponent implements OnInit {
       return;
     }
 
-    const payload = this.scheduleForm.getRawValue();
-    const selDelivery = this.authorizedDeliveryOptions.find(d => d.id === payload.deliveryOptionId);
-    if (selDelivery) {
-      payload.deliveryOptionName = selDelivery.name;
-    }
+    const formValue = this.scheduleForm.getRawValue();
+    const payload: ScheduleRequest = {
+      scheduleName: formValue.scheduleName,
+      eventType: 'Report',
+      eventName: formValue.eventName,
+      deliveryOptionId: formValue.deliveryOptionId,
+      intervalType: formValue.scheduleInterval || 'DAILY',
+      holidayOption: formValue.holidayOption || 'RUN_NEXT_BUSINESS_DAY',
+      runTimeUser: formValue.runTimeUser || undefined,
+      intervalConfig: {
+        startDate: formValue.runStartDate,
+        startTime: formValue.runStartTime,
+        everyDays: formValue.runEveryDays,
+        isDailyIntraDay: formValue.isDailyIntraDay,
+        intraDayInterval: formValue.intraDayInterval,
+        intraDayEndTime: formValue.intraDayEndTime
+      }
+    };
 
-    this.scheduleService.createSchedule(payload).subscribe(created => {
-      this.statusMessage = `Schedule '${created.scheduleName}' (${created.scheduleReferenceId}) submitted. Authorization Required.`;
-      this.statusType = 'success';
-      this.loadData();
-      this.activeTab = 'VIEW_ALL';
-      setTimeout(() => this.statusMessage = '', 5000);
+    this.scheduleService.createSchedule(payload).subscribe({
+      next: (created) => {
+        this.statusMessage = `Schedule '${created.scheduleName}' (${created.scheduleReferenceId}) submitted. Authorization Required.`;
+        this.statusType = 'success';
+        this.loadData();
+        this.activeTab = 'VIEW_ALL';
+        setTimeout(() => this.statusMessage = '', 5000);
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Failed to create schedule.';
+        this.statusType = 'error';
+      }
     });
   }
 
-  openAuthorizeSchedule(schedule: ReportSchedule): void {
+  openAuthorizeSchedule(schedule: ScheduleResponse): void {
     this.scheduleToAuthorize = schedule;
     this.showAuthorizeModal = true;
   }
 
-  onAuthorizeAction(actionReq: MakerCheckerActionRequest): void {
+  onAuthorizeAction(actionReq: AuthorizationRequest): void {
     if (!this.scheduleToAuthorize) return;
 
-    this.scheduleService.authorizeSchedule(this.scheduleToAuthorize.id, actionReq).subscribe(res => {
-      this.statusMessage = res.message;
-      this.statusType = 'success';
-      this.showAuthorizeModal = false;
-      this.scheduleToAuthorize = null;
-      this.loadData();
-      setTimeout(() => this.statusMessage = '', 5000);
+    this.scheduleService.authorizeSchedule(this.scheduleToAuthorize.id, actionReq).subscribe({
+      next: (res) => {
+        this.statusMessage = `Schedule '${res.scheduleName}' updated to ${res.authStatus}.`;
+        this.statusType = 'success';
+        this.showAuthorizeModal = false;
+        this.scheduleToAuthorize = null;
+        this.loadData();
+        setTimeout(() => this.statusMessage = '', 5000);
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Failed to authorize schedule. Check segregation of duties.';
+        this.statusType = 'error';
+      }
     });
   }
 }

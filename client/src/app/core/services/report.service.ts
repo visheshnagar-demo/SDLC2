@@ -1,8 +1,16 @@
 import { Injectable } from '@angular/core';
-import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { ApiService } from './api.service';
-import { BaseReport, ReportCriteria, StatementReportData, ExecutionJob } from '../models/report.models';
+import {
+  BaseReport,
+  ReportCriteria,
+  CriteriaPayload,
+  DerivedReportRequest,
+  DerivedReportResponse,
+  DefaultCriteriaResponse,
+  ExecutionResponse
+} from '../models/report.models';
 
 @Injectable({
   providedIn: 'root'
@@ -11,349 +19,273 @@ export class ReportService {
   constructor(private api: ApiService) {}
 
   getBaseReports(): Observable<BaseReport[]> {
-    return this.api.get<BaseReport[]>('/api/v1/reports/base').pipe(
-      catchError(() => of(this.getMockBaseReports()))
-    );
+    return this.api.get<BaseReport[]>('/api/v1/reports/base');
   }
 
   getCriteriaDefaults(): Observable<ReportCriteria> {
-    return this.api.get<ReportCriteria>('/api/v1/reports/criteria/defaults').pipe(
-      catchError(() => of(this.getMockCriteriaDefaults()))
+    return this.api.get<DefaultCriteriaResponse>('/api/v1/reports/criteria/defaults').pipe(
+      map(resp => this.mapDefaultResponseToReportCriteria(resp))
     );
   }
 
   getCriteriaById(id: string): Observable<ReportCriteria> {
-    return this.api.get<ReportCriteria>(`/api/v1/reports/criteria/${id}`).pipe(
-      catchError(() => of({ ...this.getMockCriteriaDefaults(), id, derivedReportName: 'Account Statement – Comprehensive (Saved)' }))
+    return this.api.get<DerivedReportResponse>(`/api/v1/reports/criteria/${id}`).pipe(
+      map(resp => this.mapDerivedResponseToReportCriteria(resp))
     );
   }
 
-  saveCriteria(criteria: ReportCriteria): Observable<{ id: string; message: string }> {
-    return this.api.post<{ id: string; message: string }>('/api/v1/reports/criteria', criteria).pipe(
-      catchError(() => of({ id: criteria.id || 'CRIT-' + Date.now(), message: 'Criteria saved successfully (Local/Mock)' }))
-    );
+  listCriteria(): Observable<DerivedReportResponse[]> {
+    return this.api.get<DerivedReportResponse[]>('/api/v1/reports/criteria');
   }
 
-  runReport(criteria: ReportCriteria, overrideFormat?: string): Observable<StatementReportData> {
-    return this.api.post<StatementReportData>('/api/v1/reports/execution/run', {
-      criteria,
-      format: overrideFormat || criteria.format
-    }).pipe(
-      catchError(() => of(this.getMockStatementData(criteria)))
-    );
+  saveCriteria(criteria: ReportCriteria): Observable<DerivedReportResponse> {
+    const request: DerivedReportRequest = {
+      derivedReportName: criteria.derivedReportName,
+      baseReportName: criteria.baseReportName || 'Account Statement – Comprehensive',
+      format: criteria.format || 'Adobe(PDF) requires Acrobat Reader (5.0 or higher)',
+      deliveryOptionId: criteria.deliveryOptionId || undefined,
+      designatedOwner: criteria.designatedOwner || undefined,
+      share: criteria.share || 'PRIVATE',
+      favorite: !!criteria.favorite,
+      criteria: this.mapToCriteriaPayload(criteria)
+    };
+
+    if (criteria.id) {
+      return this.api.put<DerivedReportResponse>(`/api/v1/reports/criteria/${criteria.id}`, request);
+    }
+    return this.api.post<DerivedReportResponse>('/api/v1/reports/criteria', request);
   }
 
-  getMyReports(): Observable<ExecutionJob[]> {
-    return this.api.get<ExecutionJob[]>('/api/v1/reports/my-reports').pipe(
-      catchError(() => of(this.getMockExecutionJobs()))
-    );
+  updateCriteria(id: string, criteria: ReportCriteria): Observable<DerivedReportResponse> {
+    const request: DerivedReportRequest = {
+      derivedReportName: criteria.derivedReportName,
+      baseReportName: criteria.baseReportName || 'Account Statement – Comprehensive',
+      format: criteria.format || 'Adobe(PDF) requires Acrobat Reader (5.0 or higher)',
+      deliveryOptionId: criteria.deliveryOptionId || undefined,
+      designatedOwner: criteria.designatedOwner || undefined,
+      share: criteria.share || 'PRIVATE',
+      favorite: !!criteria.favorite,
+      criteria: this.mapToCriteriaPayload(criteria)
+    };
+    return this.api.put<DerivedReportResponse>(`/api/v1/reports/criteria/${id}`, request);
+  }
+
+  deleteCriteria(id: string): Observable<void> {
+    return this.api.delete<void>(`/api/v1/reports/criteria/${id}`);
+  }
+
+  runReport(criteria: ReportCriteria, overrideFormat?: string): Observable<Blob> {
+    const payload = {
+      derivedReportId: criteria.id || undefined,
+      reportName: criteria.derivedReportName || criteria.baseReportName || 'Account Statement – Comprehensive',
+      overrideFormat: overrideFormat || criteria.format,
+      criteria: this.mapToCriteriaPayload(criteria)
+    };
+    return this.api.downloadFile('/api/v1/reports/execution/run', payload);
   }
 
   exportReportFile(criteria: ReportCriteria, format: string): Observable<Blob> {
-    return this.api.downloadFile('/api/v1/reports/execution/export', {
-      criteria,
-      format
-    }).pipe(
-      catchError(() => {
-        const dummyText = `CITIDIRECT - Account Statement Comprehensive Report\nDate: 22/01/2022\nFormat: ${format}\nAccount: XX12CITI11223344446677\nTotal Credits: 321,267.67\nTotal Debits: 292,017.85`;
-        return of(new Blob([dummyText], { type: 'text/plain' }));
-      })
-    );
+    return this.runReport(criteria, format);
   }
 
-  getMockCriteriaDefaults(): ReportCriteria {
+  getMyReports(): Observable<ExecutionResponse[]> {
+    return this.api.get<ExecutionResponse[]>('/api/v1/reports/my-reports');
+  }
+
+  downloadReport(executionId: string): Observable<Blob> {
+    return this.api.getFile(`/api/v1/reports/my-reports/${executionId}/download`);
+  }
+
+  mapToCriteriaPayload(criteria: ReportCriteria): CriteriaPayload {
+    const branchNumber = this.extractCode(criteria.branchNumberName);
+    const customerNumber = this.extractCode(criteria.customerNumberName);
+    const accountNumber = this.extractCode(criteria.accountNumberName);
+
     return {
-      derivedReportName: '',
-      baseReportName: 'Account Statement – Comprehensive',
-      format: 'Adobe(PDF) requires Acrobat Reader (5.0 or higher)',
-      signWithCertificate: false,
-      compressWithWinzip: false,
+      branchNumber: branchNumber || undefined,
+      customerNumber: customerNumber || undefined,
+      accountSelectionType: criteria.accountSelectionType || 'ACCOUNT',
+      accountNumber: accountNumber || undefined,
+      bankReference: criteria.bankReferenceValue || undefined,
+      bankReferenceOperator: this.normalizeOperator(criteria.bankReferenceOperator),
+      customerReference: criteria.customerReferenceValue || undefined,
+      customerReferenceOperator: this.normalizeOperator(criteria.customerReferenceOperator),
+      amountFrom: criteria.transactionAmountFrom !== null && criteria.transactionAmountFrom !== undefined ? Number(criteria.transactionAmountFrom) : null,
+      amountTo: criteria.transactionAmountTo !== null && criteria.transactionAmountTo !== undefined ? Number(criteria.transactionAmountTo) : null,
+      accountCurrency: criteria.accountCurrency || undefined,
+      transactionDescription: criteria.transactionDescriptionValue || undefined,
+      byOrderBeneficiary: criteria.byOrderBeneficiary || undefined,
+      transactionCode: criteria.transactionCode || 'Citi Transaction Codes',
+      cheques: criteria.cheques || 'Include Cheques',
+      baseCurrency: criteria.baseCurrency || 'USD',
+      showEnhancedTransactionDetails: !!criteria.showEnhancedTransactionDetails,
+      outputAccountSubTotals: !!criteria.outputAccountSubTotals,
+      outputGrandTotal: !!criteria.outputGrandTotal,
+      showAdditionalOrderingPartyDetails: !!criteria.showAdditionalOrderingPartyBeneficiary,
+      statementDateRadio: this.normalizeDateRadio(criteria.statementDateRadio),
+      statementDateFrom: criteria.statementDateFrom || undefined,
+      statementDateTo: criteria.statementDateTo || undefined,
+      valueDateRadio: this.normalizeDateRadio(criteria.valueDateRadio),
+      valueDateFrom: criteria.valueDateFrom || undefined,
+      valueDateTo: criteria.valueDateTo || undefined,
+      pageBreaks: criteria.pageBreaks !== false,
+      printChinaStamp: !!criteria.printCitibankChinaStamp,
+      activityOnly: !!criteria.activityOnly,
+      runInIncrementalMode: !!criteria.runInIncrementalMode,
+      printSelectionCriteria: criteria.printSelectionCriteria !== false,
+      signWithCertificate: !!criteria.signWithCertificate,
+      compressWithWinzip: !!criteria.compressWithWinzip
+    };
+  }
+
+  mapDerivedResponseToReportCriteria(resp: DerivedReportResponse): ReportCriteria {
+    const cp = resp.criteria || {};
+    return {
+      id: resp.id,
+      derivedReportName: resp.derivedReportName,
+      baseReportName: resp.baseReportName,
+      format: resp.format,
+      signWithCertificate: !!cp.signWithCertificate,
+      compressWithWinzip: !!cp.compressWithWinzip,
+      deliveryOptionId: resp.deliveryOptionId || '',
+      deliveryOptionName: '',
+      designatedOwner: resp.ownerUsername || 'JUSTIN,JOHN',
+      share: resp.sharedPublic ? 'PUBLIC' : 'PRIVATE',
+      favorite: !!resp.favorite,
+      branchNumberName: cp.branchNumber || '',
+      customerNumberName: cp.customerNumber || '',
+      accountSelectionType: cp.accountSelectionType || 'ACCOUNT',
+      accountNumberName: cp.accountNumber || '',
+      bankReferenceOperator: this.denormalizeOperator(cp.bankReferenceOperator),
+      bankReferenceValue: cp.bankReference || '',
+      customerReferenceOperator: this.denormalizeOperator(cp.customerReferenceOperator),
+      customerReferenceValue: cp.customerReference || '',
+      transactionAmountFrom: cp.amountFrom ?? null,
+      transactionAmountTo: cp.amountTo ?? null,
+      accountCurrency: cp.accountCurrency || 'GBP',
+      transactionDescriptionOperator: 'Equals',
+      transactionDescriptionValue: cp.transactionDescription || '',
+      byOrderBeneficiary: cp.byOrderBeneficiary || '',
+      transactionCode: cp.transactionCode || 'Citi Transaction Codes',
+      cheques: cp.cheques || 'Include Cheques',
+      baseCurrency: cp.baseCurrency || 'USD',
+      showEnhancedTransactionDetails: !!cp.showEnhancedTransactionDetails,
+      outputAccountSubTotals: !!cp.outputAccountSubTotals,
+      outputGrandTotal: !!cp.outputGrandTotal,
+      showAdditionalOrderingPartyBeneficiary: !!cp.showAdditionalOrderingPartyDetails,
+      statementDateRadio: this.denormalizeDateRadio(cp.statementDateRadio),
+      statementDateFrom: cp.statementDateFrom || '',
+      statementDateTo: cp.statementDateTo || '',
+      valueDateRadio: this.denormalizeDateRadio(cp.valueDateRadio),
+      valueDateFrom: cp.valueDateFrom || '',
+      valueDateTo: cp.valueDateTo || '',
+      pageBreaks: cp.pageBreaks !== false,
+      printCitibankChinaStamp: !!cp.printChinaStamp,
+      activityOnly: !!cp.activityOnly,
+      runInIncrementalMode: !!cp.runInIncrementalMode,
+      printSelectionCriteria: cp.printSelectionCriteria !== false
+    };
+  }
+
+  mapDefaultResponseToReportCriteria(resp: DefaultCriteriaResponse): ReportCriteria {
+    const cp = resp.criteriaPayload || {};
+    return {
+      derivedReportName: resp.derivedReportName || '',
+      baseReportName: resp.baseReportName || 'Account Statement – Comprehensive',
+      format: resp.format || 'Adobe(PDF) requires Acrobat Reader (5.0 or higher)',
+      signWithCertificate: resp.signWithCertificate,
+      compressWithWinzip: resp.compressWithWinzip,
       deliveryOptionId: '',
       deliveryOptionName: '',
-      designatedOwner: 'JUSTIN,JOHN',
-      share: 'PRIVATE',
-      favorite: false,
-      branchNumberName: '600 - A BRANCH NAME',
-      customerNumberName: '0000244654 - A CUSTOMER NAME',
-      accountSelectionType: 'ACCOUNT',
-      accountNumberName: 'XX12CITI11223344446677 - AN ACCOUNT NAME',
+      designatedOwner: resp.designatedOwner || 'JUSTIN,JOHN',
+      share: (resp.share as any) || 'PRIVATE',
+      favorite: resp.favorite,
+      branchNumberName: cp.branchNumber || '600 - A BRANCH NAME',
+      customerNumberName: cp.customerNumber || '0000244654 - A CUSTOMER NAME',
+      accountSelectionType: resp.accountSelectionType || 'ACCOUNT',
+      accountNumberName: cp.accountNumber || 'XX12CITI11223344446677 - AN ACCOUNT NAME',
       bankReferenceOperator: 'Equals',
-      bankReferenceValue: '',
+      bankReferenceValue: cp.bankReference || '',
       customerReferenceOperator: 'Equals',
-      customerReferenceValue: '',
-      transactionAmountFrom: null,
-      transactionAmountTo: null,
-      accountCurrency: 'GBP',
+      customerReferenceValue: cp.customerReference || '',
+      transactionAmountFrom: cp.amountFrom ?? null,
+      transactionAmountTo: cp.amountTo ?? null,
+      accountCurrency: cp.accountCurrency || 'GBP',
       transactionDescriptionOperator: 'Equals',
-      transactionDescriptionValue: '',
-      byOrderBeneficiary: '',
-      transactionCode: 'Citi Transaction Codes',
-      cheques: 'Include Cheques',
-      baseCurrency: 'USD',
-      showEnhancedTransactionDetails: false,
-      outputAccountSubTotals: false,
-      outputGrandTotal: false,
-      showAdditionalOrderingPartyBeneficiary: false,
-      statementDateRadio: 'Yesterday',
-      valueDateRadio: 'No Date Selected',
-      pageBreaks: true,
-      printCitibankChinaStamp: false,
-      activityOnly: false,
-      runInIncrementalMode: false,
-      printSelectionCriteria: true
+      transactionDescriptionValue: cp.transactionDescription || '',
+      byOrderBeneficiary: cp.byOrderBeneficiary || '',
+      transactionCode: resp.transactionCode || 'Citi Transaction Codes',
+      cheques: resp.cheques || 'Include Cheques',
+      baseCurrency: resp.baseCurrency || 'USD',
+      showEnhancedTransactionDetails: resp.showEnhancedTransactionDetails,
+      outputAccountSubTotals: resp.outputAccountSubTotals,
+      outputGrandTotal: resp.outputGrandTotal,
+      showAdditionalOrderingPartyBeneficiary: resp.showAdditionalOrderingPartyDetails,
+      statementDateRadio: this.denormalizeDateRadio(resp.statementDateRadio || 'YESTERDAY'),
+      statementDateFrom: cp.statementDateFrom || '',
+      statementDateTo: cp.statementDateTo || '',
+      valueDateRadio: this.denormalizeDateRadio(resp.valueDateRadio || 'NO_DATE_SELECTED'),
+      valueDateFrom: cp.valueDateFrom || '',
+      valueDateTo: cp.valueDateTo || '',
+      pageBreaks: resp.pageBreaks,
+      printCitibankChinaStamp: resp.printChinaStamp,
+      activityOnly: resp.activityOnly,
+      runInIncrementalMode: resp.runInIncrementalMode,
+      printSelectionCriteria: resp.printSelectionCriteria
     };
   }
 
-  getMockBaseReports(): BaseReport[] {
-    return [
-      { id: '1', reportName: 'Account Confirmation Certificate', baseReportName: 'Account Confirmation Certificate', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '2', reportName: 'Account Statement – Comprehensive', baseReportName: 'Account Statement – Comprehensive', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard', isFavorite: true },
-      { id: '3', reportName: 'Account Statement Details – ASIA', baseReportName: 'Account Statement Details – ASIA', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '4', reportName: 'Account Statement Details Report', baseReportName: 'Account Statement Details Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '5', reportName: 'Account Statement Details Report – Condensed', baseReportName: 'Account Statement Details Report – Condensed', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '6', reportName: 'Account Statement Report', baseReportName: 'Account Statement Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '7', reportName: 'Account Status Certificate', baseReportName: 'Account Status Certificate', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '8', reportName: 'Account Activity Summary Report', baseReportName: 'Account Activity Summary Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '9', reportName: 'Intraday Cash Position Statement', baseReportName: 'Intraday Cash Position Statement', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '10', reportName: 'Historical Transaction Activity Report', baseReportName: 'Historical Transaction Activity Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '11', reportName: 'Multi-Currency Account Statement', baseReportName: 'Multi-Currency Account Statement', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '12', reportName: 'Global Cash Consolidation Report', baseReportName: 'Global Cash Consolidation Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '13', reportName: 'High-Value Payment Summary Report', baseReportName: 'High-Value Payment Summary Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '14', reportName: 'Cheque Reconciliation Report', baseReportName: 'Cheque Reconciliation Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '15', reportName: 'Liquidity Management Statement', baseReportName: 'Liquidity Management Statement', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '16', reportName: 'Cash Concentration Report', baseReportName: 'Cash Concentration Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '17', reportName: 'Sweeping & Pooling Activity Report', baseReportName: 'Sweeping & Pooling Activity Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '18', reportName: 'Virtual Account Statement Report', baseReportName: 'Virtual Account Statement Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '19', reportName: 'Escrow Account Balance Certificate', baseReportName: 'Escrow Account Balance Certificate', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '20', reportName: 'Third-Party Bank Account Activity', baseReportName: 'Third-Party Bank Account Activity', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '21', reportName: 'Foreign Exchange Settlement Statement', baseReportName: 'Foreign Exchange Settlement Statement', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '22', reportName: 'Interest & Charges Summary Report', baseReportName: 'Interest & Charges Summary Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '23', reportName: 'Overdraft & Credit Line Activity', baseReportName: 'Overdraft & Credit Line Activity', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '24', reportName: 'Month-End Ledger Balance Certificate', baseReportName: 'Month-End Ledger Balance Certificate', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' },
-      { id: '25', reportName: 'Audit Trail & Balance Confirmation Report', baseReportName: 'Audit Trail & Balance Confirmation Report', isBase: true, category: 'Cash Statements Reports', reportType: 'Standard' }
-    ];
+  private extractCode(str?: string): string {
+    if (!str) return '';
+    const parts = str.split(' - ');
+    return parts[0].trim();
   }
 
-  getMockStatementData(criteria?: ReportCriteria): StatementReportData {
-    // Exact seed data from document specification:
-    // 7 transactions on 22/01/2022 for account XX12CITI11223344446677 (GBP)
-    // Credits: 21,020.67; 43,360.47; 217,765.85; 1,437.63; 37,683.05 (Total Credits = 321,267.67, Count = 5)
-    // Debits: 57,311.86; 234,705.99 (Total Debits = 292,017.85, Count = 2)
-    // Opening balance = 1,074,252.00
-    // Closing balance = 1,103,501.82
-    // Net Transaction Amount = 321,267.67 - 292,017.85 = +29,249.82
-    // 1,074,252.00 + 29,249.82 = 1,103,501.82
-    return {
-      bankName: 'CITIBANK',
-      customerNumberName: '0000244654 / A CUSTOMER NAME',
-      branchNumberName: '600 / A BRANCH NAME',
-      swiftCode: 'CITIGB2L',
-      accountNumberName: 'XX12CITI11223344446677 / AN ACCOUNT NAME',
-      currency: 'GBP',
-      accountType: 'CURRENT / OPERATING',
-      statementDate: '22/01/2022',
-      openingBalance: 1074252.00,
-      closingBalance: 1103501.82,
-      creditCount: 5,
-      totalCreditAmount: 321267.67,
-      debitCount: 2,
-      totalDebitAmount: 292017.85,
-      netTransactionAmount: 29249.82,
-      branchSupportsRunningBalance: true,
-      transactions: [
-        {
-          id: 'TXN-001',
-          valueDate: '22/01/2022',
-          customerReference: 'CUST-REF-90812',
-          bankReference: 'BK-CITI-001',
-          description: 'SUPPLIER SETTLEMENT CR',
-          orderingPartyName: 'ACME SUPPLIES LTD',
-          beneficiaryName: 'A CUSTOMER NAME',
-          remittanceInformation: 'INV-2022-0941',
-          debitCredit: 'C',
-          amount: 21020.67,
-          runningBalance: 1095272.67,
-          productType: 'DOMESTIC_TRANSFER',
-          entryDate: '22/01/2022 08:30:15',
-          batchTrackNumber: 'BAT-2022-881',
-          paymentDetails: 'INVOICE PAYMENT JAN',
-          originatingBank: 'BARCLAYS BANK PLC',
-          bankClearingId: '20-00-00',
-          beneficiaryBank: 'CITIBANK N.A. LONDON',
-          byOrderOf: 'ACME TREASURY',
-          addressLines: ['123 HIGH STREET', 'LONDON EC2', 'UNITED KINGDOM']
-        },
-        {
-          id: 'TXN-002',
-          valueDate: '22/01/2022',
-          customerReference: 'CUST-REF-90813',
-          bankReference: 'BK-CITI-002',
-          description: 'CLIENT REMITTANCE CR',
-          orderingPartyName: 'GLOBAL LOGISTICS CORP',
-          beneficiaryName: 'A CUSTOMER NAME',
-          remittanceInformation: 'FREIGHT CHARGES',
-          debitCredit: 'C',
-          amount: 43360.47,
-          runningBalance: 1138633.14,
-          productType: 'CROSS_BORDER_WIRE',
-          entryDate: '22/01/2022 09:15:20',
-          batchTrackNumber: 'BAT-2022-882',
-          paymentDetails: 'FREIGHT REMITTANCE',
-          originatingBank: 'HSBC UK BANK PLC',
-          bankClearingId: '40-05-30',
-          beneficiaryBank: 'CITIBANK N.A. LONDON',
-          byOrderOf: 'GL FIN CORP',
-          addressLines: ['45 LOGISTICS WAY', 'BIRMINGHAM B1', 'UNITED KINGDOM']
-        },
-        {
-          id: 'TXN-003',
-          valueDate: '22/01/2022',
-          customerReference: 'CUST-REF-90814',
-          bankReference: 'BK-CITI-003',
-          description: 'DIVIDEND & INTEREST CR',
-          orderingPartyName: 'CITI TRUST DEPOSIT',
-          beneficiaryName: 'A CUSTOMER NAME',
-          remittanceInformation: 'Q4 DIVIDEND REINVEST',
-          debitCredit: 'C',
-          amount: 217765.85,
-          runningBalance: 1356398.99,
-          productType: 'TREASURY_TRANSFER',
-          entryDate: '22/01/2022 10:45:00',
-          batchTrackNumber: 'BAT-2022-883',
-          paymentDetails: 'DIVIDEND PROCEEDS',
-          originatingBank: 'CITIBANK N.A. NEW YORK',
-          bankClearingId: 'CITIUS33',
-          beneficiaryBank: 'CITIBANK N.A. LONDON',
-          byOrderOf: 'CITI ASSET MANAGEMENT',
-          addressLines: ['388 GREENWICH ST', 'NEW YORK NY 10013', 'USA']
-        },
-        {
-          id: 'TXN-004',
-          valueDate: '22/01/2022',
-          customerReference: 'CUST-REF-90815',
-          bankReference: 'BK-CITI-004',
-          description: 'PAYROLL DISBURSEMENT DR',
-          orderingPartyName: 'A CUSTOMER NAME',
-          beneficiaryName: 'EXECUTIVE PAYROLL TRUST',
-          remittanceInformation: 'SALARY RUN JAN 2022',
-          debitCredit: 'D',
-          amount: 57311.86,
-          runningBalance: 1299087.13,
-          productType: 'DIRECT_DEBIT',
-          entryDate: '22/01/2022 11:30:10',
-          batchTrackNumber: 'BAT-2022-884',
-          paymentDetails: 'PAYROLL BACS',
-          originatingBank: 'CITIBANK N.A. LONDON',
-          bankClearingId: '08-00-99',
-          beneficiaryBank: 'LLOYDS BANK PLC',
-          byOrderOf: 'HR OPERATIONS',
-          addressLines: ['CANARY WHARF', 'LONDON E14 5LB', 'UNITED KINGDOM']
-        },
-        {
-          id: 'TXN-005',
-          valueDate: '22/01/2022',
-          customerReference: 'CUST-REF-90816',
-          bankReference: 'BK-CITI-005',
-          description: 'VENDOR SETTLEMENT DR',
-          orderingPartyName: 'A CUSTOMER NAME',
-          beneficiaryName: 'ENTERPRISE TECH HARDWARE',
-          remittanceInformation: 'SERVER UPGRADE PO-889',
-          debitCredit: 'D',
-          amount: 234705.99,
-          runningBalance: 1064381.14,
-          productType: 'CHAPS_WIRE',
-          entryDate: '22/01/2022 13:20:45',
-          batchTrackNumber: 'BAT-2022-885',
-          paymentDetails: 'IT INFRASTRUCTURE',
-          originatingBank: 'CITIBANK N.A. LONDON',
-          bankClearingId: '08-00-99',
-          beneficiaryBank: 'NATWEST BANK PLC',
-          byOrderOf: 'PROCUREMENT DEPT',
-          addressLines: ['TECH PARK BLVD', 'CAMBRIDGE CB4', 'UNITED KINGDOM']
-        },
-        {
-          id: 'TXN-006',
-          valueDate: '22/01/2022',
-          customerReference: 'CUST-REF-90817',
-          bankReference: 'BK-CITI-006',
-          description: 'ACCOUNT INTEREST CR',
-          orderingPartyName: 'CITIBANK N.A.',
-          beneficiaryName: 'A CUSTOMER NAME',
-          remittanceInformation: 'CREDIT INTEREST ACCRUAL',
-          debitCredit: 'C',
-          amount: 1437.63,
-          runningBalance: 1065818.77,
-          productType: 'BANK_INTEREST',
-          entryDate: '22/01/2022 15:00:00',
-          batchTrackNumber: 'BAT-2022-886',
-          paymentDetails: 'MONTHLY INTEREST',
-          originatingBank: 'CITIBANK N.A. LONDON',
-          bankClearingId: '08-00-99',
-          beneficiaryBank: 'CITIBANK N.A. LONDON',
-          byOrderOf: 'TREASURY DEPT',
-          addressLines: ['CITIGROUP CENTRE', 'LONDON E14 5LB', 'UNITED KINGDOM']
-        },
-        {
-          id: 'TXN-007',
-          valueDate: '22/01/2022',
-          customerReference: 'CUST-REF-90818',
-          bankReference: 'BK-CITI-007',
-          description: 'FX SETTLEMENT CR',
-          orderingPartyName: 'CITI FX DESK',
-          beneficiaryName: 'A CUSTOMER NAME',
-          remittanceInformation: 'EUR/GBP SPOT SETTLE',
-          debitCredit: 'C',
-          amount: 37683.05,
-          runningBalance: 1103501.82,
-          productType: 'FX_SETTLEMENT',
-          entryDate: '22/01/2022 16:30:00',
-          batchTrackNumber: 'BAT-2022-887',
-          paymentDetails: 'FX TRADE SPOT 9921',
-          originatingBank: 'CITIBANK N.A. LONDON',
-          bankClearingId: '08-00-99',
-          beneficiaryBank: 'CITIBANK N.A. LONDON',
-          byOrderOf: 'FX GLOBAL MARKETS',
-          addressLines: ['CITIGROUP CENTRE', 'LONDON E14 5LB', 'UNITED KINGDOM']
-        }
-      ]
-    };
+  private normalizeOperator(op?: string): string {
+    if (!op) return 'EQUALS';
+    const upper = op.toUpperCase();
+    if (upper.includes('CONTAIN')) return 'CONTAINS';
+    if (upper.includes('START')) return 'STARTS_WITH';
+    return 'EQUALS';
   }
 
-  getMockExecutionJobs(): ExecutionJob[] {
-    return [
-      {
-        id: '1',
-        jobId: 'JOB-2023-9001',
-        reportName: 'Account Statement – Comprehensive (Yesterday)',
-        format: 'Adobe PDF',
-        status: 'COMPLETED',
-        requestedAt: '2023-01-23 08:30:00 GMT',
-        completedAt: '2023-01-23 08:30:05 GMT',
-        recordCount: 7,
-        downloadUrl: '/api/v1/reports/download/JOB-2023-9001'
-      },
-      {
-        id: '2',
-        jobId: 'JOB-2023-9002',
-        reportName: 'Account Statement – Comprehensive (Excel 60-cols)',
-        format: 'Excel (XLS)',
-        status: 'COMPLETED',
-        requestedAt: '2023-01-23 09:15:00 GMT',
-        completedAt: '2023-01-23 09:15:08 GMT',
-        recordCount: 7,
-        downloadUrl: '/api/v1/reports/download/JOB-2023-9002'
-      },
-      {
-        id: '3',
-        jobId: 'JOB-2023-9003',
-        reportName: 'Account Statement – Comprehensive (CSV Stream)',
-        format: 'Comma Separated Value (CSV)',
-        status: 'COMPLETED',
-        requestedAt: '2023-01-23 10:00:00 GMT',
-        completedAt: '2023-01-23 10:00:02 GMT',
-        recordCount: 7,
-        downloadUrl: '/api/v1/reports/download/JOB-2023-9003'
-      }
-    ];
+  private denormalizeOperator(op?: string): string {
+    if (!op) return 'Equals';
+    if (op === 'CONTAINS') return 'Contains';
+    if (op === 'STARTS_WITH') return 'Starts With';
+    return 'Equals';
+  }
+
+  private normalizeDateRadio(radio?: string): string {
+    if (!radio) return 'YESTERDAY';
+    const r = radio.toUpperCase();
+    if (r.includes('NO DATE')) return 'NO_DATE_SELECTED';
+    if (r.includes('CURRENT MONTH')) return 'CURRENT_MONTH';
+    if (r.includes('PREVIOUS MONTH')) return 'PREVIOUS_MONTH';
+    if (r.includes('TODAY')) return 'TODAY';
+    if (r.includes('YESTERDAY')) return 'YESTERDAY';
+    if (r.includes('7')) return 'LAST_7_DAYS';
+    if (r.includes('14')) return 'LAST_14_DAYS';
+    if (r.includes('30')) return 'LAST_30_DAYS';
+    if (r.includes('RANGE')) return 'DATE_RANGE';
+    if (r.includes('LATEST')) return 'LATEST';
+    return radio.replace(/\s+/g, '_').toUpperCase();
+  }
+
+  private denormalizeDateRadio(radio?: string): string {
+    if (!radio) return 'Yesterday';
+    switch (radio.toUpperCase()) {
+      case 'NO_DATE_SELECTED': return 'No Date Selected';
+      case 'CURRENT_MONTH': return 'Current Month';
+      case 'PREVIOUS_MONTH': return 'Previous Month';
+      case 'TODAY': return 'Today';
+      case 'YESTERDAY': return 'Yesterday';
+      case 'LAST_7_DAYS': return 'Last 7 Days';
+      case 'LAST_14_DAYS': return 'Last 14 Days';
+      case 'LAST_30_DAYS': return 'Last 30 Days';
+      case 'DATE_RANGE': return 'Date Range';
+      case 'LATEST': return 'Latest';
+      default: return radio;
+    }
   }
 }

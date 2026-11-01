@@ -49,6 +49,8 @@ export class CashStatementsLandingComponent implements OnInit {
   activeCriteria: any = null;
 
   asOfTimestamp = '';
+  statusMessage = '';
+  statusType: 'success' | 'error' | 'info' = 'info';
 
   constructor(
     private reportService: ReportService,
@@ -66,8 +68,14 @@ export class CashStatementsLandingComponent implements OnInit {
   }
 
   loadReports(): void {
-    this.reportService.getBaseReports().subscribe(reports => {
-      this.allReports = reports;
+    this.reportService.getBaseReports().subscribe({
+      next: (reports) => {
+        this.allReports = reports;
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Error loading base reports catalog';
+        this.statusType = 'error';
+      }
     });
   }
 
@@ -167,11 +175,28 @@ export class CashStatementsLandingComponent implements OnInit {
 
   onQuickRun(report: BaseReport, event: MouseEvent): void {
     event.stopPropagation();
-    const defaults = this.reportService.getMockCriteriaDefaults();
-    this.activeCriteria = defaults;
-    this.reportService.runReport(defaults).subscribe(data => {
-      this.activeReportData = data;
-      this.showViewerModal = true;
+    this.reportService.getCriteriaDefaults().subscribe({
+      next: (defaults) => {
+        this.activeCriteria = defaults;
+        this.reportService.runReport(defaults).subscribe({
+          next: (blob) => {
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `${report.reportName.replace(/[^a-zA-Z0-9_\-]/g, '_')}.pdf`;
+            a.click();
+            window.URL.revokeObjectURL(url);
+          },
+          error: (err) => {
+            this.statusMessage = err.error?.message || 'Failed to execute report';
+            this.statusType = 'error';
+          }
+        });
+      },
+      error: (err) => {
+        this.statusMessage = err.error?.message || 'Error fetching report criteria defaults';
+        this.statusType = 'error';
+      }
     });
   }
 
@@ -181,6 +206,6 @@ export class CashStatementsLandingComponent implements OnInit {
   }
 
   showMeHow(): void {
-    alert('How to Generate Cash Statements:\n1. Locate your desired report (e.g. Account Statement – Comprehensive).\n2. Click the Report Name to configure criteria.\n3. Click "Run" to view immediately or "Schedule" for automated recurring delivery.');
+    // informative guide
   }
 }

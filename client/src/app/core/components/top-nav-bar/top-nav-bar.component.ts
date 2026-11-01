@@ -1,7 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterLink, RouterLinkActive } from '@angular/router';
-import { LookupService } from '../../services/lookup.service';
+import { AuthService } from '../../services/auth.service';
 import { UserProfile } from '../../models/entitlement.models';
 
 @Component({
@@ -13,20 +13,24 @@ import { UserProfile } from '../../models/entitlement.models';
 })
 export class TopNavBarComponent implements OnInit {
   currentUser: UserProfile = {
-    id: 'USR-101',
-    username: 'jjustin',
+    id: 'usr-001',
+    username: 'maker_user',
     fullName: 'JUSTIN,JOHN',
-    role: 'MAKER',
-    timeZone: 'GMT'
+    email: 'test@example.com',
+    role: 'ROLE_MAKER',
+    timeZone: 'GMT (UTC+0)'
   };
 
   currentGmtTime = '';
   activeDropdown: string | null = null;
 
-  constructor(private router: Router, private lookupService: LookupService) {}
+  constructor(
+    private router: Router,
+    private authService: AuthService
+  ) {}
 
   ngOnInit(): void {
-    this.lookupService.getCurrentUser().subscribe(u => this.currentUser = u);
+    this.currentUser = this.authService.getCurrentUser();
     this.updateClock();
     setInterval(() => this.updateClock(), 1000);
   }
@@ -45,13 +49,32 @@ export class TopNavBarComponent implements OnInit {
   }
 
   switchRole(role: 'MAKER' | 'AUTHORIZER'): void {
-    this.currentUser.role = role;
-    if (role === 'AUTHORIZER') {
-      this.currentUser.fullName = 'SMITH,SARAH';
-      this.currentUser.id = 'USR-202';
-    } else {
-      this.currentUser.fullName = 'JUSTIN,JOHN';
-      this.currentUser.id = 'USR-101';
-    }
+    this.authService.switchRole(role).subscribe({
+      next: () => {
+        this.currentUser = this.authService.getCurrentUser();
+      },
+      error: () => {
+        // Fallback update
+        if (role === 'AUTHORIZER') {
+          this.currentUser = {
+            id: 'usr-002',
+            username: 'checker_user',
+            fullName: 'SMITH,SARAH',
+            email: 'admin@example.com',
+            role: 'ROLE_AUTHORIZER',
+            timeZone: 'GMT (UTC+0)'
+          };
+        } else {
+          this.currentUser = {
+            id: 'usr-001',
+            username: 'maker_user',
+            fullName: 'JUSTIN,JOHN',
+            email: 'test@example.com',
+            role: 'ROLE_MAKER',
+            timeZone: 'GMT (UTC+0)'
+          };
+        }
+      }
+    });
   }
 }
