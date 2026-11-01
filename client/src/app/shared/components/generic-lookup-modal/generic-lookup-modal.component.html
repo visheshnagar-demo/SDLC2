@@ -1,0 +1,75 @@
+<div class="citi-modal-backdrop" (click)="onClose()">
+  <div class="citi-modal-window" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="citi-modal-header">
+      <h4>{{ title }}</h4>
+      <button type="button" class="citi-modal-close" (click)="onClose()" aria-label="Close">&times;</button>
+    </div>
+
+    <!-- Filter Toolbar -->
+    <div class="citi-lookup-toolbar">
+      <div class="search-input-wrap">
+        <label for="lookupSearch" class="citi-label">Search / Filter:</label>
+        <input
+          id="lookupSearch"
+          type="text"
+          class="citi-input"
+          placeholder="Type to filter..."
+          [(ngModel)]="searchQuery"
+          autofocus
+        />
+      </div>
+      <span class="count-badge">Found: {{ filteredItems.length }} item(s)</span>
+    </div>
+
+    <!-- Modal Body Grid -->
+    <div class="citi-modal-body">
+      <div class="citi-table-container">
+        <table class="citi-table">
+          <thead>
+            <tr>
+              @for (col of columns; track col.field) {
+                <th [style.width]="col.width">{{ col.header }}</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of filteredItems; track item[valueField] || item) {
+              <tr
+                [class.selected-row]="selectedItem === item"
+                (click)="onRowClick(item)"
+                (dblclick)="onRowDoubleClick(item)"
+              >
+                @for (col of columns; track col.field) {
+                  <td>{{ item[col.field] !== undefined ? item[col.field] : item }}</td>
+                }
+              </tr>
+            }
+            @if (filteredItems.length === 0) {
+              <tr>
+                <td [attr.colspan]="columns.length" class="empty-text">
+                  No matching records found.
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="citi-modal-footer">
+      <button type="button" class="citi-btn citi-btn-utility" (click)="onClose()">
+        Cancel
+      </button>
+      <button
+        type="button"
+        class="citi-btn citi-btn-primary"
+        [disabled]="!selectedItem"
+        (click)="confirmSelection()"
+      >
+        Select
+      </button>
+    </div>
+  </div>
+</div>

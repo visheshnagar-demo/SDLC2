@@ -1,0 +1,251 @@
+.report-viewer-window {
+  max-width: 1200px;
+  width: 95%;
+  height: 90vh;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .report-icon {
+    font-size: 16px;
+  }
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .export-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 3px 8px;
+    border-radius: 2px;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+  }
+}
+
+.report-document-body {
+  background: #ffffff;
+  padding: 24px 32px;
+  color: #000000;
+  font-family: var(--citi-font-sans);
+}
+
+.doc-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  border-bottom: 2px solid var(--citi-blue);
+  padding-bottom: 12px;
+  margin-bottom: 16px;
+
+  .doc-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .citi-wordmark {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--citi-blue);
+    }
+
+    .doc-bank-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--citi-blue-dark);
+      letter-spacing: 0.5px;
+    }
+  }
+
+  .doc-title-block {
+    text-align: right;
+
+    .doc-title {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--citi-blue);
+      margin: 0 0 4px;
+    }
+
+    .doc-subtitle {
+      font-size: 12px;
+      color: var(--citi-text-secondary);
+    }
+  }
+}
+
+.doc-account-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px 16px;
+  background-color: var(--citi-surface-sub);
+  border: 1px solid var(--citi-border-subtle);
+  padding: 12px 16px;
+  border-radius: 2px;
+  margin-bottom: 16px;
+
+  .meta-item {
+    display: flex;
+    flex-direction: column;
+
+    .meta-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--citi-text-secondary);
+    }
+
+    .meta-value {
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--citi-text-primary);
+    }
+  }
+}
+
+.doc-summary-band {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+  margin-bottom: 16px;
+
+  .summary-box {
+    background: #fafbfc;
+    border: 1px solid var(--citi-border-subtle);
+    padding: 10px 12px;
+    border-radius: 2px;
+    display: flex;
+    flex-direction: column;
+
+    .sum-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      color: var(--citi-text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .sum-value {
+      font-size: 13px;
+      font-weight: 700;
+      font-family: var(--citi-font-mono);
+    }
+
+    &.closing-box {
+      background-color: #d9e7fd;
+      border-color: var(--citi-blue-focus);
+
+      .highlight-balance {
+        color: var(--citi-blue);
+        font-size: 15px;
+      }
+    }
+  }
+}
+
+.credit-text {
+  color: var(--citi-success);
+}
+
+.debit-text {
+  color: var(--citi-danger);
+}
+
+.doc-transactions-table-wrap {
+  margin-bottom: 16px;
+}
+
+.doc-table {
+  font-size: 11px;
+
+  th {
+    font-size: 11px;
+  }
+
+  td {
+    padding: 5px 8px;
+  }
+}
+
+.cd-badge {
+  display: inline-block;
+  padding: 1px 4px;
+  border-radius: 2px;
+  font-size: 10px;
+  font-weight: 700;
+
+  &.cr {
+    background: var(--citi-success-bg);
+    color: var(--citi-success);
+  }
+
+  &.dr {
+    background: var(--citi-danger-bg);
+    color: var(--citi-danger);
+  }
+}
+
+.running-bal-col {
+  font-weight: 600;
+  color: var(--citi-blue-navy);
+}
+
+.enhanced-detail-row {
+  background-color: #f8fafc !important;
+
+  td {
+    padding: 8px 12px !important;
+    border-bottom: 1px dashed var(--citi-border-subtle) !important;
+  }
+
+  .enhanced-detail-box {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 12px;
+    font-size: 10px;
+    color: var(--citi-text-secondary);
+
+    .detail-col {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+  }
+}
+
+.doc-footer-notes {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  border-top: 1px solid var(--citi-border-subtle);
+  padding-top: 12px;
+  font-size: 10px;
+  color: var(--citi-text-muted);
+
+  p {
+    margin: 0 0 2px;
+  }
+
+  .branch-note {
+    font-style: italic;
+    max-width: 600px;
+  }
+
+  .footer-right {
+    display: flex;
+    flex-direction: column;
+    text-align: right;
+    gap: 2px;
+  }
+}

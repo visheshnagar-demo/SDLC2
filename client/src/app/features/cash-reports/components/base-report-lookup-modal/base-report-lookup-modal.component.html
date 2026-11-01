@@ -1,0 +1,99 @@
+<div class="citi-modal-backdrop" (click)="onClose()">
+  <div class="citi-modal-window base-lookup-window" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="citi-modal-header">
+      <h4>Base Report Name Lookup</h4>
+      <button type="button" class="citi-modal-close" (click)="onClose()" aria-label="Close">&times;</button>
+    </div>
+
+    <!-- Filter Toolbar -->
+    <div class="lookup-filter-toolbar">
+      <div class="filter-row">
+        <div class="filter-group">
+          <label for="baseLookupCategory" class="citi-label">Report Category</label>
+          <select id="baseLookupCategory" class="citi-select" [(ngModel)]="searchCategory">
+            <option value="Cash Statements Reports">Cash Statements Reports</option>
+            <option value="All Categories">All Categories</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label for="baseLookupType" class="citi-label">Report Type</label>
+          <select id="baseLookupType" class="citi-select" [(ngModel)]="searchReportType">
+            <option value="All Reports">All Reports</option>
+            <option value="Standard">Standard</option>
+            <option value="Derived">Derived</option>
+          </select>
+        </div>
+
+        <div class="filter-group keyword-group">
+          <label for="baseLookupSearch" class="citi-label">Search Base Report Name</label>
+          <div class="search-input-box">
+            <input
+              id="baseLookupSearch"
+              type="text"
+              class="citi-input"
+              placeholder="Filter 25 base reports..."
+              [(ngModel)]="searchKeyword"
+              autofocus
+            />
+          </div>
+        </div>
+
+        <div class="toolbar-btn-group">
+          <button type="button" class="citi-btn citi-btn-utility" (click)="onReset()">Reset</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Body: 25 Base Reports Catalog -->
+    <div class="citi-modal-body">
+      <div class="citi-table-container">
+        <table class="citi-table">
+          <thead>
+            <tr>
+              <th style="width: 60%;">Base Report Name</th>
+              <th style="width: 40%;">Report Category</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (r of filteredReports; track r.id) {
+              <tr
+                [class.selected-row]="selectedReport?.id === r.id"
+                (click)="onRowClick(r)"
+                (dblclick)="onRowDoubleClick(r)"
+                class="catalog-row"
+              >
+                <td>
+                  <strong>{{ r.baseReportName }}</strong>
+                  @if (r.baseReportName === 'Account Statement – Comprehensive') {
+                    <span class="citi-badge citi-badge-success" style="margin-left: 8px;">Fully Supported</span>
+                  }
+                </td>
+                <td>{{ r.category }}</td>
+              </tr>
+            }
+            @if (filteredReports.length === 0) {
+              <tr>
+                <td colspan="2" class="empty-msg">No base reports found.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="citi-modal-footer">
+      <button type="button" class="citi-btn citi-btn-utility" (click)="onClose()">Cancel</button>
+      <button
+        type="button"
+        class="citi-btn citi-btn-primary"
+        [disabled]="!selectedReport"
+        (click)="confirm()"
+      >
+        Select Base Report
+      </button>
+    </div>
+  </div>
+</div>

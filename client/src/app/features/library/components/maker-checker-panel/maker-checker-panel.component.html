@@ -1,0 +1,135 @@
+<div class="citi-modal-backdrop" (click)="onClose()">
+  <div class="citi-modal-window maker-checker-window" (click)="$event.stopPropagation()">
+    <!-- Header -->
+    <div class="citi-modal-header">
+      <h4>Maker-Checker Dual Control Review</h4>
+      <button type="button" class="citi-modal-close" (click)="onClose()">&times;</button>
+    </div>
+
+    <!-- Body -->
+    <div class="citi-modal-body">
+      <!-- Item Meta Box -->
+      <div class="audit-meta-card">
+        <div class="meta-row">
+          <span class="meta-label">Item Type:</span>
+          <span class="meta-val">{{ itemType === 'DELIVERY_OPTION' ? 'Delivery Option Profile' : 'Report Schedule' }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Item Identifier / Name:</span>
+          <span class="meta-val"><strong>{{ itemData.name || itemData.scheduleName }}</strong></span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Current Status:</span>
+          <span class="citi-badge citi-badge-warning">{{ itemData.authStatus }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Maker User (Submitter):</span>
+          <span class="meta-val">{{ itemData.makerName }} ({{ itemData.makerId }})</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Current Reviewer:</span>
+          <span class="meta-val">{{ currentUser ? currentUser.fullName : 'Sarah Smith' }} [{{ currentUser ? currentUser.role : 'AUTHORIZER' }}]</span>
+        </div>
+      </div>
+
+      <!-- Item Payload Details -->
+      <div class="details-section">
+        <h6>Configuration Parameters:</h6>
+        @if (itemType === 'DELIVERY_OPTION') {
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="d-label">Delivery Type:</span>
+              <span class="d-val">{{ itemData.deliveryType }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="d-label">Security Method:</span>
+              <span class="d-val">{{ itemData.securityMethod }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="d-label">Email Recipients:</span>
+              <span class="d-val">{{ itemData.emailRecipients }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="d-label">Email Subject:</span>
+              <span class="d-val">{{ itemData.emailSubject }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="d-label">File Name:</span>
+              <span class="d-val">{{ itemData.fileName }}</span>
+            </div>
+          </div>
+        } @else {
+          <div class="details-grid">
+            <div class="detail-item">
+              <span class="d-label">Schedule Reference:</span>
+              <span class="d-val">{{ itemData.scheduleReferenceId }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="d-label">Event Name:</span>
+              <span class="d-val">{{ itemData.eventName }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="d-label">Interval:</span>
+              <span class="d-val">{{ itemData.scheduleInterval }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="d-label">Holiday Option:</span>
+              <span class="d-val">{{ itemData.holidayOption }}</span>
+            </div>
+            <div class="detail-item">
+              <span class="d-label">Start Time:</span>
+              <span class="d-val">{{ itemData.runStartTime }} (Every {{ itemData.runEveryDays }} Day(s))</span>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Segregation of Duties Warning if Maker attempts to self-approve -->
+      @if (isSelfApproval) {
+        <div class="citi-alert alert-warning">
+          <strong>&#9888; Segregation of Duties Policy:</strong>
+          You are the Maker ({{ itemData.makerName }}) of this record. Dual-control policy prohibits self-authorization. Please use the Top Navigation bar to switch user role to <em>Authorizer (Sarah Smith)</em> to approve.
+        </div>
+      }
+
+      <!-- Authorizer Comments Input -->
+      <div class="citi-form-group" style="margin-top: 14px;">
+        <label class="citi-label" for="authorizerComment">Authorizer Review Notes / Comments</label>
+        <textarea
+          id="authorizerComment"
+          class="citi-form-control"
+          rows="2"
+          [(ngModel)]="authorizerComment"
+          placeholder="Enter review comments (mandatory for Repair or Reject)..."
+        ></textarea>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="citi-modal-footer">
+      <button type="button" class="citi-btn citi-btn-utility" (click)="onClose()">Close</button>
+      <button
+        type="button"
+        class="citi-btn citi-btn-destructive"
+        (click)="onAction('REJECT')"
+      >
+        Reject
+      </button>
+      <button
+        type="button"
+        class="citi-btn citi-btn-warning"
+        (click)="onAction('SEND_TO_REPAIR')"
+      >
+        Send to Repair
+      </button>
+      <button
+        type="button"
+        class="citi-btn citi-btn-success"
+        [disabled]="isSelfApproval"
+        (click)="onAction('AUTHORIZE')"
+      >
+        &#10003; Authorize
+      </button>
+    </div>
+  </div>
+</div>

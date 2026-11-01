@@ -1,0 +1,467 @@
+<div class="report-criteria-page">
+  <!-- Page Header -->
+  <div class="criteria-header-band">
+    <div class="header-title-group">
+      <h2 class="citi-h2">Report Criteria</h2>
+      <h6 class="citi-h6 sub-title">Account Statement – Comprehensive</h6>
+    </div>
+    <!-- Subheader Tabs -->
+    <div class="criteria-subnav-tabs">
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeSubTab === 'CRITERIA'"
+        (click)="activeSubTab = 'CRITERIA'"
+      >
+        Report Criteria
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeSubTab === 'SCHEDULE'"
+        (click)="onSchedule()"
+      >
+        Schedule
+      </button>
+      <button
+        type="button"
+        class="tab-btn"
+        [class.active]="activeSubTab === 'DELIVERY'"
+        (click)="router.navigate(['/library/delivery-options'])"
+      >
+        Delivery Options
+      </button>
+    </div>
+  </div>
+
+  @if (statusMessage) {
+    <div class="citi-alert" [class.alert-success]="statusType === 'success'" [class.alert-info]="statusType === 'info'">
+      {{ statusMessage }}
+    </div>
+  }
+
+  <!-- Main Criteria Form -->
+  <form [formGroup]="criteriaForm" class="criteria-form">
+    <!-- Section 1: Core Parameters (3-Column Layout) -->
+    <div class="citi-card core-criteria-card">
+      <div class="citi-card-header">
+        <h6>General Report Parameters</h6>
+      </div>
+
+      <div class="form-three-columns">
+        <!-- Column 1 -->
+        <div class="form-col">
+          <div class="citi-form-group">
+            <label class="citi-label" for="derivedReportName">
+              Derived Report Name<span class="citi-required-asterisk">*</span>
+            </label>
+            <input
+              id="derivedReportName"
+              type="text"
+              class="citi-input"
+              formControlName="derivedReportName"
+              placeholder="Enter custom report name..."
+            />
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="baseReportName">
+              Base Report Name
+            </label>
+            <input
+              id="baseReportName"
+              type="text"
+              class="citi-input"
+              formControlName="baseReportName"
+              readonly
+            />
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label" for="format">
+              Format<span class="citi-required-asterisk">*</span>
+            </label>
+            <select id="format" class="citi-select" formControlName="format">
+              @for (fmt of formatOptions; track fmt) {
+                <option [value]="fmt">{{ fmt }}</option>
+              }
+            </select>
+          </div>
+
+          <div class="checkbox-pair-row">
+            <label class="citi-checkbox-label">
+              <input type="checkbox" class="citi-checkbox" formControlName="signWithCertificate" />
+              <span>Sign with Citibank Certificate</span>
+            </label>
+            <label class="citi-checkbox-label">
+              <input type="checkbox" class="citi-checkbox" formControlName="compressWithWinzip" />
+              <span>Compress with Winzip</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Column 2 -->
+        <div class="form-col">
+          <div class="citi-form-group">
+            <div class="label-with-info">
+              <label class="citi-label">Delivery Options</label>
+              <span class="info-icon" title="Select a saved and authorized delivery profile, or leave empty to run and download in-app.">&#9432;</span>
+            </div>
+            <app-binocular-lookup-input
+              formControlName="deliveryOptionName"
+              placeholder="Empty = Run & download in-app"
+              [hasClear]="true"
+              [readonly]="true"
+              (lookupClick)="openLookup('DELIVERY')"
+              (clearClick)="criteriaForm.patchValue({ deliveryOptionId: '', deliveryOptionName: '' })"
+            ></app-binocular-lookup-input>
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label">Designated Owner</label>
+            <app-binocular-lookup-input
+              formControlName="designatedOwner"
+              [readonly]="true"
+              (lookupClick)="openLookup('OWNER')"
+            ></app-binocular-lookup-input>
+          </div>
+
+          <div class="citi-form-group">
+            <label class="citi-label">Share</label>
+            <div class="radio-horizontal-group">
+              <label class="citi-radio-label">
+                <input type="radio" class="citi-radio" value="PRIVATE" formControlName="share" />
+                <span>Private</span>
+              </label>
+              <label class="citi-radio-label">
+                <input type="radio" class="citi-radio" value="PUBLIC" formControlName="share" />
+                <span>Public</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="citi-form-group" style="margin-top: 10px;">
+            <label class="citi-checkbox-label">
+              <input type="checkbox" class="citi-checkbox" formControlName="favorite" />
+              <span>Mark as Favorite (&#9733;)</span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Column 3: Quick Metadata & Security Notice -->
+        <div class="form-col info-column">
+          <div class="citi-notice-box">
+            <div class="notice-title">CitiDirect Entitlements Applied</div>
+            <p class="notice-body">
+              Account selection and data access are strictly filtered based on your branch and customer entitlements.
+            </p>
+            <div class="notice-meta">
+              <span>Security: <strong>Maker-Checker Dual Control</strong></span>
+              <span>Timezone: <strong>GMT (UTC+0)</strong></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Collapsible "Report Specific Field Details" -->
+    <div class="citi-card specific-fields-card">
+      <div class="specific-fields-header" (click)="toggleSpecificFields()">
+        <div class="header-left">
+          <span class="chevron-icon">{{ isSpecificFieldsCollapsed ? '&#9654;' : '&#9660;' }}</span>
+          <h6>Report Specific Field Details</h6>
+        </div>
+        <span class="helper-hint">Click to {{ isSpecificFieldsCollapsed ? 'expand' : 'collapse' }} filtering options</span>
+      </div>
+
+      @if (!isSpecificFieldsCollapsed) {
+        <div class="specific-fields-body">
+          <!-- Row A: Branch, Customer, Account / Account Group -->
+          <div class="fields-grid-3">
+            <div class="citi-form-group">
+              <label class="citi-label">Branch Number/Name</label>
+              <app-binocular-lookup-input
+                formControlName="branchNumberName"
+                placeholder="Lookup branch..."
+                [hasClear]="true"
+                (lookupClick)="openLookup('BRANCH')"
+                (clearClick)="criteriaForm.patchValue({ branchNumberName: '' })"
+              ></app-binocular-lookup-input>
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label">Customer Number/Name</label>
+              <app-binocular-lookup-input
+                formControlName="customerNumberName"
+                placeholder="Lookup customer..."
+                [hasClear]="true"
+                (lookupClick)="openLookup('CUSTOMER')"
+                (clearClick)="criteriaForm.patchValue({ customerNumberName: '' })"
+              ></app-binocular-lookup-input>
+            </div>
+
+            <div class="citi-form-group">
+              <div class="radio-toggle-inline">
+                <label class="citi-radio-label">
+                  <input type="radio" class="citi-radio" value="ACCOUNT" formControlName="accountSelectionType" />
+                  <span>Account</span>
+                </label>
+                <label class="citi-radio-label">
+                  <input type="radio" class="citi-radio" value="ACCOUNT_GROUP" formControlName="accountSelectionType" />
+                  <span>Account Group</span>
+                </label>
+              </div>
+              <app-binocular-lookup-input
+                formControlName="accountNumberName"
+                placeholder="Lookup account..."
+                [hasClear]="true"
+                (lookupClick)="openLookup('ACCOUNT')"
+                (clearClick)="criteriaForm.patchValue({ accountNumberName: '' })"
+              ></app-binocular-lookup-input>
+            </div>
+          </div>
+
+          <!-- Row B: Bank Reference, Customer Reference, Transaction Amount -->
+          <div class="fields-grid-3">
+            <div class="citi-form-group">
+              <label class="citi-label">Bank Reference</label>
+              <div class="fx-input-pair">
+                <app-fx-operator-select formControlName="bankReferenceOperator"></app-fx-operator-select>
+                <input type="text" class="citi-input" formControlName="bankReferenceValue" placeholder="Bank ref..." />
+              </div>
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label">Customer Reference</label>
+              <div class="fx-input-pair">
+                <app-fx-operator-select formControlName="customerReferenceOperator"></app-fx-operator-select>
+                <input type="text" class="citi-input" formControlName="customerReferenceValue" placeholder="Customer ref..." />
+              </div>
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label">Transaction Amount Range</label>
+              <div class="range-pair">
+                <input type="number" class="citi-input" formControlName="transactionAmountFrom" placeholder="From..." />
+                <span class="range-sep">&ndash;</span>
+                <input type="number" class="citi-input" formControlName="transactionAmountTo" placeholder="To..." />
+              </div>
+            </div>
+          </div>
+
+          <!-- Row C: Account Currency, Transaction Description, By Order Beneficiary -->
+          <div class="fields-grid-3">
+            <div class="citi-form-group">
+              <label class="citi-label">Account Currency</label>
+              <app-binocular-lookup-input
+                formControlName="accountCurrency"
+                placeholder="CCY..."
+                [hasClear]="true"
+                (lookupClick)="openLookup('CURRENCY')"
+                (clearClick)="criteriaForm.patchValue({ accountCurrency: '' })"
+              ></app-binocular-lookup-input>
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label">Transaction Description</label>
+              <div class="fx-input-pair">
+                <app-fx-operator-select formControlName="transactionDescriptionOperator"></app-fx-operator-select>
+                <input type="text" class="citi-input" formControlName="transactionDescriptionValue" placeholder="Description..." />
+              </div>
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label" for="byOrderBeneficiary">By Order Beneficiary</label>
+              <input id="byOrderBeneficiary" type="text" class="citi-input" formControlName="byOrderBeneficiary" placeholder="Beneficiary name..." />
+            </div>
+          </div>
+
+          <!-- Row D: Transaction Code, Cheques, Base Currency -->
+          <div class="fields-grid-3">
+            <div class="citi-form-group">
+              <label class="citi-label" for="transactionCode">Transaction Code</label>
+              <select id="transactionCode" class="citi-select" formControlName="transactionCode">
+                @for (tc of transactionCodeOptions; track tc) {
+                  <option [value]="tc">{{ tc }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label" for="cheques">Cheques<span class="citi-required-asterisk">*</span></label>
+              <select id="cheques" class="citi-select" formControlName="cheques">
+                @for (ch of chequeOptions; track ch) {
+                  <option [value]="ch">{{ ch }}</option>
+                }
+              </select>
+            </div>
+
+            <div class="citi-form-group">
+              <label class="citi-label">Base Currency<span class="citi-required-asterisk">*</span></label>
+              <app-binocular-lookup-input
+                formControlName="baseCurrency"
+                (lookupClick)="openLookup('CURRENCY')"
+              ></app-binocular-lookup-input>
+            </div>
+          </div>
+
+          <!-- Display Options Checkboxes -->
+          <div class="display-checkboxes-bar">
+            <div class="bar-title">Additional Data & Display Options:</div>
+            <div class="checkboxes-wrap">
+              <label class="citi-checkbox-label">
+                <input type="checkbox" class="citi-checkbox" formControlName="showEnhancedTransactionDetails" />
+                <span>Show Enhanced Transaction Details</span>
+              </label>
+              <label class="citi-checkbox-label">
+                <input type="checkbox" class="citi-checkbox" formControlName="outputAccountSubTotals" />
+                <span>Output Account Sub-Totals</span>
+              </label>
+              <label class="citi-checkbox-label">
+                <input type="checkbox" class="citi-checkbox" formControlName="outputGrandTotal" />
+                <span>Output Grand Total</span>
+              </label>
+              <label class="citi-checkbox-label">
+                <input type="checkbox" class="citi-checkbox" formControlName="showAdditionalOrderingPartyBeneficiary" />
+                <span>Show Additional Ordering Party / Beneficiary Details</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Statement Date Radio Group -->
+          <div class="date-selection-box">
+            <div class="date-box-header">
+              <span class="citi-label">Statement Date<span class="citi-required-asterisk">*</span></span>
+            </div>
+            <div class="radio-pill-container">
+              @for (opt of statementDateOptions; track opt) {
+                <label class="radio-pill-label" [class.selected]="criteriaForm.get('statementDateRadio')?.value === opt">
+                  <input
+                    type="radio"
+                    class="citi-radio"
+                    [value]="opt"
+                    formControlName="statementDateRadio"
+                  />
+                  <span>{{ opt }}</span>
+                </label>
+              }
+            </div>
+            @if (criteriaForm.get('statementDateRadio')?.value === 'Date Range') {
+              <div class="custom-date-range-row">
+                <div class="citi-form-group">
+                  <label class="citi-label">From Statement Date</label>
+                  <input type="date" class="citi-input" formControlName="statementDateFrom" />
+                </div>
+                <div class="citi-form-group">
+                  <label class="citi-label">To Statement Date</label>
+                  <input type="date" class="citi-input" formControlName="statementDateTo" />
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Value Date Radio Group -->
+          <div class="date-selection-box">
+            <div class="date-box-header">
+              <span class="citi-label">Value Date</span>
+            </div>
+            <div class="radio-pill-container">
+              @for (opt of valueDateOptions; track opt) {
+                <label class="radio-pill-label" [class.selected]="criteriaForm.get('valueDateRadio')?.value === opt">
+                  <input
+                    type="radio"
+                    class="citi-radio"
+                    [value]="opt"
+                    formControlName="valueDateRadio"
+                  />
+                  <span>{{ opt }}</span>
+                </label>
+              }
+            </div>
+            @if (criteriaForm.get('valueDateRadio')?.value === 'Date Range') {
+              <div class="custom-date-range-row">
+                <div class="citi-form-group">
+                  <label class="citi-label">From Value Date</label>
+                  <input type="date" class="citi-input" formControlName="valueDateFrom" />
+                </div>
+                <div class="citi-form-group">
+                  <label class="citi-label">To Value Date</label>
+                  <input type="date" class="citi-input" formControlName="valueDateTo" />
+                </div>
+              </div>
+            }
+          </div>
+
+          <!-- Output Options Checkboxes -->
+          <div class="output-options-bar">
+            <div class="bar-title">Report Layout & Execution Options:</div>
+            <div class="checkboxes-wrap">
+              <label class="citi-checkbox-label">
+                <input type="checkbox" class="citi-checkbox" formControlName="pageBreaks" />
+                <span>Page Breaks</span>
+              </label>
+              <label class="citi-checkbox-label">
+                <input type="checkbox" class="citi-checkbox" formControlName="printCitibankChinaStamp" />
+                <span>Print Citibank China Stamp</span>
+              </label>
+              <label class="citi-checkbox-label">
+                <input type="checkbox" class="citi-checkbox" formControlName="activityOnly" />
+                <span>Activity Only</span>
+              </label>
+              <label class="citi-checkbox-label">
+                <input type="checkbox" class="citi-checkbox" formControlName="runInIncrementalMode" />
+                <span>Run In Incremental Mode</span>
+              </label>
+              <label class="citi-checkbox-label">
+                <input type="checkbox" class="citi-checkbox" formControlName="printSelectionCriteria" />
+                <span>Print Selection Criteria</span>
+              </label>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  </form>
+
+  <!-- Sticky Action Dock -->
+  <div class="citi-action-dock">
+    <button type="button" class="citi-btn citi-btn-utility" (click)="resetToDefaults()">
+      Reset To Defaults
+    </button>
+    <button type="button" class="citi-btn citi-btn-outline" (click)="onQuickSchedule()">
+      Quick Schedule
+    </button>
+    <button type="button" class="citi-btn citi-btn-outline" (click)="onSchedule()">
+      Schedule
+    </button>
+    <button type="button" class="citi-btn citi-btn-outline" (click)="onSave()">
+      Save
+    </button>
+    <button type="button" class="citi-btn citi-btn-secondary" (click)="onSaveAndRun()">
+      Save &amp; Run
+    </button>
+    <button type="button" class="citi-btn citi-btn-primary" (click)="onRun()">
+      Run
+    </button>
+  </div>
+</div>
+
+<!-- Generic Lookup Modal for Branch / Customer / Account / Delivery / Owner -->
+@if (activeLookupModal) {
+  <app-generic-lookup-modal
+    [title]="lookupTitle"
+    [columns]="lookupColumns"
+    [items]="lookupItems"
+    (selectItem)="onLookupSelect($event)"
+    (close)="closeLookupModal()"
+  ></app-generic-lookup-modal>
+}
+
+<!-- Interactive Financial Report Statement Viewer -->
+@if (showViewerModal && statementData) {
+  <app-report-viewer-modal
+    [data]="statementData"
+    [criteria]="criteriaForm.getRawValue()"
+    (close)="showViewerModal = false"
+  ></app-report-viewer-modal>
+}

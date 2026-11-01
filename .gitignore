@@ -134,3 +134,14 @@ tmp/
 temp/
 *.log
 logs/
+node_modules/
+.angular/
+.npm_install.log
+.vite_build.log
+.vitest_run.log
+validation_attempts.log
+
+# Frontend build artifacts (auto-added by Frontend Agent)
+client/node_modules/
+frontend/node_modules/
+ui/node_modules/

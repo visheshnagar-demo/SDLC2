@@ -1,0 +1,121 @@
+<header class="citi-top-navbar" (click)="$event.stopPropagation()">
+  <div class="citi-navbar-left">
+    <!-- Citi Brand Identity with Red Arc -->
+    <a routerLink="/reports/cash-statements" class="citi-brand-block" (click)="closeDropdowns()">
+      <div class="citi-logo-icon">
+        <span class="citi-wordmark">citi</span>
+        <span class="citi-red-arc"></span>
+      </div>
+      <div class="citi-brand-text">
+        <span class="citi-title-main">CitiDirect BE<sup>&reg;</sup></span>
+        <span class="citi-subtitle">Institutional Clients Group</span>
+      </div>
+    </a>
+
+    <!-- Main Navigation Modules -->
+    <nav class="citi-nav-menu">
+      <a routerLink="/reports/cash-statements" class="citi-nav-link" routerLinkActive="active" (click)="closeDropdowns()">
+        <svg class="citi-icon" viewBox="0 0 24 24" width="16" height="16" fill="currentColor">
+          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+        </svg>
+        <span>Home</span>
+      </a>
+
+      <!-- Reports & Analytics Module -->
+      <div class="citi-nav-item has-dropdown">
+        <button type="button" class="citi-nav-link active" (click)="toggleDropdown('reports')">
+          <span>Reports & Analytics</span>
+          <span class="citi-caret">&#9662;</span>
+        </button>
+        @if (activeDropdown === 'reports') {
+          <div class="citi-dropdown-panel" (click)="closeDropdowns()">
+            <div class="dropdown-column">
+              <div class="dropdown-heading">Cash Reports</div>
+              <a routerLink="/reports/cash-statements" class="dropdown-item">Cash Statements Reports</a>
+              <a routerLink="/reports/cash-statements" class="dropdown-item">Cash Balances Reports</a>
+              <a routerLink="/reports/cash-statements" class="dropdown-item">Cash Transaction Initiation Reports</a>
+            </div>
+            <div class="dropdown-column">
+              <div class="dropdown-heading">Schedule Reports</div>
+              <a routerLink="/scheduling" class="dropdown-item">Create Schedule</a>
+              <a routerLink="/scheduling" class="dropdown-item">View All Schedules</a>
+            </div>
+            <div class="dropdown-column">
+              <div class="dropdown-heading">Reports</div>
+              <a routerLink="/reports/my-reports" class="dropdown-item">My Reports</a>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- Self Service Module -->
+      <div class="citi-nav-item has-dropdown">
+        <button type="button" class="citi-nav-link" (click)="toggleDropdown('selfservice')">
+          <span>Self Service</span>
+          <span class="citi-caret">&#9662;</span>
+        </button>
+        @if (activeDropdown === 'selfservice') {
+          <div class="citi-dropdown-panel" (click)="closeDropdowns()">
+            <div class="dropdown-column">
+              <div class="dropdown-heading">Maintenance</div>
+              <a routerLink="/library/delivery-options" class="dropdown-item">Library Maintenance (Delivery Options)</a>
+              <a routerLink="/library/delivery-options" class="dropdown-item">Template Library</a>
+              <a routerLink="/library/delivery-options" class="dropdown-item">Standing Instruction Library</a>
+              <a routerLink="/library/delivery-options" class="dropdown-item">Netting Import Map & FX Rates</a>
+            </div>
+          </div>
+        }
+      </div>
+
+      <!-- File Services Module -->
+      <div class="citi-nav-item has-dropdown">
+        <button type="button" class="citi-nav-link" (click)="toggleDropdown('fileservices')">
+          <span>File Services</span>
+          <span class="citi-caret">&#9662;</span>
+        </button>
+        @if (activeDropdown === 'fileservices') {
+          <div class="citi-dropdown-panel" (click)="closeDropdowns()">
+            <div class="dropdown-column">
+              <div class="dropdown-heading">Schedule Files and Reports</div>
+              <a routerLink="/scheduling" class="dropdown-item">To Authorize (Maker-Checker)</a>
+              <a routerLink="/scheduling" class="dropdown-item">Export File Template</a>
+              <a routerLink="/scheduling" class="dropdown-item">Export Data / Custom Format</a>
+              <a routerLink="/scheduling" class="dropdown-item">Import Transactions & S/MIME</a>
+            </div>
+          </div>
+        }
+      </div>
+
+      <a class="citi-nav-link disabled-link">
+        <span>CitiDirect Services</span>
+      </a>
+    </nav>
+  </div>
+
+  <div class="citi-navbar-right">
+    <!-- Live GMT Clock -->
+    <div class="citi-gmt-clock">
+      <span class="clock-label">As of:</span>
+      <span class="clock-time">{{ currentGmtTime }}</span>
+    </div>
+
+    <!-- Maker/Checker Role Switcher for Dual-Control Testing -->
+    <div class="citi-role-switcher">
+      <span class="role-badge" [class.maker]="currentUser.role === 'MAKER'" [class.checker]="currentUser.role === 'AUTHORIZER'">
+        {{ currentUser.role }}
+      </span>
+      <button class="role-toggle-btn" (click)="switchRole(currentUser.role === 'MAKER' ? 'AUTHORIZER' : 'MAKER')" title="Switch User for Maker-Checker Dual Control Simulation">
+        Switch to {{ currentUser.role === 'MAKER' ? 'Authorizer' : 'Maker' }}
+      </button>
+    </div>
+
+    <!-- User Profile Details -->
+    <div class="citi-user-profile">
+      <div class="user-avatar">{{ currentUser.fullName.substring(0, 2) }}</div>
+      <div class="user-info">
+        <span class="user-name">{{ currentUser.fullName }}</span>
+        <span class="user-company">CITIBANK N.A. LONDON (0000244654)</span>
+      </div>
+    </div>
+  </div>
+</header>

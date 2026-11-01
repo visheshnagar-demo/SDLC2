@@ -1,0 +1,253 @@
+.citi-top-navbar {
+  height: 52px;
+  background-color: var(--citi-blue-dark);
+  color: var(--citi-text-white);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  position: relative;
+  z-index: 1000;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.citi-navbar-left, .citi-navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.citi-brand-block {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  color: var(--citi-text-white);
+  padding-right: 18px;
+  border-right: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.citi-logo-icon {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.citi-wordmark {
+  font-family: var(--citi-font-sans);
+  font-size: 24px;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.5px;
+}
+
+.citi-red-arc {
+  position: absolute;
+  top: -2px;
+  right: 2px;
+  width: 14px;
+  height: 6px;
+  border-top: 3px solid var(--citi-red-dark);
+  border-radius: 50% 50% 0 0;
+}
+
+.citi-brand-text {
+  display: flex;
+  flex-direction: column;
+
+  .citi-title-main {
+    font-size: 14px;
+    font-weight: 700;
+    line-height: 16px;
+  }
+
+  .citi-subtitle {
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.65);
+    line-height: 12px;
+  }
+}
+
+.citi-nav-menu {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.citi-nav-item {
+  position: relative;
+}
+
+.citi-nav-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  color: rgba(255, 255, 255, 0.85);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 150ms ease;
+
+  &:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+  }
+
+  &.active {
+    background-color: var(--citi-blue-navy);
+    color: #ffffff;
+    font-weight: 600;
+    border-bottom: 2px solid var(--citi-blue-focus);
+  }
+
+  &.disabled-link {
+    opacity: 0.5;
+    cursor: default;
+    &:hover { background: transparent; }
+  }
+}
+
+.citi-caret {
+  font-size: 10px;
+  margin-left: 2px;
+}
+
+.citi-dropdown-panel {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  background: var(--citi-surface-card);
+  border: 1px solid var(--citi-border-subtle);
+  border-radius: var(--citi-border-radius);
+  box-shadow: var(--citi-box-shadow-modal);
+  padding: 12px;
+  display: flex;
+  gap: 20px;
+  min-width: 480px;
+  z-index: 1010;
+  animation: citiFadeEnter 0.15s ease forwards;
+}
+
+.dropdown-column {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  .dropdown-heading {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--citi-blue);
+    padding: 4px 8px;
+    border-bottom: 1px solid var(--citi-border-subtle);
+    margin-bottom: 4px;
+  }
+
+  .dropdown-item {
+    font-size: 12px;
+    color: var(--citi-text-primary);
+    padding: 6px 8px;
+    text-decoration: none;
+    border-radius: 2px;
+
+    &:hover {
+      background-color: var(--citi-surface-sub);
+      color: var(--citi-blue-link);
+    }
+  }
+}
+
+.citi-gmt-clock {
+  font-size: 11px;
+  font-family: var(--citi-font-mono);
+  color: rgba(255, 255, 255, 0.75);
+  display: flex;
+  gap: 4px;
+
+  .clock-time {
+    color: #ffffff;
+    font-weight: 600;
+  }
+}
+
+.citi-role-switcher {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 8px;
+  border-radius: 3px;
+
+  .role-badge {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 2px;
+
+    &.maker {
+      background: var(--citi-blue-action);
+      color: #ffffff;
+    }
+
+    &.checker {
+      background: var(--citi-warning);
+      color: #000000;
+    }
+  }
+
+  .role-toggle-btn {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffffff;
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    cursor: pointer;
+
+    &:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+  }
+}
+
+.citi-user-profile {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  .user-avatar {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: var(--citi-blue);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
+
+  .user-info {
+    display: flex;
+    flex-direction: column;
+
+    .user-name {
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 14px;
+    }
+
+    .user-company {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.65);
+      line-height: 11px;
+    }
+  }
+}

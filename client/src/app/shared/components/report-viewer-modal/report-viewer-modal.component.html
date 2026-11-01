@@ -1,0 +1,194 @@
+<div class="citi-modal-backdrop" (click)="onClose()">
+  <div class="citi-modal-window report-viewer-window" (click)="$event.stopPropagation()">
+    <!-- Modal Header -->
+    <div class="citi-modal-header">
+      <div class="header-left">
+        <span class="report-icon">&#128196;</span>
+        <h4>Account Statement – Comprehensive Report (Preview)</h4>
+      </div>
+      <div class="header-actions">
+        <button type="button" class="export-btn" (click)="downloadFormat('Adobe PDF')">PDF</button>
+        <button type="button" class="export-btn" (click)="downloadFormat('Excel (XLS)')">Excel (XLS)</button>
+        <button type="button" class="export-btn" (click)="downloadFormat('Comma Separated Value (CSV)')">CSV</button>
+        <button type="button" class="export-btn" (click)="downloadFormat('DHTML')">DHTML</button>
+        <button type="button" class="export-btn" (click)="downloadFormat('Rich Text Format (RTF)')">RTF</button>
+        <button type="button" class="export-btn" (click)="printReport()">&#128424; Print</button>
+        <button type="button" class="citi-modal-close" (click)="onClose()">&times;</button>
+      </div>
+    </div>
+
+    <!-- Modal Body (Financial Document Layout) -->
+    <div class="citi-modal-body report-document-body">
+      <!-- Report Header -->
+      <div class="doc-header">
+        <div class="doc-brand">
+          <div class="citi-logo-icon">
+            <span class="citi-wordmark">citi</span>
+            <span class="citi-red-arc"></span>
+          </div>
+          <span class="doc-bank-name">CITIBANK, N.A.</span>
+        </div>
+        <div class="doc-title-block">
+          <h2 class="doc-title">Account Statement – Comprehensive Report</h2>
+          <span class="doc-subtitle">CitiDirect BE<sup>&reg;</sup> Cash Statement Reports</span>
+        </div>
+      </div>
+
+      <!-- Account Metadata Block -->
+      <div class="doc-account-grid">
+        <div class="meta-item">
+          <span class="meta-label">Customer Name / ID:</span>
+          <span class="meta-value">{{ data.customerNumberName }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Branch Name / No:</span>
+          <span class="meta-value">{{ data.branchNumberName }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Account Name / No:</span>
+          <span class="meta-value">{{ data.accountNumberName }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">SWIFT BIC:</span>
+          <span class="meta-value">{{ data.swiftCode }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Currency / Type:</span>
+          <span class="meta-value">{{ data.currency }} / {{ data.accountType }}</span>
+        </div>
+        <div class="meta-item">
+          <span class="meta-label">Statement Date:</span>
+          <span class="meta-value">{{ data.statementDate }}</span>
+        </div>
+      </div>
+
+      <!-- Financial Summary Band -->
+      <div class="doc-summary-band">
+        <div class="summary-box">
+          <span class="sum-label">Opening Available Balance:</span>
+          <span class="sum-value">{{ data.openingBalance | number:'1.2-2' }} {{ data.currency }}</span>
+        </div>
+        <div class="summary-box">
+          <span class="sum-label">Credits:</span>
+          <span class="sum-value credit-text">{{ data.creditCount }} CR ({{ data.totalCreditAmount | number:'1.2-2' }})</span>
+        </div>
+        <div class="summary-box">
+          <span class="sum-label">Debits:</span>
+          <span class="sum-value debit-text">{{ data.debitCount }} DR ({{ data.totalDebitAmount | number:'1.2-2' }})</span>
+        </div>
+        <div class="summary-box">
+          <span class="sum-label">Net Movement:</span>
+          <span class="sum-value" [class.credit-text]="data.netTransactionAmount >= 0" [class.debit-text]="data.netTransactionAmount < 0">
+            {{ data.netTransactionAmount | number:'1.2-2' }}
+          </span>
+        </div>
+        <div class="summary-box closing-box">
+          <span class="sum-label">Current Closing Avail Balance:</span>
+          <span class="sum-value highlight-balance">{{ data.closingBalance | number:'1.2-2' }} {{ data.currency }}</span>
+        </div>
+      </div>
+
+      <!-- Transactions Grid -->
+      <div class="doc-transactions-table-wrap">
+        <table class="citi-table doc-table">
+          <thead>
+            <tr>
+              <th style="width: 85px;">Value Date</th>
+              <th style="width: 120px;">Customer Ref</th>
+              <th style="width: 110px;">Bank Ref</th>
+              <th>Transaction Description</th>
+              <th>Ordering Party / Beneficiary</th>
+              <th>Remittance Info</th>
+              <th style="width: 50px; text-align: center;">C/D</th>
+              <th class="numeric-col" style="width: 120px;">Amount</th>
+              @if (data.branchSupportsRunningBalance) {
+                <th class="numeric-col" style="width: 130px;">Running Balance</th>
+              }
+            </tr>
+          </thead>
+          <tbody>
+            @for (txn of data.transactions; track txn.id) {
+              <tr>
+                <td>{{ txn.valueDate }}</td>
+                <td>{{ txn.customerReference }}</td>
+                <td>{{ txn.bankReference }}</td>
+                <td><strong>{{ txn.description }}</strong></td>
+                <td>{{ txn.orderingPartyName }} &rarr; {{ txn.beneficiaryName }}</td>
+                <td>{{ txn.remittanceInformation || '-' }}</td>
+                <td style="text-align: center;">
+                  <span class="cd-badge" [class.cr]="txn.debitCredit === 'C'" [class.dr]="txn.debitCredit === 'D'">
+                    {{ txn.debitCredit }}
+                  </span>
+                </td>
+                <td class="numeric-col" [class.debit-text]="txn.debitCredit === 'D'">
+                  {{ txn.amount | number:'1.2-2' }}{{ txn.debitCredit === 'D' ? '-' : '' }}
+                </td>
+                @if (data.branchSupportsRunningBalance) {
+                  <td class="numeric-col running-bal-col">
+                    {{ txn.runningBalance | number:'1.2-2' }}
+                  </td>
+                }
+              </tr>
+
+              <!-- Extended details row if requested -->
+              @if (criteria.showEnhancedTransactionDetails || criteria.showAdditionalOrderingPartyBeneficiary) {
+                <tr class="enhanced-detail-row">
+                  <td [attr.colspan]="data.branchSupportsRunningBalance ? 9 : 8">
+                    <div class="enhanced-detail-box">
+                      <div class="detail-col">
+                        <span><strong>Product Type:</strong> {{ txn.productType || 'WIRE_TRANSFER' }}</span>
+                        <span><strong>Entry Date/Time:</strong> {{ txn.entryDate || '-' }}</span>
+                        <span><strong>Batch/Track No:</strong> {{ txn.batchTrackNumber || '-' }}</span>
+                      </div>
+                      <div class="detail-col">
+                        <span><strong>Originating Bank:</strong> {{ txn.originatingBank || '-' }} ({{ txn.bankClearingId || '-' }})</span>
+                        <span><strong>Beneficiary Bank:</strong> {{ txn.beneficiaryBank || '-' }}</span>
+                        <span><strong>By Order Of:</strong> {{ txn.byOrderOf || '-' }}</span>
+                      </div>
+                      <div class="detail-col">
+                        <span><strong>Payment Details:</strong> {{ txn.paymentDetails || '-' }}</span>
+                        @if (txn.addressLines && txn.addressLines.length > 0) {
+                          <span><strong>Address:</strong> {{ txn.addressLines.join(', ') }}</span>
+                        }
+                      </div>
+                    </div>
+                  </td>
+                </tr>
+              }
+            }
+          </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6" style="text-align: right; font-weight: 700;">Account Totals (7 Transactions):</td>
+              <td style="text-align: center;">5CR / 2DR</td>
+              <td class="numeric-col" style="font-weight: 700;">{{ data.closingBalance | number:'1.2-2' }}</td>
+              @if (data.branchSupportsRunningBalance) {
+                <td class="numeric-col" style="font-weight: 700;">{{ data.closingBalance | number:'1.2-2' }}</td>
+              }
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+
+      <!-- Report Footer Note -->
+      <div class="doc-footer-notes">
+        <div class="footer-left">
+          <p>= Indicates Calculated Balances</p>
+          <p class="branch-note">*Please note: For branches 920, 930 and 940, balances displayed are reflective of posted funds. Any debits currently pending will not be reflected in this balance.</p>
+        </div>
+        <div class="footer-right">
+          <span>Report Generated: 22/01/2022 17:00:00 GMT</span>
+          <span>Page 1 of 1</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="citi-modal-footer">
+      <button type="button" class="citi-btn citi-btn-utility" (click)="onClose()">Close Preview</button>
+      <button type="button" class="citi-btn citi-btn-primary" (click)="downloadFormat(criteria.format)">
+        Download {{ criteria.format }}
+      </button>
+    </div>
+  </div>
+</div>
