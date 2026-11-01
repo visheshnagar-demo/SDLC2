@@ -1,0 +1,6 @@
+passlib[bcrypt]
+Pillow
+pydantic[email]
+python-dateutil
+python-multipart
+reportlab
