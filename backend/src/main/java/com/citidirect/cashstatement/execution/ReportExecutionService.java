@@ -52,6 +52,30 @@ public class ReportExecutionService {
         this.objectMapper = objectMapper;
     }
 
+    public StatementReportData getReportDataJson(RunReportRequest request, String username) {
+        String reportName = request.getReportName();
+        CriteriaPayload criteria = request.getCriteria();
+
+        if (request.getDerivedReportId() != null) {
+            DerivedReport dr = derivedReportRepository.findById(request.getDerivedReportId()).orElse(null);
+            if (dr != null) {
+                if (reportName == null) reportName = dr.getDerivedReportName();
+                if (criteria == null) {
+                    try {
+                        criteria = objectMapper.readValue(dr.getCriteriaPayload(), CriteriaPayload.class);
+                    } catch (Exception e) {
+                        criteria = new CriteriaPayload();
+                    }
+                }
+            }
+        }
+
+        if (reportName == null) reportName = "Account Statement – Comprehensive";
+        if (criteria == null) criteria = new CriteriaPayload();
+
+        return aggregationService.generateReportData(reportName, criteria, username);
+    }
+
     public ExportResult executeReport(RunReportRequest request, String userId, String username) throws Exception {
         String reportName = request.getReportName();
         CriteriaPayload criteria = request.getCriteria();
@@ -74,7 +98,7 @@ public class ReportExecutionService {
 
         if (reportName == null) reportName = "Account Statement – Comprehensive";
         if (criteria == null) criteria = new CriteriaPayload();
-        if (format == null) format = "ADOBE_PDF";
+        if (format == null || "JSON".equalsIgnoreCase(format)) format = "ADOBE_PDF";
 
         StatementReportData reportData = aggregationService.generateReportData(reportName, criteria, username);
         ReportExportEngine engine = resolveEngine(format);
@@ -130,7 +154,7 @@ public class ReportExecutionService {
         }).collect(Collectors.toList());
     }
 
-    public ExportResult downloadReport(String executionId) throws Exception {
+    public ExportResult downloadReport(String executionId, String username) throws Exception {
         ReportExecution execution = executionRepository.findById(executionId)
                 .orElseThrow(() -> new IllegalArgumentException("Execution record not found: " + executionId));
 
@@ -139,10 +163,10 @@ public class ReportExecutionService {
         req.setReportName(execution.getReportName());
         req.setOverrideFormat(execution.getFormat());
 
-        return executeReport(req, execution.getExecutedByUserId(), "SYSTEM");
+        return executeReport(req, execution.getExecutedByUserId(), username);
     }
 
-    private ReportExportEngine resolveEngine(String format) {
+    public ReportExportEngine resolveEngine(String format) {
         if (format == null) return pdfEngine;
         String f = format.toUpperCase();
         if (f.contains("EXCEL") || f.contains("XLS")) {

@@ -9,6 +9,8 @@ import com.citidirect.cashstatement.masterdata.repository.AccountRepository;
 import com.citidirect.cashstatement.masterdata.repository.BranchRepository;
 import com.citidirect.cashstatement.masterdata.repository.CustomerRepository;
 import com.citidirect.cashstatement.masterdata.repository.TransactionRepository;
+import com.citidirect.cashstatement.masterdata.repository.UserEntitlementRepository;
+import com.citidirect.cashstatement.masterdata.repository.AppUserRepository;
 import com.citidirect.cashstatement.statement.dto.AccountSummaryData;
 import com.citidirect.cashstatement.statement.dto.StatementReportData;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,6 +44,12 @@ public class StatementReconciliationTest {
 
     @Mock
     private TransactionRepository transactionRepository;
+
+    @Mock
+    private UserEntitlementRepository entitlementRepository;
+
+    @Mock
+    private AppUserRepository userRepository;
 
     @InjectMocks
     private StatementAggregationService statementService;
@@ -81,6 +88,8 @@ public class StatementReconciliationTest {
         t1.setRunningBalance(new BigDecimal("1095272.67"));
         t1.setDescription("CUSTOMER PAYMENT INWARD");
         t1.setBankReference("CITI-FT-1001");
+        t1.setTransactionCode("CITI001");
+        t1.setOrderingPartyName("ALPHA TRADING LTD");
         testTransactions.add(t1);
 
         Transaction t2 = new Transaction();
@@ -93,6 +102,8 @@ public class StatementReconciliationTest {
         t2.setRunningBalance(new BigDecimal("1138633.14"));
         t2.setDescription("SETTLEMENT CREDIT");
         t2.setBankReference("CITI-FT-1002");
+        t2.setTransactionCode("CITI001");
+        t2.setOrderingPartyName("BETA CAPITAL PARTNERS");
         testTransactions.add(t2);
 
         Transaction t3 = new Transaction();
@@ -105,6 +116,8 @@ public class StatementReconciliationTest {
         t3.setRunningBalance(new BigDecimal("1356398.99"));
         t3.setDescription("SWIFT MT103 INTERCOMPANY TRANSFER");
         t3.setBankReference("CITI-FT-1003");
+        t3.setTransactionCode("CITI002");
+        t3.setOrderingPartyName("CITI CORP TREASURY NY");
         testTransactions.add(t3);
 
         Transaction t4 = new Transaction();
@@ -117,6 +130,8 @@ public class StatementReconciliationTest {
         t4.setRunningBalance(new BigDecimal("1299087.13"));
         t4.setDescription("SUPPLIER OUTWARD WIRE");
         t4.setBankReference("CITI-FT-1004");
+        t4.setTransactionCode("CITI003");
+        t4.setBeneficiaryName("DELTA VENDOR SERVICES");
         testTransactions.add(t4);
 
         Transaction t5 = new Transaction();
@@ -129,6 +144,8 @@ public class StatementReconciliationTest {
         t5.setRunningBalance(new BigDecimal("1064381.14"));
         t5.setDescription("TAX AND DIVIDEND REMITTANCE");
         t5.setBankReference("CITI-FT-1005");
+        t5.setTransactionCode("CITI003");
+        t5.setBeneficiaryName("HM REVENUE AND CUSTOMS");
         testTransactions.add(t5);
 
         Transaction t6 = new Transaction();
@@ -141,6 +158,8 @@ public class StatementReconciliationTest {
         t6.setRunningBalance(new BigDecimal("1065818.77"));
         t6.setDescription("INTEREST REBATE");
         t6.setBankReference("CITI-FT-1006");
+        t6.setTransactionCode("CITI004");
+        t6.setOrderingPartyName("CITIBANK LONDON ASSET MGMT");
         testTransactions.add(t6);
 
         Transaction t7 = new Transaction();
@@ -153,11 +172,13 @@ public class StatementReconciliationTest {
         t7.setRunningBalance(new BigDecimal("1103501.82"));
         t7.setDescription("DIRECT DEBIT RECEIVABLE");
         t7.setBankReference("CITI-FT-1007");
+        t7.setTransactionCode("CITI001");
+        t7.setOrderingPartyName("OMEGA ENTERPRISES");
         testTransactions.add(t7);
     }
 
     @Test
-    @DisplayName("Verify Exact CBS36222 Section 4 Balance and Running Balance Reconciliation for Account XX12CITI11223344446677")
+    @DisplayName("Verify Exact Section 4 Balance and Running Balance Reconciliation for Account XX12CITI11223344446677")
     void testReconciliationExactMath() {
         when(accountRepository.findById("XX12CITI11223344446677")).thenReturn(Optional.of(testAccount));
         when(branchRepository.findById("600")).thenReturn(Optional.of(testBranch));
@@ -167,9 +188,9 @@ public class StatementReconciliationTest {
 
         CriteriaPayload criteria = new CriteriaPayload();
         criteria.setAccountNumber("XX12CITI11223344446677");
-        criteria.setStatementDateRadio("YESTERDAY");
+        criteria.setStatementDateRadio("NO_DATE_SELECTED");
 
-        StatementReportData reportData = statementService.generateReportData("Account Statement – Comprehensive", criteria, "JUSTIN,JOHN");
+        StatementReportData reportData = statementService.generateReportData("Account Statement – Comprehensive", criteria, "SYSTEM");
 
         assertNotNull(reportData);
         assertEquals(1, reportData.getAccounts().size());
@@ -194,5 +215,56 @@ public class StatementReconciliationTest {
         assertEquals(new BigDecimal("1064381.14"), summary.getTransactions().get(4).getRunningBalance());
         assertEquals(new BigDecimal("1065818.77"), summary.getTransactions().get(5).getRunningBalance());
         assertEquals(new BigDecimal("1103501.82"), summary.getTransactions().get(6).getRunningBalance());
+    }
+
+    @Test
+    @DisplayName("Filter by amount range retains authoritative period opening and closing balances")
+    void testFilteredTransactionsPreservesAuthoritativeBalances() {
+        when(accountRepository.findById("XX12CITI11223344446677")).thenReturn(Optional.of(testAccount));
+        when(branchRepository.findById("600")).thenReturn(Optional.of(testBranch));
+        when(customerRepository.findById("0000244654")).thenReturn(Optional.of(testCustomer));
+        when(transactionRepository.findByAccountNumberOrderByStatementDateAscCreatedAtAsc("XX12CITI11223344446677"))
+                .thenReturn(testTransactions);
+
+        CriteriaPayload criteria = new CriteriaPayload();
+        criteria.setAccountNumber("XX12CITI11223344446677");
+        criteria.setAmountFrom(new BigDecimal("200000.00")); // Matches txn-3 (217,765.85) and txn-5 (234,705.99)
+        criteria.setStatementDateRadio("NO_DATE_SELECTED");
+
+        StatementReportData reportData = statementService.generateReportData("Account Statement – Comprehensive", criteria, "SYSTEM");
+
+        assertNotNull(reportData);
+        assertEquals(1, reportData.getAccounts().size());
+
+        AccountSummaryData summary = reportData.getAccounts().get(0);
+        // Only 2 filtered transactions displayed
+        assertEquals(2, summary.getTransactions().size());
+        // Opening and closing balances remain authoritative for the account
+        assertEquals(new BigDecimal("1074252.00"), summary.getOpeningAvailableBalance());
+        assertEquals(new BigDecimal("1103501.82"), summary.getClosingAvailableBalance());
+        // Displayed transactions retain their true calculated running balance
+        assertEquals(new BigDecimal("1356398.99"), summary.getTransactions().get(0).getRunningBalance());
+        assertEquals(new BigDecimal("1064381.14"), summary.getTransactions().get(1).getRunningBalance());
+    }
+
+    @Test
+    @DisplayName("Filter by Beneficiary / Ordering Party matches intended records")
+    void testBeneficiaryFilter() {
+        when(accountRepository.findById("XX12CITI11223344446677")).thenReturn(Optional.of(testAccount));
+        when(branchRepository.findById("600")).thenReturn(Optional.of(testBranch));
+        when(customerRepository.findById("0000244654")).thenReturn(Optional.of(testCustomer));
+        when(transactionRepository.findByAccountNumberOrderByStatementDateAscCreatedAtAsc("XX12CITI11223344446677"))
+                .thenReturn(testTransactions);
+
+        CriteriaPayload criteria = new CriteriaPayload();
+        criteria.setAccountNumber("XX12CITI11223344446677");
+        criteria.setByOrderBeneficiary("DELTA VENDOR");
+        criteria.setStatementDateRadio("NO_DATE_SELECTED");
+
+        StatementReportData reportData = statementService.generateReportData("Account Statement – Comprehensive", criteria, "SYSTEM");
+
+        AccountSummaryData summary = reportData.getAccounts().get(0);
+        assertEquals(1, summary.getTransactions().size());
+        assertEquals("CITI-FT-1004", summary.getTransactions().get(0).getBankReference());
     }
 }

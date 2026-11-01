@@ -1,5 +1,8 @@
 package com.citidirect.cashstatement.masterdata;
 
+import com.citidirect.cashstatement.auth.AuthService;
+import com.citidirect.cashstatement.auth.UserPrincipal;
+import com.citidirect.cashstatement.auth.dto.EntitlementsResponse;
 import com.citidirect.cashstatement.masterdata.model.Account;
 import com.citidirect.cashstatement.masterdata.model.AppUser;
 import com.citidirect.cashstatement.masterdata.model.Branch;
@@ -9,9 +12,11 @@ import com.citidirect.cashstatement.masterdata.repository.AppUserRepository;
 import com.citidirect.cashstatement.masterdata.repository.BranchRepository;
 import com.citidirect.cashstatement.masterdata.repository.CustomerRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -24,15 +29,18 @@ public class LookupController {
     private final CustomerRepository customerRepository;
     private final AccountRepository accountRepository;
     private final AppUserRepository userRepository;
+    private final AuthService authService;
 
     public LookupController(BranchRepository branchRepository,
                             CustomerRepository customerRepository,
                             AccountRepository accountRepository,
-                            AppUserRepository userRepository) {
+                            AppUserRepository userRepository,
+                            AuthService authService) {
         this.branchRepository = branchRepository;
         this.customerRepository = customerRepository;
         this.accountRepository = accountRepository;
         this.userRepository = userRepository;
+        this.authService = authService;
     }
 
     @GetMapping("/branches")
@@ -61,7 +69,23 @@ public class LookupController {
     public ResponseEntity<List<Account>> getAccounts(
             @RequestParam(required = false) String customerNumber,
             @RequestParam(required = false) String branchNumber,
-            @RequestParam(required = false) String query) {
+            @RequestParam(required = false) String query,
+            @AuthenticationPrincipal UserPrincipal principal) {
+
+        // Enforce account-level authorization scoped to authenticated user
+        List<String> entitledAccountNumbers = Collections.emptyList();
+        if (principal != null) {
+            EntitlementsResponse entitlements = authService.getUserEntitlements(principal.getId());
+            if (entitlements != null && entitlements.getAccounts() != null) {
+                entitledAccountNumbers = entitlements.getAccounts();
+            }
+        }
+
+        // If user has no entitled accounts, return empty list immediately - never broaden access or return all accounts
+        if (entitledAccountNumbers.isEmpty()) {
+            return ResponseEntity.ok(Collections.emptyList());
+        }
+
         List<Account> accounts;
         if (StringUtils.hasText(customerNumber) && StringUtils.hasText(branchNumber)) {
             accounts = accountRepository.findByCustomerNumberAndBranchNumber(customerNumber, branchNumber);
@@ -74,7 +98,14 @@ public class LookupController {
         } else {
             accounts = accountRepository.findAll();
         }
-        return ResponseEntity.ok(accounts);
+
+        // Filter results strictly to authorized accounts
+        List<String> allowed = entitledAccountNumbers;
+        List<Account> scopedAccounts = accounts.stream()
+                .filter(a -> allowed.contains(a.getAccountNumber()))
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(scopedAccounts);
     }
 
     @GetMapping("/currencies")
@@ -122,7 +153,11 @@ public class LookupController {
                 "Citi Transaction Codes",
                 "SWIFT Transaction Codes",
                 "ISO 20022 Domain Codes",
-                "Local Clearing Codes"
+                "Local Clearing Codes",
+                "CITI001",
+                "CITI002",
+                "CITI003",
+                "CITI004"
         ));
     }
 }

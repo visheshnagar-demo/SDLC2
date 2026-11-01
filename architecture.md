@@ -23,6 +23,7 @@ graph TD
   DB --- tbl_report_schedules["report_schedules"]
   DB --- tbl_schedule_history["schedule_history"]
   DB --- tbl_audit_trail["audit_trail"]
+  DB --- tbl_QRTZ_JOB_DETAILS["QRTZ_JOB_DETAILS"]
 ```
 
 ## Tech Stack
@@ -38,7 +39,37 @@ graph TD
 - (no server/ files found yet)
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/src/app/app.component.spec.ts
+- client/src/app/app.component.ts
+- client/src/app/app.config.ts
+- client/src/app/app.routes.ts
+- client/src/app/core/components/sub-nav-breadcrumb/sub-nav-breadcrumb.component.ts
+- client/src/app/core/components/top-nav-bar/top-nav-bar.component.ts
+- client/src/app/core/models/delivery.models.ts
+- client/src/app/core/models/entitlement.models.ts
+- client/src/app/core/models/report.models.ts
+- client/src/app/core/models/schedule.models.ts
+- client/src/app/core/services/api.service.ts
+- client/src/app/core/services/delivery-options.service.ts
+- client/src/app/core/services/lookup.service.ts
+- client/src/app/core/services/report.service.ts
+- client/src/app/core/services/schedule.service.ts
+- client/src/app/features/cash-reports/components/base-report-lookup-modal/base-report-lookup-modal.component.ts
+- client/src/app/features/cash-reports/pages/cash-statements-landing/cash-statements-landing.component.ts
+- client/src/app/features/cash-reports/pages/report-criteria/report-criteria.component.spec.ts
+- client/src/app/features/cash-reports/pages/report-criteria/report-criteria.component.ts
+- client/src/app/features/library/components/maker-checker-panel/maker-checker-panel.component.ts
+- client/src/app/features/library/pages/delivery-options-maintenance/delivery-options-maintenance.component.ts
+- client/src/app/features/reports/pages/my-reports/my-reports.component.ts
+- client/src/app/features/scheduling/components/execution-history-log/execution-history-log.component.ts
+- client/src/app/features/scheduling/pages/schedule-management/schedule-management.component.ts
+- client/src/app/shared/components/binocular-lookup-input/binocular-lookup-input.component.ts
+- client/src/app/shared/components/fx-operator-select/fx-operator-select.component.ts
+- client/src/app/shared/components/generic-lookup-modal/generic-lookup-modal.component.ts
+- client/src/app/shared/components/report-viewer-modal/report-viewer-modal.component.ts
+- client/src/environments/environment.prod.ts
+- client/src/environments/environment.ts
+- client/src/main.ts
 
 ## API Endpoints
 - POST /api/v1/auth/login
@@ -47,12 +78,11 @@ graph TD
 - GET /api/v1/reports/criteria/defaults
 - POST /api/v1/reports/criteria
 - POST /api/v1/reports/execution/run
-- GET /api/v1/reports/my-reports
+- POST /api/v1/reports/export
 - GET /api/v1/delivery-options
-- POST /api/v1/delivery-options
 - POST /api/v1/delivery-options/{id}/authorize
 - POST /api/v1/schedules
-- POST /api/v1/schedules/{id}/authorize
+- GET /api/v1/system/integrations/status
 
 ## Data Model
 - branches
@@ -66,3 +96,5 @@ graph TD
 - report_schedules
 - schedule_history
 - audit_trail
+- QRTZ_JOB_DETAILS
+- QRTZ_TRIGGERS

@@ -9,7 +9,6 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
-import java.math.BigDecimal;
 import java.time.format.DateTimeFormatter;
 
 @Component("excelReportEngine")
@@ -60,6 +59,12 @@ public class ExcelReportEngine implements ReportExportEngine {
         DataFormat df = workbook.createDataFormat();
         currencyStyle.setDataFormat(df.getFormat("#,##0.00;(#,##0.00)"));
 
+        Font totalFont = workbook.createFont();
+        totalFont.setBold(true);
+        CellStyle totalStyle = workbook.createCellStyle();
+        totalStyle.setFont(totalFont);
+        totalStyle.setDataFormat(df.getFormat("#,##0.00;(#,##0.00)"));
+
         int rowIdx = 0;
 
         // Row 0: "CITIDIRECT"
@@ -78,6 +83,15 @@ public class ExcelReportEngine implements ReportExportEngine {
         Row r2 = sheet.createRow(rowIdx++);
         Cell c2 = r2.createCell(0);
         c2.setCellValue("Report Date " + reportData.getReportDate());
+
+        // Criteria Print
+        if (reportData.getCriteria() != null && reportData.getCriteria().isPrintSelectionCriteria()) {
+            Row rCrit = sheet.createRow(rowIdx++);
+            rCrit.createCell(0).setCellValue("Selection Criteria: Account Selection=" + 
+                    (reportData.getCriteria().getAccountNumber() != null ? reportData.getCriteria().getAccountNumber() : "All Entitled") +
+                    ", Statement Date=" + reportData.getCriteria().getStatementDateRadio() +
+                    ", Currency=" + (reportData.getCriteria().getAccountCurrency() != null ? reportData.getCriteria().getAccountCurrency() : "All"));
+        }
 
         rowIdx++; // Blank row
 
@@ -195,12 +209,50 @@ public class ExcelReportEngine implements ReportExportEngine {
                 row.createCell(56).setCellValue("CITIDIRECT_CORE");
                 row.createCell(57).setCellValue("HIGH");
                 row.createCell(58).setCellValue(1.0);
-                row.createCell(59).setCellValue("USD");
+                row.createCell(59).setCellValue(account.getCurrency());
                 row.createCell(60).setCellValue(txn.getAmount().doubleValue());
-                row.createCell(61).setCellValue("");
+                row.createCell(61).setCellValue(txn.getChequeNumber() != null ? txn.getChequeNumber() : "");
                 row.createCell(62).setCellValue(txn.getValueDate() + " 12:00:00");
                 row.createCell(63).setCellValue("POSTED_RECONCILED");
             }
+
+            // Subtotal Row if requested
+            if (reportData.getCriteria() != null && reportData.getCriteria().isOutputAccountSubTotals()) {
+                Row subRow = sheet.createRow(rowIdx++);
+                subRow.createCell(0).setCellValue("Subtotal: " + account.getAccountNumber());
+                subRow.getCell(0).setCellStyle(totalStyle);
+
+                Cell subCred = subRow.createCell(23);
+                subCred.setCellValue(account.getTotalCreditAmount().doubleValue());
+                subCred.setCellStyle(totalStyle);
+
+                Cell subDeb = subRow.createCell(25);
+                subDeb.setCellValue(account.getTotalDebitAmount().doubleValue());
+                subDeb.setCellStyle(totalStyle);
+
+                Cell subNet = subRow.createCell(26);
+                subNet.setCellValue(account.getNetTransactionAmount().doubleValue());
+                subNet.setCellStyle(totalStyle);
+            }
+        }
+
+        // Grand Total Row if requested
+        if (reportData.getCriteria() != null && reportData.getCriteria().isOutputGrandTotal()) {
+            Row gRow = sheet.createRow(rowIdx++);
+            gRow.createCell(0).setCellValue("Grand Total");
+            gRow.getCell(0).setCellStyle(totalStyle);
+
+            Cell gCred = gRow.createCell(23);
+            gCred.setCellValue(reportData.getGrandTotalCreditAmount().doubleValue());
+            gCred.setCellStyle(totalStyle);
+
+            Cell gDeb = gRow.createCell(25);
+            gDeb.setCellValue(reportData.getGrandTotalDebitAmount().doubleValue());
+            gDeb.setCellStyle(totalStyle);
+
+            Cell gNet = gRow.createCell(26);
+            gNet.setCellValue(reportData.getGrandNetTransactionAmount().doubleValue());
+            gNet.setCellStyle(totalStyle);
         }
 
         workbook.write(baos);

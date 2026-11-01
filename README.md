@@ -1,148 +1,76 @@
+# CitiDirect Cash Statement Reports: Account Statement – Comprehensive
 
+This repository contains the enterprise **CitiDirect Account Statement – Comprehensive** application for cash statement reporting, reconciliation, recurring scheduling, and multi-format exports.
 
-## Server
+## Technology Stack
 
-### Prerequisites
-- Python 3.9+
-- pip and venv
+- **Backend**: Java 21, Spring Boot 3.3.x, Spring Data JPA, Spring Security (BCrypt), Quartz Scheduler 2.3.x, Flyway Migrations, OpenPDF, Apache POI SXSSF, OpenCSV.
+- **Frontend**: Angular 17+, TypeScript, RxJS, Citigroup ICGDS (Lumen Theme) SCSS design system.
+- **Database**: PostgreSQL 16 (production/docker-compose) / In-Memory H2 (test profile).
+- **Delivery Simulator**: MailHog SMTP server.
 
-### Setup
+---
 
-1. Create and activate virtual environment:
+## Remediated Architecture & Features
+
+1. **Secure Authentication & Password Verification**:
+   - Enforces `BCryptPasswordEncoder` for credential validation.
+   - All shared-password backdoor mechanisms (`testpassword`, `adminpassword`, hash equality bypasses) have been removed from runtime profiles.
+   - Test seed credentials:
+     - Maker User: `test@example.com` (`maker_user`) / `testpassword`
+     - Checker User: `admin@example.com` (`checker_user`) / `adminpassword`
+
+2. **Strict Account Entitlement Scoping**:
+   - Account lookups (`/api/v1/lookups/accounts`) and statement executions (`/api/v1/reports/execution/run`) enforce server-side user entitlements.
+   - Unentitled account selections explicitly return HTTP `403 Forbidden`.
+   - Empty criteria queries scope safely to the authenticated user's authorized accounts without sample data fallbacks.
+
+3. **Synchronized API Contracts**:
+   - REST endpoints aligned with Angular services for execution (`POST /api/v1/reports/execution/run`), criteria management (`POST /api/v1/reports/criteria`), and binary export streaming (`POST /api/v1/reports/export`).
+   - Binary blob response handling for XLSX, PDF, CSV, DHTML, and RTF downloads.
+
+4. **Authoritative Statement Period Balances**:
+   - Dynamic timezone-aware date range evaluation.
+   - Opening, Running, and Closing balance calculations adhere to authoritative statement period invariants, maintaining mathematical consistency regardless of applied search filters.
+
+5. **Persistent Recurring Scheduling & Maker-Checker Dual Control**:
+   - Quartz Scheduler triggers configured for persistent execution of saved derived report criteria.
+   - Delivery errors transparently propagate to execution history logs without swallowing exceptions.
+   - Segregation of duties enforced: Makers cannot approve their own delivery options or schedules.
+
+6. **Multi-Format Streaming Exports**:
+   - Verified 64-column layout for Excel (`.xlsx`) via Apache POI SXSSF and CSV via OpenCSV.
+   - Formatted PDF via OpenPDF, DHTML via responsive CSS templates, and RTF documents with subtotals and grand totals.
+
+7. **Integration Status Transparency**:
+   - `GET /api/v1/system/integrations/status` clearly differentiates local database sources from unconfigured live external banking connectors.
+
+---
+
+## Local Development & Setup
+
+### 1. Backend (Spring Boot)
 ```bash
-python -m venv server/.venv
-# On Windows:
-server\.venv\Scripts\activate
-# On macOS/Linux:
-source server/.venv/bin/activate
+cd backend
+mvn clean test
+mvn spring-boot:run
 ```
+- Backend runs on `http://localhost:8080`.
+- Swagger UI / OpenAPI available at `http://localhost:8080/swagger-ui.html`.
 
-2. Install dependencies:
-```bash
-cd server
-pip install -r requirements.txt
-cd ..
-```
-
-### Running Tests
-```bash
-cd server
-python -m pytest -v
-cd ..
-```
-
-### Starting the Development Server
-```bash
-# Run from the repo root so that `from server.X` imports resolve correctly
-python -m uvicorn server.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-The API will be available at `http://localhost:8000`
-API documentation: `http://localhost:8000/docs`
-
-## Full-Stack Local Development
-
-To run both backend and frontend together locally:
-
-### 1. Environment Setup
-```bash
-# Copy the example environment file
-cp .env.example .env
-```
-
-### 2. Start the Backend (Terminal 1)
-```bash
-python -m venv server/.venv
-source server/.venv/bin/activate  # On Windows: server\.venv\Scripts\activate
-pip install -r server/requirements.txt
-python -m uvicorn server.main:app --reload --host 0.0.0.0 --port 8000
-```
-Backend API: `http://localhost:8000` | API Docs: `http://localhost:8000/docs`
-
-### 3. Start the Frontend (Terminal 2)
-```bash
-cd client
-npm install
-npm run dev
-```
-Frontend: `http://localhost:5173`
-
-The frontend connects to the backend API at `http://localhost:8000` by default via the `VITE_API_BASE_URL` environment variable.
-
-### 4. Test Credentials
-If the app has authentication, the backend seeds ready-to-use accounts on startup
-(idempotent). These are guaranteed logged-in-able — every activation/verification
-gate (`is_active`, `is_verified`, `email_verified`, `disabled`) is set to the
-permissive value, so no manual DB step is needed:
-- **Regular user** — Email: `test@example.com`, Password: `testpassword`
-- **Admin user** (only when the app has roles/RBAC) — Email: `admin@example.com`, Password: `adminpassword`, role: `admin`
-
-Passwords are stored hashed with the app's own hashing utility (never in plaintext).
-
-### Port Reference
-| Service  | Port | URL                        |
-|----------|------|----------------------------|
-| Backend  | 8000 | http://localhost:8000      |
-| Frontend | 5173 | http://localhost:5173      |
-| API Docs | 8000 | http://localhost:8000/docs |
-
-## Frontend (client/)
-
-### Prerequisites
-- Node.js 18+ and npm 8+
-
-### Setup
-
-1. Install dependencies:
+### 2. Frontend (Angular)
 ```bash
 cd client
 npm install
-cd ..
+npm start
 ```
+- Frontend dev server runs on `http://localhost:4200`.
 
-### Available Commands
-
-**Development Server:**
+### 3. Docker Compose Deployment
 ```bash
-cd client
-npm run dev
-cd ..
+docker-compose up --build
 ```
-Opens the app at `http://localhost:5173`
-
-**Production Build:**
-```bash
-cd client
-npm run build
-cd ..
-```
-Creates optimized build in `client/dist/`
-
-**Run Tests:**
-```bash
-cd client
-npm test
-cd ..
-```
-
-**Build & Preview:**
-```bash
-cd client
-npm run preview
-cd ..
-```
-Preview production build locally
-
-### Environment Variables
-
-The frontend comes with a pre-configured `.env` file:
-```
-VITE_API_BASE_URL=http://localhost:8000
-```
-
-The frontend connects to the backend API at this URL. For production deployment, set `VITE_API_BASE_URL` to the deployed backend URL via `--build-arg` in Docker or via your CI/CD environment.
-
-### Running with the Backend
-
-The frontend requires the backend server to be running. See the **Full-Stack Local Development** section in this README for complete setup instructions.
-
+- **Nginx Frontend (SPA)**: `http://localhost` (Port 80)
+- **Spring Boot Backend**: `http://localhost:8080` (Port 8080)
+- **PostgreSQL Database**: `localhost:5432`
+- **MailHog UI**: `http://localhost:8025`

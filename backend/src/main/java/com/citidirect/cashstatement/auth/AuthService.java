@@ -17,7 +17,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,19 +42,7 @@ public class AuthService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         AppUser user = userRepository.findByUsername(username)
                 .or(() -> userRepository.findByEmail(username))
-                .orElseGet(() -> {
-                    // Auto-provision if user does not exist yet (helpful for tests)
-                    AppUser newUser = new AppUser(
-                            UUID.randomUUID().toString(),
-                            username,
-                            username.toUpperCase(),
-                            username.contains("@") ? username : username + "@example.com",
-                            passwordEncoder.encode("testpassword"),
-                            username.contains("admin") || username.contains("checker") ? "ROLE_AUTHORIZER" : "ROLE_MAKER",
-                            true
-                    );
-                    return userRepository.save(newUser);
-                });
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
         return new UserPrincipal(
                 user.getId(),
@@ -68,18 +55,18 @@ public class AuthService implements UserDetailsService {
         );
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest loginRequest) {
         AppUser user = userRepository.findByUsername(loginRequest.getUsername())
                 .or(() -> userRepository.findByEmail(loginRequest.getUsername()))
                 .orElseThrow(() -> new BadCredentialsException("Invalid username or password"));
 
-        boolean matches = passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())
-                || loginRequest.getPassword().equals("testpassword")
-                || loginRequest.getPassword().equals("adminpassword")
-                || loginRequest.getPassword().equals(user.getPasswordHash());
+        if (!user.isActive()) {
+            throw new BadCredentialsException("User account is inactive");
+        }
 
-        if (!matches) {
+        // Strictly verify password using secure PasswordEncoder (BCrypt) - no backdoor paths allowed
+        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPasswordHash())) {
             throw new BadCredentialsException("Invalid username or password");
         }
 
@@ -117,17 +104,6 @@ public class AuthService implements UserDetailsService {
                 .filter(e -> "ACCOUNT".equalsIgnoreCase(e.getEntityType()))
                 .map(UserEntitlement::getEntityId)
                 .collect(Collectors.toList());
-
-        // Defaults if empty
-        if (branches.isEmpty()) {
-            branches = List.of("600", "920", "930", "940");
-        }
-        if (customers.isEmpty()) {
-            customers = List.of("0000244654", "0000188920", "0000355411");
-        }
-        if (accounts.isEmpty()) {
-            accounts = List.of("XX12CITI11223344446677", "US11CITI99887766554433", "SG88CITI44556677889900");
-        }
 
         return new EntitlementsResponse(branches, customers, accounts);
     }

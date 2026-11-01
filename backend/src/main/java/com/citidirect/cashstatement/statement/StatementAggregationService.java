@@ -9,9 +9,14 @@ import com.citidirect.cashstatement.masterdata.repository.AccountRepository;
 import com.citidirect.cashstatement.masterdata.repository.BranchRepository;
 import com.citidirect.cashstatement.masterdata.repository.CustomerRepository;
 import com.citidirect.cashstatement.masterdata.repository.TransactionRepository;
+import com.citidirect.cashstatement.masterdata.repository.UserEntitlementRepository;
+import com.citidirect.cashstatement.masterdata.model.UserEntitlement;
+import com.citidirect.cashstatement.masterdata.repository.AppUserRepository;
+import com.citidirect.cashstatement.masterdata.model.AppUser;
 import com.citidirect.cashstatement.statement.dto.AccountSummaryData;
 import com.citidirect.cashstatement.statement.dto.StatementReportData;
 import com.citidirect.cashstatement.statement.dto.TransactionRecord;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -19,8 +24,7 @@ import org.springframework.util.StringUtils;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -30,15 +34,21 @@ public class StatementAggregationService {
     private final BranchRepository branchRepository;
     private final CustomerRepository customerRepository;
     private final TransactionRepository transactionRepository;
+    private final UserEntitlementRepository entitlementRepository;
+    private final AppUserRepository userRepository;
 
     public StatementAggregationService(AccountRepository accountRepository,
                                        BranchRepository branchRepository,
                                        CustomerRepository customerRepository,
-                                       TransactionRepository transactionRepository) {
+                                       TransactionRepository transactionRepository,
+                                       UserEntitlementRepository entitlementRepository,
+                                       AppUserRepository userRepository) {
         this.accountRepository = accountRepository;
         this.branchRepository = branchRepository;
         this.customerRepository = customerRepository;
         this.transactionRepository = transactionRepository;
+        this.entitlementRepository = entitlementRepository;
+        this.userRepository = userRepository;
     }
 
     @Transactional(readOnly = true)
@@ -52,49 +62,105 @@ public class StatementAggregationService {
         );
         reportData.setReportDate(LocalDate.now().format(formatter));
 
-        // 1. Resolve Accounts to include
-        List<Account> targetAccounts = resolveTargetAccounts(criteria);
+        // 1. Resolve User Entitlements
+        List<String> entitledAccounts = resolveUserEntitledAccounts(username);
 
-        // 2. Resolve Date Ranges
-        DateRange statementRange = resolveDateRange(criteria != null ? criteria.getStatementDateRadio() : "YESTERDAY",
+        // 2. Resolve Target Accounts ensuring strict entitlement enforcement
+        List<Account> targetAccounts = resolveTargetAccounts(criteria, entitledAccounts);
+
+        // 3. Resolve Date Ranges
+        DateRange statementRange = resolveDateRange(
+                criteria != null ? criteria.getStatementDateRadio() : "NO_DATE_SELECTED",
                 criteria != null ? criteria.getStatementDateFrom() : null,
-                criteria != null ? criteria.getStatementDateTo() : null);
+                criteria != null ? criteria.getStatementDateTo() : null
+        );
 
-        DateRange valueRange = resolveDateRange(criteria != null ? criteria.getValueDateRadio() : "NO_DATE_SELECTED",
+        DateRange valueRange = resolveDateRange(
+                criteria != null ? criteria.getValueDateRadio() : "NO_DATE_SELECTED",
                 criteria != null ? criteria.getValueDateFrom() : null,
-                criteria != null ? criteria.getValueDateTo() : null);
+                criteria != null ? criteria.getValueDateTo() : null
+        );
 
         List<AccountSummaryData> accountSummaries = new ArrayList<>();
 
         for (Account account : targetAccounts) {
+            // Apply Account Currency filter if specified
+            if (criteria != null && StringUtils.hasText(criteria.getAccountCurrency())
+                    && !criteria.getAccountCurrency().equalsIgnoreCase(account.getCurrency())) {
+                continue;
+            }
+
             Branch branch = branchRepository.findById(account.getBranchNumber())
                     .orElseGet(() -> new Branch(account.getBranchNumber(), "BRANCH " + account.getBranchNumber(), "CITIXXXX", "GBR", true));
             Customer customer = customerRepository.findById(account.getCustomerNumber())
                     .orElseGet(() -> new Customer(account.getCustomerNumber(), "CUSTOMER " + account.getCustomerNumber(), "GBR"));
 
-            List<Transaction> transactions = transactionRepository.findByAccountNumberOrderByStatementDateAscCreatedAtAsc(account.getAccountNumber());
+            List<Transaction> allAccountTxns = transactionRepository.findByAccountNumberOrderByStatementDateAscCreatedAtAsc(account.getAccountNumber());
 
-            // Apply Statement Date Filter
+            // Compute authoritative baseline balances across statement period
+            BigDecimal openingBalance = account.getOpeningBalance();
+            if (statementRange.hasFilter() && statementRange.getStartDate() != null) {
+                // Adjust opening balance by transactions prior to statement range
+                BigDecimal prePeriodNet = BigDecimal.ZERO;
+                for (Transaction t : allAccountTxns) {
+                    if (t.getStatementDate().isBefore(statementRange.getStartDate())) {
+                        if ("C".equalsIgnoreCase(t.getDebitCredit())) {
+                            prePeriodNet = prePeriodNet.add(t.getAmount());
+                        } else {
+                            prePeriodNet = prePeriodNet.subtract(t.getAmount());
+                        }
+                    }
+                }
+                openingBalance = openingBalance.add(prePeriodNet);
+            }
+
+            // Identify statement period transactions
+            List<Transaction> periodTxns = allAccountTxns;
             if (statementRange.hasFilter()) {
-                transactions = transactions.stream()
+                periodTxns = allAccountTxns.stream()
                         .filter(t -> statementRange.matches(t.getStatementDate()))
                         .collect(Collectors.toList());
             }
 
-            // Apply Value Date Filter
+            // Calculate authoritative running balances and statement period totals
+            int periodCreditCount = 0;
+            BigDecimal periodTotalCredit = BigDecimal.ZERO;
+            int periodDebitCount = 0;
+            BigDecimal periodTotalDebit = BigDecimal.ZERO;
+            BigDecimal currentRunning = openingBalance;
+
+            Map<String, BigDecimal> calculatedRunningBalances = new HashMap<>();
+
+            for (Transaction t : periodTxns) {
+                if ("C".equalsIgnoreCase(t.getDebitCredit())) {
+                    periodCreditCount++;
+                    periodTotalCredit = periodTotalCredit.add(t.getAmount());
+                    currentRunning = currentRunning.add(t.getAmount());
+                } else {
+                    periodDebitCount++;
+                    periodTotalDebit = periodTotalDebit.add(t.getAmount());
+                    currentRunning = currentRunning.subtract(t.getAmount());
+                }
+                calculatedRunningBalances.put(t.getId(), currentRunning);
+            }
+
+            BigDecimal closingBalance = currentRunning;
+
+            // Apply Value Date Filter to transactions
+            List<Transaction> filteredTxns = periodTxns;
             if (valueRange.hasFilter()) {
-                transactions = transactions.stream()
+                filteredTxns = filteredTxns.stream()
                         .filter(t -> valueRange.matches(t.getValueDate()))
                         .collect(Collectors.toList());
             }
 
-            // Apply Text & Amount Filters
+            // Apply Criteria Filters (amount, reference, description, beneficiary, transaction code, cheques)
             if (criteria != null) {
-                transactions = filterTransactionsByCriteria(transactions, criteria);
+                filteredTxns = filterTransactionsByCriteria(filteredTxns, criteria);
             }
 
-            // Check Activity Only filter
-            if (criteria != null && criteria.isActivityOnly() && transactions.isEmpty()) {
+            // Activity Only filter check: skip account if no matching transaction activity
+            if (criteria != null && criteria.isActivityOnly() && filteredTxns.isEmpty()) {
                 continue;
             }
 
@@ -110,102 +176,115 @@ public class StatementAggregationService {
             summary.setAccountType(account.getAccountType());
             summary.setRunningBalanceEnabled(branch.isRunningBalanceEnabled());
 
-            LocalDate displayStatementDate = statementRange.getStartDate() != null ? statementRange.getStartDate() : LocalDate.of(2022, 1, 22);
+            LocalDate displayStatementDate = statementRange.getStartDate() != null ? statementRange.getStartDate() : LocalDate.now();
             summary.setStatementDate(displayStatementDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
-            summary.setOpeningAvailableBalance(account.getOpeningBalance());
-
-            // Reconcile and calculate
-            int creditCount = 0;
-            BigDecimal totalCredit = BigDecimal.ZERO;
-            int debitCount = 0;
-            BigDecimal totalDebit = BigDecimal.ZERO;
-            BigDecimal currentRunning = account.getOpeningBalance();
+            summary.setOpeningAvailableBalance(openingBalance);
+            summary.setClosingAvailableBalance(closingBalance);
+            summary.setCreditCount(periodCreditCount);
+            summary.setTotalCreditAmount(periodTotalCredit);
+            summary.setDebitCount(periodDebitCount);
+            summary.setTotalDebitAmount(periodTotalDebit);
+            summary.setNetTransactionAmount(periodTotalCredit.subtract(periodTotalDebit));
 
             List<TransactionRecord> records = new ArrayList<>();
-            for (Transaction t : transactions) {
+            for (Transaction t : filteredTxns) {
                 TransactionRecord r = mapToRecord(t);
-                if ("C".equalsIgnoreCase(t.getDebitCredit())) {
-                    creditCount++;
-                    totalCredit = totalCredit.add(t.getAmount());
-                    currentRunning = currentRunning.add(t.getAmount());
-                } else {
-                    debitCount++;
-                    totalDebit = totalDebit.add(t.getAmount());
-                    currentRunning = currentRunning.subtract(t.getAmount());
-                }
-                r.setRunningBalance(currentRunning);
+                BigDecimal runBal = calculatedRunningBalances.getOrDefault(t.getId(), t.getRunningBalance());
+                r.setRunningBalance(runBal);
                 records.add(r);
             }
-
             summary.setTransactions(records);
-            summary.setCreditCount(creditCount);
-            summary.setTotalCreditAmount(totalCredit);
-            summary.setDebitCount(debitCount);
-            summary.setTotalDebitAmount(totalDebit);
-            summary.setNetTransactionAmount(totalCredit.subtract(totalDebit));
-
-            if (records.isEmpty()) {
-                summary.setClosingAvailableBalance(account.getCurrentBalance());
-            } else {
-                summary.setClosingAvailableBalance(account.getOpeningBalance().add(summary.getNetTransactionAmount()));
-            }
 
             accountSummaries.add(summary);
         }
 
-        // If target account list was empty or filters yielded no account summaries, ensure sample account exists
-        if (accountSummaries.isEmpty()) {
-            Account sampleAcc = accountRepository.findById("XX12CITI11223344446677").orElse(null);
-            if (sampleAcc != null) {
-                AccountSummaryData fallback = buildSampleSummary(sampleAcc);
-                accountSummaries.add(fallback);
-            }
-        }
-
         reportData.setAccounts(accountSummaries);
 
-        // Calculate Grand Totals
+        // Calculate Grand Totals across all included accounts
+        BigDecimal grandOpening = BigDecimal.ZERO;
+        BigDecimal grandClosing = BigDecimal.ZERO;
+        int grandCreditCount = 0;
+        BigDecimal grandCreditAmt = BigDecimal.ZERO;
+        int grandDebitCount = 0;
+        BigDecimal grandDebitAmt = BigDecimal.ZERO;
+
         for (AccountSummaryData acc : accountSummaries) {
-            reportData.setGrandOpeningBalance(reportData.getGrandOpeningBalance().add(acc.getOpeningAvailableBalance()));
-            reportData.setGrandClosingBalance(reportData.getGrandClosingBalance().add(acc.getClosingAvailableBalance()));
-            reportData.setGrandCreditCount(reportData.getGrandCreditCount() + acc.getCreditCount());
-            reportData.setGrandTotalCreditAmount(reportData.getGrandTotalCreditAmount().add(acc.getTotalCreditAmount()));
-            reportData.setGrandDebitCount(reportData.getGrandDebitCount() + acc.getDebitCount());
-            reportData.setGrandTotalDebitAmount(reportData.getGrandTotalDebitAmount().add(acc.getTotalDebitAmount()));
-            reportData.setGrandNetTransactionAmount(reportData.getGrandNetTransactionAmount().add(acc.getNetTransactionAmount()));
+            grandOpening = grandOpening.add(acc.getOpeningAvailableBalance());
+            grandClosing = grandClosing.add(acc.getClosingAvailableBalance());
+            grandCreditCount += acc.getCreditCount();
+            grandCreditAmt = grandCreditAmt.add(acc.getTotalCreditAmount());
+            grandDebitCount += acc.getDebitCount();
+            grandDebitAmt = grandDebitAmt.add(acc.getTotalDebitAmount());
         }
+
+        reportData.setGrandOpeningBalance(grandOpening);
+        reportData.setGrandClosingBalance(grandClosing);
+        reportData.setGrandCreditCount(grandCreditCount);
+        reportData.setGrandTotalCreditAmount(grandCreditAmt);
+        reportData.setGrandDebitCount(grandDebitCount);
+        reportData.setGrandTotalDebitAmount(grandDebitAmt);
+        reportData.setGrandNetTransactionAmount(grandCreditAmt.subtract(grandDebitAmt));
 
         return reportData;
     }
 
-    private List<Account> resolveTargetAccounts(CriteriaPayload criteria) {
+    private List<String> resolveUserEntitledAccounts(String username) {
+        if (!StringUtils.hasText(username) || "SYSTEM".equalsIgnoreCase(username)) {
+            // For system or internal test context without user constraint, return all accounts
+            return accountRepository.findAll().stream().map(Account::getAccountNumber).collect(Collectors.toList());
+        }
+
+        Optional<AppUser> userOpt = userRepository.findByUsername(username)
+                .or(() -> userRepository.findByEmail(username));
+
+        if (userOpt.isEmpty()) {
+            return Collections.emptyList();
+        }
+
+        AppUser user = userOpt.get();
+        List<UserEntitlement> entitlements = entitlementRepository.findByUserId(user.getId());
+        return entitlements.stream()
+                .filter(e -> "ACCOUNT".equalsIgnoreCase(e.getEntityType()))
+                .map(UserEntitlement::getEntityId)
+                .collect(Collectors.toList());
+    }
+
+    private List<Account> resolveTargetAccounts(CriteriaPayload criteria, List<String> entitledAccounts) {
+        if (entitledAccounts == null || entitledAccounts.isEmpty()) {
+            return Collections.emptyList();
+        }
+
         if (criteria == null) {
-            return accountRepository.findAll();
+            return accountRepository.findAll().stream()
+                    .filter(a -> entitledAccounts.contains(a.getAccountNumber()))
+                    .collect(Collectors.toList());
         }
 
         if (StringUtils.hasText(criteria.getAccountNumber())) {
-            return accountRepository.findById(criteria.getAccountNumber())
+            String requestedAcc = criteria.getAccountNumber().trim();
+            if (!entitledAccounts.contains(requestedAcc)) {
+                throw new AccessDeniedException("User is not authorized to access account: " + requestedAcc);
+            }
+            return accountRepository.findById(requestedAcc)
                     .map(List::of)
-                    .orElseGet(() -> accountRepository.findAll());
+                    .orElse(Collections.emptyList());
         }
 
+        List<Account> matches;
         if (StringUtils.hasText(criteria.getCustomerNumber()) && StringUtils.hasText(criteria.getBranchNumber())) {
-            List<Account> accounts = accountRepository.findByCustomerNumberAndBranchNumber(criteria.getCustomerNumber(), criteria.getBranchNumber());
-            if (!accounts.isEmpty()) return accounts;
+            matches = accountRepository.findByCustomerNumberAndBranchNumber(criteria.getCustomerNumber(), criteria.getBranchNumber());
+        } else if (StringUtils.hasText(criteria.getCustomerNumber())) {
+            matches = accountRepository.findByCustomerNumber(criteria.getCustomerNumber());
+        } else if (StringUtils.hasText(criteria.getBranchNumber())) {
+            matches = accountRepository.findByBranchNumber(criteria.getBranchNumber());
+        } else {
+            matches = accountRepository.findAll();
         }
 
-        if (StringUtils.hasText(criteria.getCustomerNumber())) {
-            List<Account> accounts = accountRepository.findByCustomerNumber(criteria.getCustomerNumber());
-            if (!accounts.isEmpty()) return accounts;
-        }
-
-        if (StringUtils.hasText(criteria.getBranchNumber())) {
-            List<Account> accounts = accountRepository.findByBranchNumber(criteria.getBranchNumber());
-            if (!accounts.isEmpty()) return accounts;
-        }
-
-        return accountRepository.findAll();
+        return matches.stream()
+                .filter(a -> entitledAccounts.contains(a.getAccountNumber()))
+                .collect(Collectors.toList());
     }
 
     private List<Transaction> filterTransactionsByCriteria(List<Transaction> list, CriteriaPayload criteria) {
@@ -227,7 +306,34 @@ public class StatementAggregationService {
                 return false;
             }
             if (StringUtils.hasText(criteria.getTransactionDescription())) {
-                if (!t.getDescription().toLowerCase().contains(criteria.getTransactionDescription().toLowerCase())) {
+                if (t.getDescription() == null || !t.getDescription().toLowerCase().contains(criteria.getTransactionDescription().toLowerCase())) {
+                    return false;
+                }
+            }
+            if (StringUtils.hasText(criteria.getByOrderBeneficiary())) {
+                String search = criteria.getByOrderBeneficiary().toLowerCase();
+                boolean matchesParty = (t.getOrderingPartyName() != null && t.getOrderingPartyName().toLowerCase().contains(search))
+                        || (t.getBeneficiaryName() != null && t.getBeneficiaryName().toLowerCase().contains(search))
+                        || (t.getOrderingPartyAccount() != null && t.getOrderingPartyAccount().toLowerCase().contains(search))
+                        || (t.getBeneficiaryAccount() != null && t.getBeneficiaryAccount().toLowerCase().contains(search));
+                if (!matchesParty) {
+                    return false;
+                }
+            }
+            if (StringUtils.hasText(criteria.getTransactionCode())
+                    && !"Citi Transaction Codes".equalsIgnoreCase(criteria.getTransactionCode())
+                    && !"All".equalsIgnoreCase(criteria.getTransactionCode())) {
+                if (!criteria.getTransactionCode().equalsIgnoreCase(t.getTransactionCode())) {
+                    return false;
+                }
+            }
+            if (StringUtils.hasText(criteria.getCheques())) {
+                String chq = criteria.getCheques().trim();
+                boolean hasChequeNum = t.getChequeNumber() != null && !t.getChequeNumber().trim().isEmpty();
+                if ("Cheques Only".equalsIgnoreCase(chq) && !hasChequeNum) {
+                    return false;
+                }
+                if ("Exclude Cheques".equalsIgnoreCase(chq) && hasChequeNum) {
                     return false;
                 }
             }
@@ -276,39 +382,6 @@ public class StatementAggregationService {
         return r;
     }
 
-    private AccountSummaryData buildSampleSummary(Account account) {
-        AccountSummaryData summary = new AccountSummaryData();
-        summary.setCustomerNumber("0000244654");
-        summary.setCustomerName("A CUSTOMER NAME");
-        summary.setBranchNumber("600");
-        summary.setBranchName("LONDON MAIN BRANCH");
-        summary.setSwiftCode("CITIGB2L");
-        summary.setAccountNumber(account.getAccountNumber());
-        summary.setAccountName(account.getAccountName());
-        summary.setCurrency(account.getCurrency());
-        summary.setAccountType(account.getAccountType());
-        summary.setStatementDate("22/01/2022");
-        summary.setRunningBalanceEnabled(true);
-        summary.setOpeningAvailableBalance(account.getOpeningBalance());
-        summary.setClosingAvailableBalance(account.getCurrentBalance());
-
-        List<Transaction> txns = transactionRepository.findByAccountNumberOrderByStatementDateAscCreatedAtAsc(account.getAccountNumber());
-        List<TransactionRecord> records = txns.stream().map(this::mapToRecord).collect(Collectors.toList());
-        summary.setTransactions(records);
-
-        int creditCount = (int) records.stream().filter(r -> "C".equals(r.getDebitCredit())).count();
-        BigDecimal creditAmount = records.stream().filter(r -> "C".equals(r.getDebitCredit())).map(TransactionRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-        int debitCount = (int) records.stream().filter(r -> "D".equals(r.getDebitCredit())).count();
-        BigDecimal debitAmount = records.stream().filter(r -> "D".equals(r.getDebitCredit())).map(TransactionRecord::getAmount).reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        summary.setCreditCount(creditCount);
-        summary.setTotalCreditAmount(creditAmount);
-        summary.setDebitCount(debitCount);
-        summary.setTotalDebitAmount(debitAmount);
-        summary.setNetTransactionAmount(creditAmount.subtract(debitAmount));
-        return summary;
-    }
-
     private DateRange resolveDateRange(String radio, LocalDate from, LocalDate to) {
         if (radio == null || "NO_DATE_SELECTED".equalsIgnoreCase(radio)) {
             return new DateRange(null, null, false);
@@ -318,8 +391,8 @@ public class StatementAggregationService {
             case "TODAY":
                 return new DateRange(now, now, true);
             case "YESTERDAY":
-                // In demo/seeded environment, yesterday resolves to sample date or yesterday
-                return new DateRange(LocalDate.of(2022, 1, 22), LocalDate.of(2022, 1, 22), false);
+                LocalDate yest = now.minusDays(1);
+                return new DateRange(yest, yest, true);
             case "LAST_7_DAYS":
                 return new DateRange(now.minusDays(7), now, true);
             case "LAST_14_DAYS":
@@ -339,7 +412,7 @@ public class StatementAggregationService {
         }
     }
 
-    private static class DateRange {
+    public static class DateRange {
         private final LocalDate startDate;
         private final LocalDate endDate;
         private final boolean filter;
@@ -352,6 +425,10 @@ public class StatementAggregationService {
 
         public LocalDate getStartDate() {
             return startDate;
+        }
+
+        public LocalDate getEndDate() {
+            return endDate;
         }
 
         public boolean hasFilter() {

@@ -14,6 +14,8 @@ import com.citidirect.cashstatement.scheduling.repository.ReportScheduleReposito
 import com.citidirect.cashstatement.scheduling.repository.ScheduleHistoryRepository;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.quartz.*;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,6 +34,9 @@ public class ReportScheduleService {
     private final DeliveryOptionRepository deliveryOptionRepository;
     private final AppUserRepository userRepository;
     private final ObjectMapper objectMapper;
+
+    @Autowired(required = false)
+    private Scheduler scheduler;
 
     public ReportScheduleService(ReportScheduleRepository scheduleRepository,
                                  ScheduleHistoryRepository historyRepository,
@@ -57,7 +62,7 @@ public class ReportScheduleService {
             derivedReportId = dr.getId();
         }
 
-        // Verify Delivery Option exists and is authorized (or pending)
+        // Verify Delivery Option exists
         DeliveryOption delOpt = deliveryOptionRepository.findById(request.getDeliveryOptionId())
                 .orElseThrow(() -> new IllegalArgumentException("Delivery Option not found: " + request.getDeliveryOptionId()));
 
@@ -102,14 +107,17 @@ public class ReportScheduleService {
             case "AUTHORIZE":
                 schedule.setAuthStatus("AUTHORIZED");
                 schedule.setRejectionReason(null);
+                registerQuartzJob(schedule);
                 break;
             case "REJECT":
                 schedule.setAuthStatus("REJECTED");
                 schedule.setRejectionReason(authRequest.getComment());
+                removeQuartzJob(schedule.getId());
                 break;
             case "SEND_TO_REPAIR":
                 schedule.setAuthStatus("REPAIR_REQUIRED");
                 schedule.setRejectionReason(authRequest.getComment());
+                removeQuartzJob(schedule.getId());
                 break;
             default:
                 throw new IllegalArgumentException("Invalid authorization action: " + action);
@@ -119,6 +127,65 @@ public class ReportScheduleService {
         schedule.setUpdatedAt(OffsetDateTime.now());
         ReportSchedule saved = scheduleRepository.save(schedule);
         return mapToResponse(saved);
+    }
+
+    private void registerQuartzJob(ReportSchedule schedule) {
+        if (scheduler == null) {
+            return;
+        }
+
+        try {
+            JobKey jobKey = JobKey.jobKey(schedule.getId(), "REPORT_SCHEDULES");
+            TriggerKey triggerKey = TriggerKey.triggerKey(schedule.getId(), "REPORT_SCHEDULES");
+
+            if (scheduler.checkExists(jobKey)) {
+                scheduler.deleteJob(jobKey);
+            }
+
+            JobDetail jobDetail = JobBuilder.newJob(QuartzReportJob.class)
+                    .withIdentity(jobKey)
+                    .usingJobData("scheduleId", schedule.getId())
+                    .storeDurably()
+                    .build();
+
+            ScheduleBuilder<?> scheduleBuilder = buildSchedule(schedule.getIntervalType());
+            Trigger trigger = TriggerBuilder.newTrigger()
+                    .withIdentity(triggerKey)
+                    .forJob(jobDetail)
+                    .withSchedule(scheduleBuilder)
+                    .startNow()
+                    .build();
+
+            scheduler.scheduleJob(jobDetail, trigger);
+        } catch (Exception ex) {
+            System.err.println("Failed to register Quartz job for schedule: " + schedule.getId() + " - " + ex.getMessage());
+        }
+    }
+
+    private ScheduleBuilder<?> buildSchedule(String intervalType) {
+        if (intervalType == null) return SimpleScheduleBuilder.repeatHourlyForever(24);
+        switch (intervalType.toUpperCase()) {
+            case "INTRADAY":
+                return SimpleScheduleBuilder.repeatMinutelyForever(30);
+            case "DAILY":
+                return CronScheduleBuilder.dailyAtHourAndMinute(2, 0);
+            case "WEEKLY":
+                return CronScheduleBuilder.weeklyOnDayAndHourAndMinute(DateBuilder.MONDAY, 2, 0);
+            case "MONTHLY":
+                return CronScheduleBuilder.monthlyOnDayAndHourAndMinute(1, 2, 0);
+            default:
+                return SimpleScheduleBuilder.repeatHourlyForever(24);
+        }
+    }
+
+    private void removeQuartzJob(String scheduleId) {
+        if (scheduler == null) return;
+        try {
+            JobKey jobKey = JobKey.jobKey(scheduleId, "REPORT_SCHEDULES");
+            if (scheduler.checkExists(jobKey)) {
+                scheduler.deleteJob(jobKey);
+            }
+        } catch (Exception ignored) {}
     }
 
     @Transactional(readOnly = true)
@@ -146,6 +213,7 @@ public class ReportScheduleService {
 
     @Transactional
     public void deleteSchedule(String id) {
+        removeQuartzJob(id);
         scheduleRepository.deleteById(id);
     }
 

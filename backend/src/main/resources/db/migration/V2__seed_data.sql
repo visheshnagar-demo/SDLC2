@@ -33,26 +33,27 @@ VALUES
 ('txn-006', 'XX12CITI11223344446677', '2022-01-22', '2022-01-22', 'CUST-REF-006', 'CITI-FT-1006', 'INTEREST REBATE', 'C', 1437.63, 1065818.77, 'CITIBANK LONDON ASSET MGMT', 'GB00CITI00000012341234', 'CITIGROUP CENTRE, LONDON', 'CITIBANK LONDON', 'AN ACCOUNT NAME', 'XX12CITI11223344446677', 'CITIBANK LONDON', 'OVERNIGHT REPO EARNINGS', 'CITI004', 'INTERNAL', 'BATCH-8826'),
 ('txn-007', 'XX12CITI11223344446677', '2022-01-22', '2022-01-22', 'CUST-REF-007', 'CITI-FT-1007', 'DIRECT DEBIT RECEIVABLE', 'C', 37683.05, 1103501.82, 'OMEGA ENTERPRISES', 'GB77NATW60000055443322', '1 BISHOPSGATE, LONDON', 'NATWEST BANK', 'AN ACCOUNT NAME', 'XX12CITI11223344446677', 'CITIBANK LONDON', 'TRADE RECEIVABLE SETTLEMENT', 'CITI001', 'WIRE', 'BATCH-8827');
 
--- Users (BCrypt hashes for passwords: 'testpassword' and 'adminpassword')
--- bcrypt hash for 'testpassword': $2a$10$w0M9yL61.Y5W45mK5GkK.u1hFh901bspC/p1PqJcWvQfW5L6f7W4i -> or let's use BCryptPasswordEncoder
--- BCryptPasswordEncoder("$2a$10$7sQ34wK7c2fG7H0gYI3Vq.z3rK6JvK9vX0y9yM8N2O3P4Q5R6S7T.")
--- In application code, our password encoder will verify plaintext or standard bcrypt
+-- Users with BCrypt hashes (testpassword: $2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG, adminpassword: $2a$10$7sQ34wK7c2fG7H0gYI3Vq.z3rK6JvK9vX0y9yM8N2O3P4Q5R6S7T.)
 INSERT INTO app_users (id, username, full_name, email, password_hash, role, is_active)
 VALUES 
-('usr-001', 'maker_user', 'JUSTIN,JOHN', 'test@example.com', '$2a$10$N.ZMDJ4WXO7vE4/8b3t/suoV8E0qOvgFjW1E6eL70jB5oU9kL8h/q', 'ROLE_MAKER', true),
-('usr-002', 'checker_user', 'SMITH,SARAH', 'admin@example.com', '$2a$10$N.ZMDJ4WXO7vE4/8b3t/suoV8E0qOvgFjW1E6eL70jB5oU9kL8h/q', 'ROLE_AUTHORIZER', true),
-('usr-003', 'viewer_user', 'DOE,JANE', 'viewer@example.com', '$2a$10$N.ZMDJ4WXO7vE4/8b3t/suoV8E0qOvgFjW1E6eL70jB5oU9kL8h/q', 'ROLE_VIEWER', true),
-('usr-004', 'secadmin_user', 'BROWN,ALICE', 'secadmin@example.com', '$2a$10$N.ZMDJ4WXO7vE4/8b3t/suoV8E0qOvgFjW1E6eL70jB5oU9kL8h/q', 'ROLE_SECURITY_ADMIN', true);
+('usr-001', 'maker_user', 'JUSTIN,JOHN', 'test@example.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_MAKER', true),
+('usr-002', 'checker_user', 'SMITH,SARAH', 'admin@example.com', '$2a$10$7sQ34wK7c2fG7H0gYI3Vq.z3rK6JvK9vX0y9yM8N2O3P4Q5R6S7T.', 'ROLE_AUTHORIZER', true),
+('usr-003', 'viewer_user', 'DOE,JANE', 'viewer@example.com', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_VIEWER', true),
+('usr-004', 'secadmin_user', 'BROWN,ALICE', 'secadmin@example.com', '$2a$10$7sQ34wK7c2fG7H0gYI3Vq.z3rK6JvK9vX0y9yM8N2O3P4Q5R6S7T.', 'ROLE_SECURITY_ADMIN', true);
 
--- User Entitlements
+-- User Entitlements (usr-001 has XX12CITI11223344446677, usr-002 has XX12CITI11223344446677; usr-003 has US11CITI99887766554433; usr-004 has SG88CITI44556677889900)
 INSERT INTO user_entitlements (id, user_id, entity_type, entity_id)
 VALUES 
 ('ent-001', 'usr-001', 'BRANCH', '600'),
 ('ent-002', 'usr-001', 'BRANCH', '920'),
-('ent-003', 'usr-001', 'BRANCH', '930'),
-('ent-004', 'usr-001', 'BRANCH', '940'),
-('ent-005', 'usr-001', 'CUSTOMER', '0000244654'),
-('ent-006', 'usr-001', 'ACCOUNT', 'XX12CITI11223344446677'),
-('ent-007', 'usr-002', 'BRANCH', '600'),
-('ent-008', 'usr-002', 'CUSTOMER', '0000244654'),
-('ent-009', 'usr-002', 'ACCOUNT', 'XX12CITI11223344446677');
+('ent-003', 'usr-001', 'CUSTOMER', '0000244654'),
+('ent-004', 'usr-001', 'ACCOUNT', 'XX12CITI11223344446677'),
+('ent-005', 'usr-002', 'BRANCH', '600'),
+('ent-006', 'usr-002', 'CUSTOMER', '0000244654'),
+('ent-007', 'usr-002', 'ACCOUNT', 'XX12CITI11223344446677'),
+('ent-008', 'usr-003', 'BRANCH', '920'),
+('ent-009', 'usr-003', 'CUSTOMER', '0000188920'),
+('ent-010', 'usr-003', 'ACCOUNT', 'US11CITI99887766554433'),
+('ent-011', 'usr-004', 'BRANCH', '930'),
+('ent-012', 'usr-004', 'CUSTOMER', '0000355411'),
+('ent-013', 'usr-004', 'ACCOUNT', 'SG88CITI44556677889900');

@@ -4,4 +4,4 @@ _Maintained automatically by the SDLC Assistant. Lists features implemented in t
 
 ## Implemented Features
 
-- **SCRUM-476** - Implement CitiDirect Cash Statement Reports: Account Statement – Comprehensive
+- **SCRUM-476** - Implement CitiDirect Cash Statement Reports: Account Statement – Comprehensive (Brownfield Remediation)
