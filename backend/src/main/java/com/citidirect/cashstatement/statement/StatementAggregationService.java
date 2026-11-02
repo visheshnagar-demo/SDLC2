@@ -427,6 +427,7 @@ public class StatementAggregationService {
         r.setTransactionCode(t.getTransactionCode());
         r.setProductType(t.getProductType());
         r.setBatchNumber(t.getBatchNumber());
+        r.setChequeNumber(t.getChequeNumber());
         r.setEnhancedDetails(t.getEnhancedDetails());
         return r;
     }

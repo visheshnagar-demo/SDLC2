@@ -259,8 +259,7 @@ public class ReportScheduleService {
             DailyTimeIntervalScheduleBuilder sched = DailyTimeIntervalScheduleBuilder.dailyTimeIntervalSchedule()
                     .startingDailyAt(new TimeOfDay(startHour, startMinute))
                     .endingDailyAt(new TimeOfDay(endHour, endMinute))
-                    .withInterval(intervalMinutes, DateBuilder.IntervalUnit.MINUTE)
-                    .everyDays(everyDays > 0 ? everyDays : 1);
+                    .withInterval(intervalMinutes, DateBuilder.IntervalUnit.MINUTE);
             builder.withSchedule(sched);
         } else if ("WEEKLY".equalsIgnoreCase(intervalType)) {
             int dayOfWeek = DateBuilder.MONDAY;

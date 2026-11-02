@@ -27,6 +27,7 @@ public class TransactionRecord {
     private String transactionCode;
     private String productType;
     private String batchNumber;
+    private String chequeNumber;
     private String enhancedDetails;
 
     public TransactionRecord() {}
@@ -206,6 +207,15 @@ public class TransactionRecord {
     public void setBatchNumber(String batchNumber) {
         this.batchNumber = batchNumber;
     }
+
+    public String getChequeNumber() {
+        return chequeNumber;
+    }
+
+    public void setChequeNumber(String chequeNumber) {
+        this.chequeNumber = chequeNumber;
+    }
+
 
     public String getEnhancedDetails() {
         return enhancedDetails;

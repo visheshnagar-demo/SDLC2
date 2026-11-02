@@ -80,6 +80,9 @@ public class Transaction {
     @Column(name = "batch_number", length = 50)
     private String batchNumber;
 
+    @Column(name = "cheque_number", length = 50)
+    private String chequeNumber;
+
     @Column(name = "enhanced_details", columnDefinition = "TEXT")
     private String enhancedDetails;
 
@@ -263,6 +266,15 @@ public class Transaction {
     public void setBatchNumber(String batchNumber) {
         this.batchNumber = batchNumber;
     }
+
+    public String getChequeNumber() {
+        return chequeNumber;
+    }
+
+    public void setChequeNumber(String chequeNumber) {
+        this.chequeNumber = chequeNumber;
+    }
+
 
     public String getEnhancedDetails() {
         return enhancedDetails;
