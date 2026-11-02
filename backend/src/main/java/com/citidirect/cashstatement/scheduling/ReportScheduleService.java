@@ -320,7 +320,6 @@ public class ReportScheduleService {
             }
         }
     }
-    }
 
     private void removeQuartzJob(String scheduleId) {
         if (scheduler == null) return;
