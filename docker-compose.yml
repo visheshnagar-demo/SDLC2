@@ -3,8 +3,8 @@ version: '3.8'
 services:
   app-backend:
     build:
-      context: .
-      dockerfile: backend/Dockerfile
+      context: backend
+      dockerfile: Dockerfile
     container_name: citidirect-backend
     ports:
       - "8080:8080"
@@ -25,8 +25,8 @@ services:
 
   app-frontend:
     build:
-      context: .
-      dockerfile: client/Dockerfile
+      context: client
+      dockerfile: Dockerfile
     container_name: citidirect-frontend
     ports:
       - "80:80"

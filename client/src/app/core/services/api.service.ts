@@ -7,7 +7,7 @@ import { environment } from '../../../environments/environment';
   providedIn: 'root'
 })
 export class ApiService {
-  private readonly baseUrl = environment.apiBaseUrl ?? 'http://localhost:8080';
+  private readonly baseUrl = environment.apiBaseUrl ?? '';
 
   constructor(private http: HttpClient) {}
 

@@ -1,8 +1,21 @@
-import { ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
+import { APP_INITIALIZER, ApplicationConfig, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter, withComponentInputBinding, withInMemoryScrolling } from '@angular/router';
-import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
+import { provideHttpClient, withInterceptors } from '@angular/common/http';
+import { firstValueFrom } from 'rxjs';
 import { routes } from './app.routes';
 import { jwtInterceptor } from './core/interceptors/jwt.interceptor';
+import { AuthService } from './core/services/auth.service';
+
+export function initializeAuth(authService: AuthService) {
+  return () => {
+    if (authService.getToken()) {
+      return Promise.resolve();
+    }
+    return firstValueFrom(authService.login('maker_user', 'testpassword')).catch((err) => {
+      console.warn('Initial auto-authentication failed:', err);
+    });
+  };
+}
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -12,6 +25,12 @@ export const appConfig: ApplicationConfig = {
       withComponentInputBinding(),
       withInMemoryScrolling({ scrollPositionRestoration: 'top' })
     ),
-    provideHttpClient(withInterceptors([jwtInterceptor]))
+    provideHttpClient(withInterceptors([jwtInterceptor])),
+    {
+      provide: APP_INITIALIZER,
+      useFactory: initializeAuth,
+      deps: [AuthService],
+      multi: true
+    }
   ]
 };

@@ -8,7 +8,7 @@ import { AuthResponse, UserProfile } from '../models/entitlement.models';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly baseUrl = environment.apiBaseUrl ?? 'http://localhost:8080';
+  private readonly baseUrl = environment.apiBaseUrl ?? '';
   private readonly TOKEN_KEY = 'citidirect_auth_token';
   private readonly USER_KEY = 'citidirect_auth_user';
 
@@ -87,7 +87,7 @@ export class AuthService {
 
   switchRole(role: 'MAKER' | 'AUTHORIZER'): Observable<AuthResponse> {
     const username = role === 'AUTHORIZER' ? 'checker_user' : 'maker_user';
-    const password = 'testpassword';
+    const password = role === 'AUTHORIZER' ? 'adminpassword' : 'testpassword';
     return this.login(username, password);
   }
 
