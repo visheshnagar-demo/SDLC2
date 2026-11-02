@@ -8,7 +8,7 @@ import { AuthResponse, UserProfile } from '../models/entitlement.models';
   providedIn: 'root'
 })
 export class AuthService {
-  private readonly baseUrl = environment.apiBaseUrl || 'http://localhost:8000';
+  private readonly baseUrl = environment.apiBaseUrl ?? 'http://localhost:8080';
   private readonly TOKEN_KEY = 'citidirect_auth_token';
   private readonly USER_KEY = 'citidirect_auth_user';
 

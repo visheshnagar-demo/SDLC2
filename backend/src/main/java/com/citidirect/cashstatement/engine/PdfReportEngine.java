@@ -122,11 +122,12 @@ public class PdfReportEngine implements ReportExportEngine {
         summaryHeader.setSpacingAfter(3);
         document.add(summaryHeader);
 
-        PdfPTable summaryTable = new PdfPTable(7);
+        PdfPTable summaryTable = new PdfPTable(8);
         summaryTable.setWidthPercentage(100);
-        summaryTable.setWidths(new float[]{15f, 15f, 12f, 15f, 12f, 15f, 16f});
+        summaryTable.setWidths(new float[]{13f, 13f, 13f, 10f, 13f, 10f, 13f, 15f});
 
         addSummaryHeaderCell(summaryTable, "Opening Avail Bal");
+        addSummaryHeaderCell(summaryTable, "Intraday Bal");
         addSummaryHeaderCell(summaryTable, "Current Closing Avail");
         addSummaryHeaderCell(summaryTable, "Credit Count");
         addSummaryHeaderCell(summaryTable, "Total Credit Amt");
@@ -135,6 +136,7 @@ public class PdfReportEngine implements ReportExportEngine {
         addSummaryHeaderCell(summaryTable, "Net Txn Amt");
 
         addSummaryValueCell(summaryTable, moneyFormat.format(account.getOpeningAvailableBalance()) + " " + account.getCurrency());
+        addSummaryValueCell(summaryTable, moneyFormat.format(account.getIntradayBalance() != null ? account.getIntradayBalance() : account.getClosingAvailableBalance()) + " " + account.getCurrency());
         addSummaryValueCell(summaryTable, moneyFormat.format(account.getClosingAvailableBalance()) + " " + account.getCurrency());
         addSummaryValueCell(summaryTable, String.valueOf(account.getCreditCount()));
         addSummaryValueCell(summaryTable, moneyFormat.format(account.getTotalCreditAmount()));

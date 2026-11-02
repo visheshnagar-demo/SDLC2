@@ -22,6 +22,7 @@ export interface CriteriaPayload {
   amountTo?: number | null;
   accountCurrency?: string;
   transactionDescription?: string;
+  transactionDescriptionOperator?: string;
   byOrderBeneficiary?: string;
   transactionCode?: string;
   cheques?: string;
@@ -188,6 +189,7 @@ export interface StatementReportData {
   statementDate: string;
   openingBalance: number;
   closingBalance: number;
+  intradayBalance?: number;
   creditCount: number;
   totalCreditAmount: number;
   debitCount: number;

@@ -63,6 +63,7 @@ public class DhtmlReportEngine implements ReportExportEngine {
             // Summary Band
             html.append("<div class=\"summary-band\">\n");
             html.append("  <div class=\"summary-item th\">Opening Available</div>\n");
+            html.append("  <div class=\"summary-item th\">Intraday Balance</div>\n");
             html.append("  <div class=\"summary-item th\">Closing Available</div>\n");
             html.append("  <div class=\"summary-item th\">Credits</div>\n");
             html.append("  <div class=\"summary-item th\">Total Credit</div>\n");
@@ -71,6 +72,7 @@ public class DhtmlReportEngine implements ReportExportEngine {
             html.append("  <div class=\"summary-item th\">Net Amount</div>\n");
 
             html.append("  <div class=\"summary-item num-cell\">").append(moneyFormat.format(account.getOpeningAvailableBalance())).append(" ").append(account.getCurrency()).append("</div>\n");
+            html.append("  <div class=\"summary-item num-cell\">").append(moneyFormat.format(account.getIntradayBalance() != null ? account.getIntradayBalance() : account.getClosingAvailableBalance())).append(" ").append(account.getCurrency()).append("</div>\n");
             html.append("  <div class=\"summary-item num-cell\">").append(moneyFormat.format(account.getClosingAvailableBalance())).append(" ").append(account.getCurrency()).append("</div>\n");
             html.append("  <div class=\"summary-item num-cell\">").append(account.getCreditCount()).append("</div>\n");
             html.append("  <div class=\"summary-item num-cell\">").append(moneyFormat.format(account.getTotalCreditAmount())).append("</div>\n");

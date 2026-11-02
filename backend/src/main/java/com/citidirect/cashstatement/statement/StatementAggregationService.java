@@ -179,13 +179,31 @@ public class StatementAggregationService {
             LocalDate displayStatementDate = statementRange.getStartDate() != null ? statementRange.getStartDate() : LocalDate.now();
             summary.setStatementDate(displayStatementDate.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
 
+            // Calculate summary counts and amounts from filtered transactions
+            int filteredCreditCount = 0;
+            BigDecimal filteredTotalCredit = BigDecimal.ZERO;
+            int filteredDebitCount = 0;
+            BigDecimal filteredTotalDebit = BigDecimal.ZERO;
+
+            for (Transaction t : filteredTxns) {
+                if ("C".equalsIgnoreCase(t.getDebitCredit())) {
+                    filteredCreditCount++;
+                    filteredTotalCredit = filteredTotalCredit.add(t.getAmount());
+                } else {
+                    filteredDebitCount++;
+                    filteredTotalDebit = filteredTotalDebit.add(t.getAmount());
+                }
+            }
+
             summary.setOpeningAvailableBalance(openingBalance);
             summary.setClosingAvailableBalance(closingBalance);
-            summary.setCreditCount(periodCreditCount);
-            summary.setTotalCreditAmount(periodTotalCredit);
-            summary.setDebitCount(periodDebitCount);
-            summary.setTotalDebitAmount(periodTotalDebit);
-            summary.setNetTransactionAmount(periodTotalCredit.subtract(periodTotalDebit));
+            summary.setIntradayBalance(account.getCurrentBalance() != null ? account.getCurrentBalance() : closingBalance);
+            summary.setIntradayAvailableBalance(account.getCurrentBalance() != null ? account.getCurrentBalance() : closingBalance);
+            summary.setCreditCount(filteredCreditCount);
+            summary.setTotalCreditAmount(filteredTotalCredit);
+            summary.setDebitCount(filteredDebitCount);
+            summary.setTotalDebitAmount(filteredTotalDebit);
+            summary.setNetTransactionAmount(filteredTotalCredit.subtract(filteredTotalDebit));
 
             List<TransactionRecord> records = new ArrayList<>();
             for (Transaction t : filteredTxns) {
@@ -261,6 +279,37 @@ public class StatementAggregationService {
                     .collect(Collectors.toList());
         }
 
+        boolean isAccountGroup = "ACCOUNT_GROUP".equalsIgnoreCase(criteria.getAccountSelectionType())
+                || StringUtils.hasText(criteria.getAccountGroup());
+
+        if (isAccountGroup) {
+            String group = criteria.getAccountGroup();
+            List<Account> candidateAccounts;
+            if (StringUtils.hasText(criteria.getCustomerNumber()) && StringUtils.hasText(criteria.getBranchNumber())) {
+                candidateAccounts = accountRepository.findByCustomerNumberAndBranchNumber(criteria.getCustomerNumber(), criteria.getBranchNumber());
+            } else if (StringUtils.hasText(criteria.getCustomerNumber())) {
+                candidateAccounts = accountRepository.findByCustomerNumber(criteria.getCustomerNumber());
+            } else if (StringUtils.hasText(criteria.getBranchNumber())) {
+                candidateAccounts = accountRepository.findByBranchNumber(criteria.getBranchNumber());
+            } else {
+                candidateAccounts = accountRepository.findAll();
+            }
+
+            return candidateAccounts.stream()
+                    .filter(a -> entitledAccounts.contains(a.getAccountNumber()))
+                    .filter(a -> {
+                        if (!StringUtils.hasText(group) || "ALL".equalsIgnoreCase(group.trim())) {
+                            return true;
+                        }
+                        String g = group.trim().toLowerCase();
+                        return (a.getAccountType() != null && a.getAccountType().toLowerCase().contains(g))
+                                || (a.getCurrency() != null && a.getCurrency().equalsIgnoreCase(g))
+                                || (a.getAccountName() != null && a.getAccountName().toLowerCase().contains(g))
+                                || (a.getAccountNumber() != null && a.getAccountNumber().toLowerCase().contains(g));
+                    })
+                    .collect(Collectors.toList());
+        }
+
         if (StringUtils.hasText(criteria.getAccountNumber())) {
             String requestedAcc = criteria.getAccountNumber().trim();
             if (!entitledAccounts.contains(requestedAcc)) {
@@ -306,7 +355,7 @@ public class StatementAggregationService {
                 return false;
             }
             if (StringUtils.hasText(criteria.getTransactionDescription())) {
-                if (t.getDescription() == null || !t.getDescription().toLowerCase().contains(criteria.getTransactionDescription().toLowerCase())) {
+                if (!matchString(t.getDescription(), criteria.getTransactionDescription(), criteria.getTransactionDescriptionOperator())) {
                     return false;
                 }
             }

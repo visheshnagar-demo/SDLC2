@@ -15,12 +15,19 @@ import com.citidirect.cashstatement.scheduling.repository.ScheduleHistoryReposit
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.quartz.*;
+import org.quartz.impl.calendar.HolidayCalendar;
+import org.quartz.impl.calendar.WeeklyCalendar;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.context.event.ApplicationReadyEvent;
+import org.springframework.context.event.EventListener;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -107,7 +114,11 @@ public class ReportScheduleService {
             case "AUTHORIZE":
                 schedule.setAuthStatus("AUTHORIZED");
                 schedule.setRejectionReason(null);
-                registerQuartzJob(schedule);
+                try {
+                    registerQuartzJob(schedule);
+                } catch (Exception ex) {
+                    throw new IllegalStateException("Failed to register Quartz recurring trigger: " + ex.getMessage(), ex);
+                }
                 break;
             case "REJECT":
                 schedule.setAuthStatus("REJECTED");
@@ -129,53 +140,186 @@ public class ReportScheduleService {
         return mapToResponse(saved);
     }
 
-    private void registerQuartzJob(ReportSchedule schedule) {
+    public static final String HOLIDAY_CALENDAR_NAME = "citiHolidayCalendar";
+
+    public synchronized void ensureHolidayCalendarRegistered() throws SchedulerException {
+        if (scheduler == null) return;
+        if (scheduler.getCalendar(HOLIDAY_CALENDAR_NAME) == null) {
+            WeeklyCalendar weekly = new WeeklyCalendar();
+            weekly.setDayExcluded(java.util.Calendar.SATURDAY, true);
+            weekly.setDayExcluded(java.util.Calendar.SUNDAY, true);
+            HolidayCalendar holidayCalendar = new HolidayCalendar(weekly);
+            scheduler.addCalendar(HOLIDAY_CALENDAR_NAME, holidayCalendar, true, true);
+        }
+    }
+
+    public void registerQuartzJob(ReportSchedule schedule) throws SchedulerException {
         if (scheduler == null) {
             return;
         }
 
+        JobKey jobKey = JobKey.jobKey(schedule.getId(), "REPORT_SCHEDULES");
+        if (scheduler.checkExists(jobKey)) {
+            scheduler.deleteJob(jobKey);
+        }
+
+        JobDetail jobDetail = JobBuilder.newJob(QuartzReportJob.class)
+                .withIdentity(jobKey)
+                .usingJobData("scheduleId", schedule.getId())
+                .storeDurably()
+                .build();
+
+        Trigger trigger = buildTrigger(schedule, jobDetail);
+        scheduler.scheduleJob(jobDetail, trigger);
+    }
+
+    private Map<String, Object> parseIntervalConfig(String json) {
+        if (json == null || json.isBlank()) return Collections.emptyMap();
         try {
-            JobKey jobKey = JobKey.jobKey(schedule.getId(), "REPORT_SCHEDULES");
-            TriggerKey triggerKey = TriggerKey.triggerKey(schedule.getId(), "REPORT_SCHEDULES");
-
-            if (scheduler.checkExists(jobKey)) {
-                scheduler.deleteJob(jobKey);
-            }
-
-            JobDetail jobDetail = JobBuilder.newJob(QuartzReportJob.class)
-                    .withIdentity(jobKey)
-                    .usingJobData("scheduleId", schedule.getId())
-                    .storeDurably()
-                    .build();
-
-            ScheduleBuilder<?> scheduleBuilder = buildSchedule(schedule.getIntervalType());
-            Trigger trigger = TriggerBuilder.newTrigger()
-                    .withIdentity(triggerKey)
-                    .forJob(jobDetail)
-                    .withSchedule(scheduleBuilder)
-                    .startNow()
-                    .build();
-
-            scheduler.scheduleJob(jobDetail, trigger);
-        } catch (Exception ex) {
-            System.err.println("Failed to register Quartz job for schedule: " + schedule.getId() + " - " + ex.getMessage());
+            return objectMapper.readValue(json, new TypeReference<Map<String, Object>>() {});
+        } catch (Exception e) {
+            return Collections.emptyMap();
         }
     }
 
-    private ScheduleBuilder<?> buildSchedule(String intervalType) {
-        if (intervalType == null) return SimpleScheduleBuilder.repeatHourlyForever(24);
-        switch (intervalType.toUpperCase()) {
-            case "INTRADAY":
-                return SimpleScheduleBuilder.repeatMinutelyForever(30);
-            case "DAILY":
-                return CronScheduleBuilder.dailyAtHourAndMinute(2, 0);
-            case "WEEKLY":
-                return CronScheduleBuilder.weeklyOnDayAndHourAndMinute(DateBuilder.MONDAY, 2, 0);
-            case "MONTHLY":
-                return CronScheduleBuilder.monthlyOnDayAndHourAndMinute(1, 2, 0);
-            default:
-                return SimpleScheduleBuilder.repeatHourlyForever(24);
+    private Trigger buildTrigger(ReportSchedule schedule, JobDetail jobDetail) throws SchedulerException {
+        TriggerKey triggerKey = TriggerKey.triggerKey(schedule.getId(), "REPORT_SCHEDULES");
+        Map<String, Object> config = parseIntervalConfig(schedule.getIntervalConfig());
+
+        String intervalType = schedule.getIntervalType() != null ? schedule.getIntervalType().toUpperCase() : "DAILY";
+        boolean isIntraDay = "INTRADAY".equalsIgnoreCase(intervalType) || Boolean.TRUE.equals(config.get("isDailyIntraDay"));
+
+        // Parse Start Time
+        int startHour = 2;
+        int startMinute = 0;
+        if (config.containsKey("startTime") && config.get("startTime") != null) {
+            String[] parts = config.get("startTime").toString().split(":");
+            if (parts.length >= 2) {
+                try {
+                    startHour = Integer.parseInt(parts[0].trim());
+                    startMinute = Integer.parseInt(parts[1].trim());
+                } catch (NumberFormatException ignored) {}
+            }
+        } else if (config.containsKey("hourGmt") && config.get("hourGmt") != null) {
+            try {
+                startHour = Integer.parseInt(config.get("hourGmt").toString().trim());
+            } catch (NumberFormatException ignored) {}
         }
+
+        // Parse Start Date
+        LocalDate startDate = LocalDate.now();
+        if (config.containsKey("startDate") && config.get("startDate") != null) {
+            try {
+                startDate = LocalDate.parse(config.get("startDate").toString().trim());
+            } catch (Exception ignored) {}
+        }
+
+        int everyDays = 1;
+        if (config.containsKey("everyDays") && config.get("everyDays") != null) {
+            try {
+                everyDays = Integer.parseInt(config.get("everyDays").toString().trim());
+            } catch (NumberFormatException ignored) {}
+        }
+
+        TriggerBuilder<Trigger> builder = TriggerBuilder.newTrigger()
+                .withIdentity(triggerKey)
+                .forJob(jobDetail);
+
+        if (isIntraDay) {
+            int endHour = 17;
+            int endMinute = 30;
+            if (config.containsKey("intraDayEndTime") && config.get("intraDayEndTime") != null) {
+                String[] parts = config.get("intraDayEndTime").toString().split(":");
+                if (parts.length >= 2) {
+                    try {
+                        endHour = Integer.parseInt(parts[0].trim());
+                        endMinute = Integer.parseInt(parts[1].trim());
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+
+            int intervalMinutes = 30;
+            if (config.containsKey("intraDayInterval") && config.get("intraDayInterval") != null) {
+                String val = config.get("intraDayInterval").toString().trim();
+                if (val.contains(":")) {
+                    String[] parts = val.split(":");
+                    try {
+                        int h = Integer.parseInt(parts[0].trim());
+                        int m = Integer.parseInt(parts[1].trim());
+                        intervalMinutes = (h * 60) + m;
+                    } catch (NumberFormatException ignored) {}
+                } else {
+                    try {
+                        intervalMinutes = Integer.parseInt(val);
+                    } catch (NumberFormatException ignored) {}
+                }
+            }
+            if (intervalMinutes <= 0) intervalMinutes = 30;
+
+            DailyTimeIntervalScheduleBuilder sched = DailyTimeIntervalScheduleBuilder.dailyTimeIntervalSchedule()
+                    .startingDailyAt(new TimeOfDay(startHour, startMinute))
+                    .endingDailyAt(new TimeOfDay(endHour, endMinute))
+                    .withInterval(intervalMinutes, DateBuilder.IntervalUnit.MINUTE)
+                    .everyDays(everyDays > 0 ? everyDays : 1);
+            builder.withSchedule(sched);
+        } else if ("WEEKLY".equalsIgnoreCase(intervalType)) {
+            int dayOfWeek = DateBuilder.MONDAY;
+            if (startDate != null) {
+                dayOfWeek = startDate.getDayOfWeek().getValue() % 7 + 1;
+            }
+            builder.withSchedule(CronScheduleBuilder.weeklyOnDayAndHourAndMinute(dayOfWeek, startHour, startMinute));
+        } else if ("MONTHLY".equalsIgnoreCase(intervalType)) {
+            int dayOfMonth = 1;
+            if (config.containsKey("dayOfMonth") && config.get("dayOfMonth") != null) {
+                try {
+                    dayOfMonth = Integer.parseInt(config.get("dayOfMonth").toString().trim());
+                } catch (NumberFormatException ignored) {}
+            } else if (startDate != null) {
+                dayOfMonth = startDate.getDayOfMonth();
+            }
+            builder.withSchedule(CronScheduleBuilder.monthlyOnDayAndHourAndMinute(dayOfMonth, startHour, startMinute));
+        } else {
+            // DAILY
+            if (everyDays <= 1) {
+                builder.withSchedule(CronScheduleBuilder.dailyAtHourAndMinute(startHour, startMinute));
+            } else {
+                builder.withSchedule(CalendarIntervalScheduleBuilder.calendarIntervalSchedule().withIntervalInDays(everyDays));
+            }
+        }
+
+        LocalTime startTime = LocalTime.of(startHour, startMinute);
+        ZonedDateTime startZdt = ZonedDateTime.of(startDate, startTime, ZoneId.of("UTC"));
+        builder.startAt(Date.from(startZdt.toInstant()));
+
+        String holidayOption = schedule.getHolidayOption();
+        if (holidayOption != null && !"RUN_ALL_DAYS".equalsIgnoreCase(holidayOption)) {
+            ensureHolidayCalendarRegistered();
+            builder.modifiedByCalendar(HOLIDAY_CALENDAR_NAME);
+        }
+
+        return builder.build();
+    }
+
+    @EventListener(ApplicationReadyEvent.class)
+    public void initializeAuthorizedSchedules() {
+        if (scheduler == null) {
+            return;
+        }
+        try {
+            ensureHolidayCalendarRegistered();
+        } catch (Exception ex) {
+            System.err.println("Failed to initialize holiday calendar: " + ex.getMessage());
+        }
+
+        List<ReportSchedule> authorized = scheduleRepository.findByAuthStatus("AUTHORIZED");
+        for (ReportSchedule schedule : authorized) {
+            try {
+                registerQuartzJob(schedule);
+            } catch (Exception ex) {
+                System.err.println("Failed to re-register schedule on startup: " + schedule.getId() + " - " + ex.getMessage());
+            }
+        }
+    }
     }
 
     private void removeQuartzJob(String scheduleId) {

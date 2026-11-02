@@ -21,6 +21,8 @@ public class AccountSummaryData {
 
     private BigDecimal openingAvailableBalance = BigDecimal.ZERO;
     private BigDecimal closingAvailableBalance = BigDecimal.ZERO;
+    private BigDecimal intradayBalance = BigDecimal.ZERO;
+    private BigDecimal intradayAvailableBalance = BigDecimal.ZERO;
     private int creditCount = 0;
     private BigDecimal totalCreditAmount = BigDecimal.ZERO;
     private int debitCount = 0;
@@ -141,6 +143,22 @@ public class AccountSummaryData {
 
     public void setClosingAvailableBalance(BigDecimal closingAvailableBalance) {
         this.closingAvailableBalance = closingAvailableBalance;
+    }
+
+    public BigDecimal getIntradayBalance() {
+        return intradayBalance;
+    }
+
+    public void setIntradayBalance(BigDecimal intradayBalance) {
+        this.intradayBalance = intradayBalance;
+    }
+
+    public BigDecimal getIntradayAvailableBalance() {
+        return intradayAvailableBalance;
+    }
+
+    public void setIntradayAvailableBalance(BigDecimal intradayAvailableBalance) {
+        this.intradayAvailableBalance = intradayAvailableBalance;
     }
 
     public int getCreditCount() {

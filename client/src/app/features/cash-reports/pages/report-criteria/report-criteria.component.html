@@ -213,7 +213,7 @@
               </div>
               <app-binocular-lookup-input
                 formControlName="accountNumberName"
-                placeholder="Lookup account..."
+                [placeholder]="criteriaForm.get('accountSelectionType')?.value === 'ACCOUNT_GROUP' ? 'Lookup account group...' : 'Lookup account...'"
                 [hasClear]="true"
                 (lookupClick)="openLookup('ACCOUNT')"
                 (clearClick)="criteriaForm.patchValue({ accountNumberName: '' })"

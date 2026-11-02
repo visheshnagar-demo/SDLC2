@@ -21,6 +21,7 @@ public class CriteriaPayload {
 
     private String accountCurrency;
     private String transactionDescription;
+    private String transactionDescriptionOperator = "EQUALS";
     private String byOrderBeneficiary;
     private String transactionCode = "Citi Transaction Codes";
     private String cheques = "Include Cheques";
@@ -155,6 +156,14 @@ public class CriteriaPayload {
 
     public void setTransactionDescription(String transactionDescription) {
         this.transactionDescription = transactionDescription;
+    }
+
+    public String getTransactionDescriptionOperator() {
+        return transactionDescriptionOperator;
+    }
+
+    public void setTransactionDescriptionOperator(String transactionDescriptionOperator) {
+        this.transactionDescriptionOperator = transactionDescriptionOperator;
     }
 
     public String getByOrderBeneficiary() {

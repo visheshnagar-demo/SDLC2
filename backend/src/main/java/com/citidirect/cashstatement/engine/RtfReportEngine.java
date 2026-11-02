@@ -39,6 +39,7 @@ public class RtfReportEngine implements ReportExportEngine {
             rtf.append("--------------------------------------------------------------------------------------------------------------------\\par\n");
             rtf.append("\\b Summary Balance Band:\\b0\\par\n");
             rtf.append("Opening Avail: ").append(moneyFormat.format(account.getOpeningAvailableBalance())).append(" ").append(account.getCurrency())
+               .append(" | Intraday Bal: ").append(moneyFormat.format(account.getIntradayBalance() != null ? account.getIntradayBalance() : account.getClosingAvailableBalance())).append(" ").append(account.getCurrency())
                .append(" | Closing Avail: ").append(moneyFormat.format(account.getClosingAvailableBalance())).append(" ").append(account.getCurrency())
                .append(" | Credits: ").append(account.getCreditCount()).append(" (").append(moneyFormat.format(account.getTotalCreditAmount())).append(")")
                .append(" | Debits: ").append(account.getDebitCount()).append(" (").append(moneyFormat.format(account.getTotalDebitAmount())).append(")")

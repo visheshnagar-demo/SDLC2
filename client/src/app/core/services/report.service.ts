@@ -99,13 +99,15 @@ export class ReportService {
   mapToCriteriaPayload(criteria: ReportCriteria): CriteriaPayload {
     const branchNumber = this.extractCode(criteria.branchNumberName);
     const customerNumber = this.extractCode(criteria.customerNumberName);
-    const accountNumber = this.extractCode(criteria.accountNumberName);
+    const accountOrGroup = this.extractCode(criteria.accountNumberName);
+    const isGroup = criteria.accountSelectionType === 'ACCOUNT_GROUP';
 
     return {
       branchNumber: branchNumber || undefined,
       customerNumber: customerNumber || undefined,
       accountSelectionType: criteria.accountSelectionType || 'ACCOUNT',
-      accountNumber: accountNumber || undefined,
+      accountNumber: !isGroup ? (accountOrGroup || undefined) : undefined,
+      accountGroup: isGroup ? (accountOrGroup || undefined) : undefined,
       bankReference: criteria.bankReferenceValue || undefined,
       bankReferenceOperator: this.normalizeOperator(criteria.bankReferenceOperator),
       customerReference: criteria.customerReferenceValue || undefined,
@@ -114,6 +116,7 @@ export class ReportService {
       amountTo: criteria.transactionAmountTo !== null && criteria.transactionAmountTo !== undefined ? Number(criteria.transactionAmountTo) : null,
       accountCurrency: criteria.accountCurrency || undefined,
       transactionDescription: criteria.transactionDescriptionValue || undefined,
+      transactionDescriptionOperator: this.normalizeOperator(criteria.transactionDescriptionOperator),
       byOrderBeneficiary: criteria.byOrderBeneficiary || undefined,
       transactionCode: criteria.transactionCode || 'Citi Transaction Codes',
       cheques: criteria.cheques || 'Include Cheques',
@@ -155,7 +158,7 @@ export class ReportService {
       branchNumberName: cp.branchNumber || '',
       customerNumberName: cp.customerNumber || '',
       accountSelectionType: cp.accountSelectionType || 'ACCOUNT',
-      accountNumberName: cp.accountNumber || '',
+      accountNumberName: (cp.accountSelectionType === 'ACCOUNT_GROUP' ? cp.accountGroup : cp.accountNumber) || '',
       bankReferenceOperator: this.denormalizeOperator(cp.bankReferenceOperator),
       bankReferenceValue: cp.bankReference || '',
       customerReferenceOperator: this.denormalizeOperator(cp.customerReferenceOperator),
@@ -163,7 +166,7 @@ export class ReportService {
       transactionAmountFrom: cp.amountFrom ?? null,
       transactionAmountTo: cp.amountTo ?? null,
       accountCurrency: cp.accountCurrency || 'GBP',
-      transactionDescriptionOperator: 'Equals',
+      transactionDescriptionOperator: this.denormalizeOperator(cp.transactionDescriptionOperator) || 'Equals',
       transactionDescriptionValue: cp.transactionDescription || '',
       byOrderBeneficiary: cp.byOrderBeneficiary || '',
       transactionCode: cp.transactionCode || 'Citi Transaction Codes',
@@ -211,7 +214,7 @@ export class ReportService {
       transactionAmountFrom: cp.amountFrom ?? null,
       transactionAmountTo: cp.amountTo ?? null,
       accountCurrency: cp.accountCurrency || 'GBP',
-      transactionDescriptionOperator: 'Equals',
+      transactionDescriptionOperator: this.denormalizeOperator(cp.transactionDescriptionOperator) || 'Equals',
       transactionDescriptionValue: cp.transactionDescription || '',
       byOrderBeneficiary: cp.byOrderBeneficiary || '',
       transactionCode: resp.transactionCode || 'Citi Transaction Codes',

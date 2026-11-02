@@ -68,6 +68,12 @@
           <span class="sum-label">Opening Available Balance:</span>
           <span class="sum-value">{{ data.openingBalance | number:'1.2-2' }} {{ data.currency }}</span>
         </div>
+        @if (data.intradayBalance !== undefined && data.intradayBalance !== null) {
+          <div class="summary-box">
+            <span class="sum-label">Intraday Balance:</span>
+            <span class="sum-value">{{ data.intradayBalance | number:'1.2-2' }} {{ data.currency }}</span>
+          </div>
+        }
         <div class="summary-box">
           <span class="sum-label">Credits:</span>
           <span class="sum-value credit-text">{{ data.creditCount }} CR ({{ data.totalCreditAmount | number:'1.2-2' }})</span>

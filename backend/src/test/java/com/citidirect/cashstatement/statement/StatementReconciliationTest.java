@@ -245,6 +245,14 @@ public class StatementReconciliationTest {
         // Displayed transactions retain their true calculated running balance
         assertEquals(new BigDecimal("1356398.99"), summary.getTransactions().get(0).getRunningBalance());
         assertEquals(new BigDecimal("1064381.14"), summary.getTransactions().get(1).getRunningBalance());
+
+        // Summary counts and amounts correctly describe the filtered transactions subset
+        assertEquals(1, summary.getCreditCount());
+        assertEquals(new BigDecimal("217765.85"), summary.getTotalCreditAmount());
+        assertEquals(1, summary.getDebitCount());
+        assertEquals(new BigDecimal("234705.99"), summary.getTotalDebitAmount());
+        assertEquals(new BigDecimal("-16940.14"), summary.getNetTransactionAmount());
+        assertEquals(new BigDecimal("1103501.82"), summary.getIntradayBalance());
     }
 
     @Test
@@ -266,5 +274,69 @@ public class StatementReconciliationTest {
         AccountSummaryData summary = reportData.getAccounts().get(0);
         assertEquals(1, summary.getTransactions().size());
         assertEquals("CITI-FT-1004", summary.getTransactions().get(0).getBankReference());
+    }
+
+    @Test
+    @DisplayName("Transaction description operator STARTS_WITH, EQUALS, and CONTAINS are honored")
+    void testTransactionDescriptionOperators() {
+        when(accountRepository.findById("XX12CITI11223344446677")).thenReturn(Optional.of(testAccount));
+        when(branchRepository.findById("600")).thenReturn(Optional.of(testBranch));
+        when(customerRepository.findById("0000244654")).thenReturn(Optional.of(testCustomer));
+        when(transactionRepository.findByAccountNumberOrderByStatementDateAscCreatedAtAsc("XX12CITI11223344446677"))
+                .thenReturn(testTransactions);
+
+        // STARTS_WITH test: "CUSTOMER" matches "CUSTOMER PAYMENT INWARD"
+        CriteriaPayload startsWithCrit = new CriteriaPayload();
+        startsWithCrit.setAccountNumber("XX12CITI11223344446677");
+        startsWithCrit.setTransactionDescription("CUSTOMER");
+        startsWithCrit.setTransactionDescriptionOperator("STARTS_WITH");
+        startsWithCrit.setStatementDateRadio("NO_DATE_SELECTED");
+
+        StatementReportData res1 = statementService.generateReportData("Account Statement – Comprehensive", startsWithCrit, "SYSTEM");
+        assertEquals(1, res1.getAccounts().get(0).getTransactions().size());
+        assertEquals("txn-1", res1.getAccounts().get(0).getTransactions().get(0).getId());
+
+        // EQUALS test: exact match only
+        CriteriaPayload equalsCrit = new CriteriaPayload();
+        equalsCrit.setAccountNumber("XX12CITI11223344446677");
+        equalsCrit.setTransactionDescription("SETTLEMENT CREDIT");
+        equalsCrit.setTransactionDescriptionOperator("EQUALS");
+        equalsCrit.setStatementDateRadio("NO_DATE_SELECTED");
+
+        StatementReportData res2 = statementService.generateReportData("Account Statement – Comprehensive", equalsCrit, "SYSTEM");
+        assertEquals(1, res2.getAccounts().get(0).getTransactions().size());
+        assertEquals("txn-2", res2.getAccounts().get(0).getTransactions().get(0).getId());
+
+        // EQUALS negative test: partial text should NOT match
+        CriteriaPayload equalsCritNeg = new CriteriaPayload();
+        equalsCritNeg.setAccountNumber("XX12CITI11223344446677");
+        equalsCritNeg.setTransactionDescription("SETTLEMENT");
+        equalsCritNeg.setTransactionDescriptionOperator("EQUALS");
+        equalsCritNeg.setStatementDateRadio("NO_DATE_SELECTED");
+
+        StatementReportData res3 = statementService.generateReportData("Account Statement – Comprehensive", equalsCritNeg, "SYSTEM");
+        assertEquals(0, res3.getAccounts().get(0).getTransactions().size());
+    }
+
+    @Test
+    @DisplayName("Account Group selection resolves entitled accounts matching group criteria")
+    void testAccountGroupResolution() {
+        when(accountRepository.findByCustomerNumber("0000244654")).thenReturn(List.of(testAccount));
+        when(branchRepository.findById("600")).thenReturn(Optional.of(testBranch));
+        when(customerRepository.findById("0000244654")).thenReturn(Optional.of(testCustomer));
+        when(transactionRepository.findByAccountNumberOrderByStatementDateAscCreatedAtAsc("XX12CITI11223344446677"))
+                .thenReturn(testTransactions);
+
+        CriteriaPayload criteria = new CriteriaPayload();
+        criteria.setAccountSelectionType("ACCOUNT_GROUP");
+        criteria.setAccountGroup("CHECKING");
+        criteria.setCustomerNumber("0000244654");
+        criteria.setStatementDateRadio("NO_DATE_SELECTED");
+
+        StatementReportData reportData = statementService.generateReportData("Account Statement – Comprehensive", criteria, "usr-001");
+
+        assertNotNull(reportData);
+        assertEquals(1, reportData.getAccounts().size());
+        assertEquals("XX12CITI11223344446677", reportData.getAccounts().get(0).getAccountNumber());
     }
 }

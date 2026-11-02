@@ -286,25 +286,40 @@ export class ReportCriteriaComponent implements OnInit {
         }
       });
     } else if (type === 'ACCOUNT') {
-      this.lookupTitle = 'Account Number / Name Lookup';
-      this.lookupColumns = [
-        { field: 'accountNumber', header: 'Account Number', width: '180px' },
-        { field: 'accountName', header: 'Account Name' },
-        { field: 'currency', header: 'CCY', width: '60px' },
-        { field: 'accountType', header: 'Type', width: '120px' }
-      ];
-      const custRaw = this.criteriaForm.get('customerNumberName')?.value || '';
-      const branchRaw = this.criteriaForm.get('branchNumberName')?.value || '';
-      const customerNumber = custRaw.split(' - ')[0].trim() || undefined;
-      const branchNumber = branchRaw.split(' - ')[0].trim() || undefined;
+      const isGroup = this.criteriaForm.get('accountSelectionType')?.value === 'ACCOUNT_GROUP';
+      if (isGroup) {
+        this.lookupTitle = 'Account Group Lookup';
+        this.lookupColumns = [
+          { field: 'code', header: 'Group Code', width: '140px' },
+          { field: 'name', header: 'Group Description' }
+        ];
+        this.lookupItems = [
+          { code: 'ALL', name: 'All Entitled Accounts (Customer/Branch)' },
+          { code: 'CHECKING', name: 'Checking Accounts Group' },
+          { code: 'OPERATING', name: 'Operating Treasury Group' },
+          { code: 'SAVINGS', name: 'Savings & Regional Pools' }
+        ];
+      } else {
+        this.lookupTitle = 'Account Number / Name Lookup';
+        this.lookupColumns = [
+          { field: 'accountNumber', header: 'Account Number', width: '180px' },
+          { field: 'accountName', header: 'Account Name' },
+          { field: 'currency', header: 'CCY', width: '60px' },
+          { field: 'accountType', header: 'Type', width: '120px' }
+        ];
+        const custRaw = this.criteriaForm.get('customerNumberName')?.value || '';
+        const branchRaw = this.criteriaForm.get('branchNumberName')?.value || '';
+        const customerNumber = custRaw.split(' - ')[0].trim() || undefined;
+        const branchNumber = branchRaw.split(' - ')[0].trim() || undefined;
 
-      this.lookupService.getAccounts(customerNumber, branchNumber).subscribe({
-        next: (accounts) => this.lookupItems = accounts,
-        error: (err) => {
-          this.statusMessage = err.error?.message || 'Error fetching accounts';
-          this.statusType = 'error';
-        }
-      });
+        this.lookupService.getAccounts(customerNumber, branchNumber).subscribe({
+          next: (accounts) => this.lookupItems = accounts,
+          error: (err) => {
+            this.statusMessage = err.error?.message || 'Error fetching accounts';
+            this.statusType = 'error';
+          }
+        });
+      }
     } else if (type === 'CURRENCY') {
       this.lookupTitle = 'Currency Lookup';
       this.lookupColumns = [
@@ -361,10 +376,17 @@ export class ReportCriteriaComponent implements OnInit {
         customerNumberName: `${item.customerNumber} - ${item.customerName}`
       });
     } else if (this.activeLookupModal === 'ACCOUNT') {
-      this.criteriaForm.patchValue({
-        accountNumberName: `${item.accountNumber} - ${item.accountName}`,
-        accountCurrency: item.currency
-      });
+      const isGroup = this.criteriaForm.get('accountSelectionType')?.value === 'ACCOUNT_GROUP';
+      if (isGroup) {
+        this.criteriaForm.patchValue({
+          accountNumberName: item.code ? `${item.code} - ${item.name}` : item.name
+        });
+      } else {
+        this.criteriaForm.patchValue({
+          accountNumberName: `${item.accountNumber} - ${item.accountName}`,
+          accountCurrency: item.currency
+        });
+      }
     } else if (this.activeLookupModal === 'CURRENCY') {
       this.criteriaForm.patchValue({
         accountCurrency: item.code
