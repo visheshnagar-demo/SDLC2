@@ -1,0 +1,285 @@
+@import 'styles/design-tokens';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: $citi-font-family;
+  font-size: 13px;
+  color: $citi-text-primary;
+  background-color: $citi-surface-canvas;
+  line-height: 1.4;
+  -webkit-font-smoothing: antialiased;
+}
+
+// Global Typography
+h1 {
+  font-size: 18px;
+  font-weight: 700;
+  color: $citi-dark-midnight;
+}
+
+h2 {
+  font-size: 15px;
+  font-weight: 600;
+  color: $citi-core-blue;
+}
+
+h3 {
+  font-size: 14px;
+  font-weight: 600;
+  color: $citi-dark-midnight;
+}
+
+// Global Skeuomorphic Buttons (Style A)
+.citi-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: $citi-button-height;
+  padding: 0 16px;
+  background: linear-gradient(180deg, $citi-sky-action-top 0%, #3B9DD9 50%, $citi-action-blue-mid 51%, #155B96 100%);
+  border: 1px solid #1B64A7;
+  border-radius: 2px;
+  color: #FFFFFF;
+  font-family: $citi-font-family;
+  font-size: 12px;
+  font-weight: 700;
+  text-shadow: 0 -1px 0 rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 1px 2px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(180deg, lighten($citi-sky-action-top, 5%) 0%, #4BA8E2 50%, lighten($citi-action-blue-mid, 5%) 51%, #1B6EB5 100%);
+    border-color: #124C80;
+  }
+
+  &:active:not(:disabled) {
+    background: linear-gradient(180deg, #155B96 0%, $citi-action-blue-mid 100%);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    filter: grayscale(80%);
+  }
+}
+
+// Secondary / Silver Flat Button (Style B)
+.citi-btn-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: $citi-button-height;
+  padding: 0 14px;
+  background: linear-gradient(180deg, #FFFFFF 0%, #F0F4F8 100%);
+  border: 1px solid $citi-border-input;
+  border-radius: 2px;
+  color: $citi-text-primary;
+  font-family: $citi-font-family;
+  font-size: 12px;
+  font-weight: 600;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(180deg, #F8FAFC 0%, #E2E8F0 100%);
+    border-color: darken($citi-border-input, 10%);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+// Danger Action Button
+.citi-btn-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: $citi-button-height;
+  padding: 0 14px;
+  background: linear-gradient(180deg, #FF6B6B 0%, #E02424 50%, #C81E1E 51%, #9B1C1C 100%);
+  border: 1px solid #771D1D;
+  border-radius: 2px;
+  color: #FFFFFF;
+  font-family: $citi-font-family;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.1);
+  }
+}
+
+// Form Controls
+.citi-form-group {
+  margin-bottom: 12px;
+
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: $citi-text-primary;
+    margin-bottom: 4px;
+
+    .required {
+      color: $citi-required-asterisk;
+      margin-left: 2px;
+    }
+  }
+
+  input[type="text"],
+  input[type="date"],
+  input[type="time"],
+  input[type="number"],
+  input[type="email"],
+  select,
+  textarea {
+    width: 100%;
+    height: $citi-input-height;
+    padding: 0 8px;
+    font-family: $citi-font-family;
+    font-size: 12px;
+    color: $citi-text-primary;
+    background-color: #FFFFFF;
+    border: 1px solid $citi-border-input;
+    border-radius: 2px;
+    outline: none;
+    transition: border-color 0.15s ease-in-out;
+
+    &:focus {
+      border-color: $citi-focus-blue;
+      box-shadow: 0 0 0 1px $citi-focus-blue;
+    }
+
+    &:disabled, &[readonly] {
+      background-color: $citi-surface-disabled;
+      color: $citi-text-secondary;
+      cursor: not-allowed;
+    }
+  }
+
+  textarea {
+    height: auto;
+    min-height: 60px;
+    padding: 6px 8px;
+  }
+}
+
+// High density table styles
+.citi-table-container {
+  background: #FFFFFF;
+  border: 1px solid $citi-border-grid;
+  overflow-x: auto;
+}
+
+.citi-data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+
+  thead {
+    tr {
+      background-color: $citi-surface-table-head;
+      border-bottom: 1px solid $citi-border-grid;
+
+      th {
+        padding: 6px 10px;
+        text-align: left;
+        font-weight: 700;
+        color: $citi-text-link-blue;
+        white-space: nowrap;
+        border-right: 1px solid lighten($citi-border-grid, 5%);
+
+        &:last-child {
+          border-right: none;
+        }
+      }
+    }
+  }
+
+  tbody {
+    tr {
+      border-bottom: 1px solid $citi-border-subtle;
+      height: $citi-table-row-height;
+
+      &:nth-child(even) {
+        background-color: $citi-surface-row-zebra;
+      }
+
+      &:hover {
+        background-color: lighten($citi-surface-row-selected, 4%);
+      }
+
+      &.selected {
+        background-color: $citi-surface-row-selected;
+      }
+
+      td {
+        padding: 6px 10px;
+        color: $citi-text-primary;
+        white-space: nowrap;
+        border-right: 1px solid rgba(200, 213, 225, 0.4);
+
+        &:last-child {
+          border-right: none;
+        }
+
+        &.numeric {
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+
+        &.debit {
+          color: $citi-danger;
+          text-align: right;
+          font-variant-numeric: tabular-nums;
+        }
+      }
+    }
+  }
+}
+
+// Status Badges
+.citi-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 2px;
+  text-transform: uppercase;
+
+  &.badge-success, &.badge-active, &.badge-authorized, &.badge-completed {
+    background-color: $citi-success-bg;
+    color: $citi-success;
+    border: 1px solid rgba(0, 132, 61, 0.3);
+  }
+
+  &.badge-pending, &.badge-pending-auth {
+    background-color: $citi-warning-bg;
+    color: $citi-warning;
+    border: 1px solid rgba(201, 151, 0, 0.4);
+  }
+
+  &.badge-danger, &.badge-rejected, &.badge-failed {
+    background-color: $citi-danger-bg;
+    color: $citi-danger;
+    border: 1px solid rgba(182, 0, 0, 0.3);
+  }
+
+  &.badge-neutral {
+    background-color: $citi-surface-disabled;
+    color: $citi-text-secondary;
+    border: 1px solid $citi-border-subtle;
+  }
+}
