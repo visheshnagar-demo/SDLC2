@@ -1,0 +1,237 @@
+@import 'styles/design-tokens';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: $font-family-base;
+  font-size: $font-size-body;
+  color: $citi-text-primary;
+  background-color: $citi-surface-canvas;
+  -webkit-font-smoothing: antialiased;
+}
+
+.citi-app-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+// CitiDirect Signature Glossy Action Buttons
+.btn-citi-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(180deg, $citi-blue-action-top 0%, $citi-blue-action-mid 50%, $citi-blue-action-bot 100%);
+  border: 1px solid #1B64A7;
+  border-radius: $radius-default;
+  color: #FFFFFF;
+  font-family: $font-family-base;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 14px;
+  cursor: pointer;
+  box-shadow: 0 1px 2px rgba(0, 45, 114, 0.25);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  transition: all 0.15s ease-in-out;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(180deg, lighten($citi-blue-action-top, 5%) 0%, $citi-blue-action-mid 50%, lighten($citi-blue-action-bot, 5%) 100%);
+    box-shadow: 0 2px 4px rgba(0, 45, 114, 0.35);
+  }
+
+  &:active:not(:disabled) {
+    background: linear-gradient(180deg, $citi-blue-action-bot 0%, $citi-blue-action-mid 50%, $citi-blue-action-top 100%);
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-citi-secondary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: #FFFFFF;
+  border: 1px solid $citi-border-input;
+  border-radius: $radius-default;
+  color: $citi-blue;
+  font-family: $font-family-base;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover:not(:disabled) {
+    background: $citi-surface-banner;
+    border-color: $citi-blue-navy;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btn-citi-danger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  background: linear-gradient(180deg, #FF6B6B 0%, $citi-red 50%, $citi-red-dark 100%);
+  border: 1px solid #900000;
+  border-radius: $radius-default;
+  color: #FFFFFF;
+  font-family: $font-family-base;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    background: linear-gradient(180deg, lighten(#FF6B6B, 5%) 0%, $citi-red 50%, lighten($citi-red-dark, 5%) 100%);
+  }
+}
+
+// Form Controls
+.citi-input {
+  height: 28px;
+  padding: 4px 8px;
+  font-family: $font-family-base;
+  font-size: 12px;
+  color: $citi-text-primary;
+  border: 1px solid $citi-border-input;
+  border-radius: $radius-default;
+  background-color: #FFFFFF;
+  outline: none;
+
+  &:focus {
+    border-color: $citi-focus-blue;
+    box-shadow: 0 0 0 1px $citi-focus-blue;
+  }
+
+  &.error {
+    border-color: $citi-red-dark;
+  }
+}
+
+.citi-select {
+  height: 28px;
+  padding: 2px 24px 2px 8px;
+  font-family: $font-family-base;
+  font-size: 12px;
+  color: $citi-text-primary;
+  border: 1px solid $citi-border-input;
+  border-radius: $radius-default;
+  background-color: #FFFFFF;
+  outline: none;
+
+  &:focus {
+    border-color: $citi-focus-blue;
+  }
+}
+
+// Data Tables
+.citi-table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  border: 1px solid $citi-border-grid;
+  background-color: #FFFFFF;
+}
+
+.citi-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: $font-size-table-data;
+
+  thead th {
+    background-color: $citi-surface-table-head;
+    color: $citi-blue;
+    font-size: $font-size-table-header;
+    font-weight: 600;
+    text-align: left;
+    padding: 6px 10px;
+    border-bottom: 1px solid $citi-border-grid;
+    border-right: 1px solid $citi-border-subtle;
+    white-space: nowrap;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+
+  tbody tr {
+    border-bottom: 1px solid $citi-border-subtle;
+
+    &:nth-child(even) {
+      background-color: $citi-surface-zebra;
+    }
+
+    &:hover {
+      background-color: #EDF4FA;
+    }
+
+    &.selected {
+      background-color: #D9EAF7;
+    }
+  }
+
+  tbody td {
+    padding: 6px 10px;
+    color: $citi-text-primary;
+    border-right: 1px solid $citi-border-subtle;
+    white-space: nowrap;
+
+    &:last-child {
+      border-right: none;
+    }
+  }
+}
+
+// Status Badges
+.citi-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: $radius-pill;
+  font-size: 11px;
+  font-weight: 600;
+
+  &.status-active, &.status-approved, &.status-completed {
+    background-color: $citi-success-bg;
+    color: $citi-success;
+  }
+
+  &.status-pending, &.status-pending-auth {
+    background-color: $citi-warning-bg;
+    color: $citi-warning;
+  }
+
+  &.status-rejected, &.status-failed, &.status-inactive {
+    background-color: #FDE8E8;
+    color: $citi-red-dark;
+  }
+}
+
+// Money & Ledger Formatting
+.citi-amount {
+  font-family: $font-family-mono;
+  text-align: right;
+
+  &.debit {
+    color: $citi-red-dark;
+  }
+
+  &.credit {
+    color: $citi-success;
+  }
+}
