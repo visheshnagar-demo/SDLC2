@@ -1,3 +1,4 @@
+# Merged requirements.txt
 passlib[bcrypt]
 Pillow
 pydantic[email]
