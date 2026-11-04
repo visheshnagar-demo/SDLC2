@@ -1,0 +1,80 @@
+<!-- TOP NAV BAR (Institutional Docked Header) -->
+<header class="top-navbar bg-[#002D62] text-white top-0 z-50 h-[52px] border-b border-[#CBD5E1]/30 flex items-center justify-between px-4 select-none">
+  <!-- Brand & Section Context -->
+  <div class="flex items-center gap-4 h-full">
+    <div class="flex items-center gap-2">
+      <!-- Citi Logo Mark Simulation with Red Arc -->
+      <a routerLink="/reports" class="relative flex items-center pr-2 text-decoration-none cursor-pointer">
+        <span class="text-[20px] font-bold tracking-tight text-white">citi</span>
+        <span class="citi-red-arc absolute -top-1 left-2 text-[#EF4444] text-[16px] font-bold leading-none select-none">◠</span>
+      </a>
+      <div class="h-4 w-px bg-[#CBD5E1]/40"></div>
+      <span class="font-semibold text-[13px] text-white tracking-wide flex items-center gap-1">
+        CitiDirect<span class="text-[9px] align-super">®</span>
+        <span class="text-[#CBD5E1] font-normal text-[11px] ml-1">| Liquidity &amp; Cash Management</span>
+      </span>
+    </div>
+
+    <!-- Navigation Links -->
+    <nav class="flex items-center h-full ml-4">
+      <a routerLink="/reports" routerLinkActive="active-tab" [routerLinkActiveOptions]="{exact: true}"
+         class="nav-item text-white hover:text-white font-medium text-[13px] h-full flex items-center px-3 transition-colors">
+        Reports &amp; Analytics
+      </a>
+      <a routerLink="/criteria" routerLinkActive="active-tab"
+         class="nav-item text-[#CBD5E1] hover:text-white font-medium text-[13px] h-full flex items-center px-3 transition-colors">
+        Criteria Builder
+      </a>
+      <a routerLink="/schedule" routerLinkActive="active-tab"
+         class="nav-item text-[#CBD5E1] hover:text-white font-medium text-[13px] h-full flex items-center px-3 transition-colors">
+        Schedule Builder
+      </a>
+      <a routerLink="/delivery" routerLinkActive="active-tab"
+         class="nav-item text-[#CBD5E1] hover:text-white font-medium text-[13px] h-full flex items-center px-3 transition-colors">
+        Delivery &amp; Authorization
+      </a>
+    </nav>
+  </div>
+
+  <!-- Right Controls: Global Search, Quick Actions, Profile -->
+  <div class="flex items-center gap-3 h-full">
+    <!-- Search Input -->
+    <div class="relative flex items-center">
+      <span class="material-symbols-outlined absolute left-2 text-[#CBD5E1] text-[16px]">search</span>
+      <input class="bg-[#001D40] text-white placeholder:text-[#94A3B8] text-[12px] pl-7 pr-10 py-1 h-8 rounded border border-[#004A79] focus:outline-none focus:ring-1 focus:ring-[#1793CF] w-64"
+             placeholder="Search reports, BIC, accounts (Ctrl+K)" type="text" />
+      <kbd class="absolute right-2 text-[10px] font-mono text-[#CBD5E1] border border-[#004A79] px-1 rounded">⌘K</kbd>
+    </div>
+
+    <!-- Icon Action Cluster -->
+    <div class="flex items-center gap-1 text-white">
+      <a routerLink="/delivery" class="relative p-1.5 rounded hover:bg-[#00193C] transition-colors" title="Pending Approvals">
+        <span class="material-symbols-outlined text-[18px]">verified_user</span>
+        <span class="absolute top-0 right-0 w-4 h-4 bg-[#E11D48] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+          {{ pendingCount() }}
+        </span>
+      </a>
+      <button class="p-1.5 rounded hover:bg-[#00193C] transition-colors" title="Help &amp; Documentation">
+        <span class="material-symbols-outlined text-[18px]">help</span>
+      </button>
+      <button class="p-1.5 rounded hover:bg-[#00193C] transition-colors" title="Treasury App Switcher">
+        <span class="material-symbols-outlined text-[18px]">apps</span>
+      </button>
+    </div>
+
+    <div class="h-5 w-px bg-[#CBD5E1]/30"></div>
+
+    <!-- Operator User Profile Pill -->
+    <div class="flex items-center gap-2 pl-1 pr-2 py-1 rounded bg-[#001D40] border border-[#004A79] cursor-pointer hover:bg-[#00193C] transition-colors"
+         (click)="toggleProfileMenu()" title="Institutional Operator Credentials">
+      <div class="w-6 h-6 rounded-full bg-[#0070BA] text-white text-[11px] flex items-center justify-center font-bold">
+        JV
+      </div>
+      <div class="flex flex-col text-left">
+        <span class="text-[11px] font-semibold text-white leading-tight">J. Vance • Tier 4</span>
+        <span class="text-[9px] text-[#94A3B8] font-mono leading-none">Branch #88301 - New York</span>
+      </div>
+      <span class="material-symbols-outlined text-[#CBD5E1] text-[16px]">expand_more</span>
+    </div>
+  </div>
+</header>

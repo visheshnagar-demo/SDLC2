@@ -1,0 +1,21 @@
+@import 'styles/design-tokens';
+
+.top-navbar {
+  background-color: $citi-blue;
+  color: #FFFFFF;
+}
+
+.citi-red-arc {
+  font-family: sans-serif;
+  color: #EF4444;
+}
+
+.nav-item {
+  position: relative;
+  text-decoration: none;
+
+  &.active-tab {
+    color: #FFFFFF;
+    border-bottom: 2px solid $citi-cyan-accent;
+  }
+}
