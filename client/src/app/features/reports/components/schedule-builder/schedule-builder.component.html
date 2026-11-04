@@ -1,0 +1,341 @@
+<!-- SYSTEM STATUS / ENV RIBBON SUB-BAR -->
+<aside class="bg-[#F1F5F9] border-b border-[#CBD5E1] h-[34px] px-4 flex items-center justify-between text-[11px] font-mono text-[#475569] select-none">
+  <div class="flex items-center gap-3">
+    <div class="flex items-center gap-1.5 font-medium">
+      <span class="inline-block w-2 h-2 rounded-full bg-[#059669]"></span>
+      <span class="text-[#00193C] font-semibold">ENV:</span>
+      <span class="text-[#002D62]">PROD - NY FED GATEWAY (NODE #4)</span>
+    </div>
+    <span class="text-[#CBD5E1]">|</span>
+    <div class="flex items-center gap-1">
+      <span>LEGAL ENTITY:</span>
+      <span class="font-semibold text-[#00193C]">CITIBANK N.A. (GLOBAL TREASURY OPERATIONS)</span>
+    </div>
+    <span class="text-[#CBD5E1]">|</span>
+    <div class="flex items-center gap-1">
+      <span>CUT-OFF:</span>
+      <span class="text-[#002D62] font-semibold">USD FEDWIRE 17:00 EST</span>
+      <span class="text-[#E11D48] font-semibold">(-01:42:15)</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <span>SESSION EXPIRY: 48m</span>
+    <button class="h-[22px] px-2 rounded bg-white border border-[#CBD5E1] text-[#002D62] text-[10px] font-bold uppercase flex items-center gap-1 cursor-pointer">
+      <span class="material-symbols-outlined text-[12px]">sync</span> Force Sync
+    </button>
+  </div>
+</aside>
+
+<!-- MAIN WORKSPACE LAYOUT (SideNav + Content Canvas) -->
+<div class="flex flex-1 w-full overflow-hidden min-h-[calc(100vh-86px)]">
+  <!-- COLLAPSIBLE LEFT RAIL -->
+  <aside class="bg-white border-r border-[#CBD5E1] flex flex-col justify-between w-60 py-3 px-2 select-none shrink-0">
+    <div class="space-y-3">
+      <div class="flex items-center gap-2 px-3 py-1 border-b border-[#CBD5E1] pb-3">
+        <div class="w-8 h-8 rounded bg-[#002D62] text-white flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[20px]">shield</span>
+        </div>
+        <div class="flex flex-col overflow-hidden">
+          <span class="text-[13px] text-[#00193C] font-bold truncate">Treasury Services</span>
+          <span class="text-[10px] text-[#64748B] font-medium truncate">Global Liquidity &amp; Recon</span>
+        </div>
+      </div>
+      <div class="px-1">
+        <button routerLink="/reports" class="w-full bg-[#002D62] hover:bg-[#00193C] text-white text-[12px] py-1.5 px-3 rounded flex items-center justify-center space-x-2 transition-all shadow-sm cursor-pointer border-0">
+          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+          <span>View All Reports</span>
+        </button>
+      </div>
+      <nav class="flex flex-col space-y-0.5 mt-2">
+        <a routerLink="/reports" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">account_balance</span>
+          <span>Cash Statements</span>
+        </a>
+        <a routerLink="/criteria" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">tune</span>
+          <span>Criteria Builder</span>
+        </a>
+        <a routerLink="/schedule" class="bg-[#EAEDFF] text-[#00193C] font-semibold text-[13px] border-l-4 border-[#0070BA] pl-3 py-1.5 flex items-center gap-2 rounded-r-lg text-decoration-none">
+          <span class="material-symbols-outlined text-[#0070BA] text-[18px]">event_repeat</span>
+          <span>Schedule Builder</span>
+        </a>
+        <a routerLink="/delivery" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">verified_user</span>
+          <span>Dual Control Auth</span>
+        </a>
+      </nav>
+    </div>
+    <div class="border-t border-[#CBD5E1] pt-2 px-3 text-[10px] text-[#64748B] font-mono">
+      PORTAL v24.8.1 • ONLINE
+    </div>
+  </aside>
+
+  <!-- CONTENT CANVAS -->
+  <main class="flex-1 flex flex-col overflow-y-auto bg-[#F8FAFC] p-4 space-y-4 pb-24 custom-scroll">
+    <!-- Success Banner -->
+    <div *ngIf="successMessage()" class="p-3 bg-[#ECFDF5] border border-[#A7F3D0] rounded-lg text-[#059669] flex items-center gap-2">
+      <span class="material-symbols-outlined text-[20px]">check_circle</span>
+      <span class="font-semibold text-[13px]">{{ successMessage() }}</span>
+    </div>
+
+    <!-- Breadcrumbs & Page Title -->
+    <div class="space-y-1">
+      <nav class="flex items-center gap-1.5 text-[11px] text-[#64748B]">
+        <span routerLink="/reports" class="hover:text-[#00193C] cursor-pointer">Liquidity</span>
+        <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+        <span routerLink="/reports" class="hover:text-[#00193C] cursor-pointer">Cash Management</span>
+        <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+        <span routerLink="/reports" class="hover:text-[#00193C] cursor-pointer">Cash Statement Reports</span>
+        <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+        <span class="text-[#00193C] font-semibold">Schedule Builder</span>
+      </nav>
+      <div class="flex items-center justify-between pt-1">
+        <div>
+          <h1 class="text-[22px] font-bold text-slate-900 tracking-tight m-0">Schedule Builder — Recurring Statement Automation</h1>
+          <p class="text-[13px] text-[#475569] mt-0.5 mb-0">Automate recurring MT940/BAI2 cash balance generation and statement dispatches.</p>
+        </div>
+        <span class="text-[11px] px-2.5 py-1 bg-[#F1F5F9] text-[#334155] border border-[#CBD5E1] rounded font-mono">
+          SCHEDULE-UID: SCH-2026-0518-EOD
+        </span>
+      </div>
+    </div>
+
+    <!-- SECTION 1: LINKED REPORT CRITERIA SUMMARY BANNER -->
+    <section class="bg-[#F0F9FF] border border-[#BAE6FD] rounded p-3">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 flex-1">
+          <div class="border-r border-[#BAE6FD]/80 pr-3">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-[#0284C7] block">Linked Criteria ID</span>
+            <div class="flex items-center gap-1 mt-0.5">
+              <span class="font-mono text-[12px] font-semibold text-[#002D62]">CRIT-USD-EOD-20260518</span>
+            </div>
+          </div>
+          <div class="border-r border-[#BAE6FD]/80 pr-3">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-[#0284C7] block">Base Report Definition</span>
+            <span class="text-[12px] font-semibold text-slate-900 truncate block mt-0.5">
+              CASH_STMT_EOD - End of Day Consolidated
+            </span>
+          </div>
+          <div class="border-r border-[#BAE6FD]/80 pr-3">
+            <span class="text-[10px] uppercase font-bold tracking-wider text-[#0284C7] block">Target Accounts (2)</span>
+            <div class="text-[11px] font-mono text-slate-700 mt-0.5">
+              CITI-US-99201488 (USD), CITI-GB-88402199 (GBP)
+            </div>
+          </div>
+          <div>
+            <span class="text-[10px] uppercase font-bold tracking-wider text-[#0284C7] block">Ledger Format &amp; State</span>
+            <div class="flex items-center gap-2 mt-0.5">
+              <span class="text-[11px] font-medium text-slate-900">PDF 9-Column Ledger</span>
+              <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#EFF6FF] text-[#1D4ED8] border border-[#BFDBFE]">
+                Draft Linked
+              </span>
+            </div>
+          </div>
+        </div>
+        <div class="flex items-center gap-2 lg:pl-3 border-t lg:border-t-0 lg:border-l border-[#BAE6FD] pt-2 lg:pt-0 shrink-0">
+          <a routerLink="/criteria" class="text-[#0070BA] font-bold text-[12px] underline">Edit Criteria</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: RECURRENCE CADENCE & CRON CONTROLS -->
+    <section class="bg-white border border-[#CBD5E1] rounded">
+      <div class="h-9 px-3 bg-[#F8FAFC] border-b border-[#CBD5E1] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#002D62] text-[16px]">event_repeat</span>
+          <h2 class="text-[11px] font-bold uppercase text-slate-700 tracking-wider m-0">Recurrence Cadence &amp; Cron Configuration</h2>
+        </div>
+        <span class="text-[11px] text-[#64748B]">Section 2 of 4</span>
+      </div>
+      <div class="p-4 space-y-4">
+        <!-- Cadence Tabs -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1.5 uppercase">Execution Cadence</label>
+          <div class="inline-flex rounded border border-[#CBD5E1] bg-[#F1F5F9] p-0.5">
+            <button (click)="setFrequency('DAILY')" [class.bg-[#002D62]]="frequency() === 'DAILY'" [class.text-white]="frequency() === 'DAILY'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">DAILY</button>
+            <button (click)="setFrequency('WEEKLY')" [class.bg-[#002D62]]="frequency() === 'WEEKLY'" [class.text-white]="frequency() === 'WEEKLY'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">WEEKLY</button>
+            <button (click)="setFrequency('MONTHLY')" [class.bg-[#002D62]]="frequency() === 'MONTHLY'" [class.text-white]="frequency() === 'MONTHLY'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">MONTHLY</button>
+            <button (click)="setFrequency('CUSTOM')" [class.bg-[#002D62]]="frequency() === 'CUSTOM'" [class.text-white]="frequency() === 'CUSTOM'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">CUSTOM CRON</button>
+          </div>
+        </div>
+
+        <!-- Days of Week Selector Pills -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-1.5 uppercase">Active Days of Week</label>
+          <div class="flex items-center gap-2">
+            <button *ngFor="let d of daysList"
+                    (click)="toggleDay(d.key)"
+                    [class.bg-[#002D62]]="isDayActive(d.key)"
+                    [class.text-white]="isDayActive(d.key)"
+                    [class.border-[#002D62]]="isDayActive(d.key)"
+                    class="w-10 h-10 rounded border border-[#CBD5E1] bg-white text-slate-700 flex flex-col items-center justify-center font-bold text-[12px] cursor-pointer transition-colors shadow-xs">
+              <span class="text-[13px] leading-none">{{ d.initial }}</span>
+              <span class="text-[9px] opacity-80 font-normal">{{ d.label }}</span>
+            </button>
+            <span class="text-[11px] text-[#64748B] ml-3">Non-business weekend cycles trigger holiday failover rules.</span>
+          </div>
+        </div>
+
+        <!-- Execution Time & Timezone -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-2xl">
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1 uppercase">Dispatch Execution Time</label>
+            <div class="relative flex items-center">
+              <span class="material-symbols-outlined absolute left-2 text-[#475569] text-[16px]">schedule</span>
+              <input class="h-8 pl-8 pr-3 w-full bg-white border border-[#CBD5E1] rounded font-mono text-[12px] text-slate-900 focus:outline-none"
+                     [(ngModel)]="executionTime" type="text" />
+              <span class="absolute right-2 text-[10px] font-bold text-[#64748B] uppercase font-mono">24H MIL</span>
+            </div>
+          </div>
+          <div>
+            <label class="block text-[11px] font-semibold text-slate-600 mb-1 uppercase">Reference Timezone</label>
+            <select class="h-8 px-2 w-full bg-white border border-[#CBD5E1] rounded text-[12px] text-slate-900 focus:outline-none"
+                    [(ngModel)]="timezone">
+              <option>UTC - Coordinated Universal Time (UTC+00:00)</option>
+              <option>EST - New York Fed Terminal (UTC-05:00)</option>
+              <option>GMT - London Settlement Desk (UTC+00:00)</option>
+              <option>SGT - Singapore Treasury Hub (UTC+08:00)</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Cron Box -->
+        <div class="bg-[#F8FAFC] border border-[#CBD5E1] rounded p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div class="flex items-center gap-3">
+            <div class="px-2.5 py-1 bg-[#001D40] text-white rounded font-mono text-[13px] font-semibold tracking-wider flex items-center gap-2">
+              <span>{{ cronExpression() }}</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-[12px] text-[#002D62]">
+              <span class="material-symbols-outlined text-[16px] text-[#0070BA]">info</span>
+              <span class="font-medium">Fires every Monday at 08:00 AM UTC</span>
+            </div>
+          </div>
+          <span class="text-[11px] text-[#64748B] font-mono">Parser Engine: Quartz Scheduler v2.4</span>
+        </div>
+
+        <!-- Delivery Channels -->
+        <div>
+          <label class="block text-[11px] font-semibold text-slate-600 mb-2 uppercase">Dispatch Transport &amp; Delivery Target</label>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <label class="flex items-start gap-2.5 p-3 border border-[#CBD5E1] rounded bg-white cursor-pointer">
+              <input [(ngModel)]="sftpEnabled" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <div>
+                <span class="text-[12px] font-bold text-slate-900 block">Secure SFTP Delivery</span>
+                <span class="text-[11px] text-[#64748B] block mt-0.5">Push encrypted file to sftp.corporate.citigroup.net:2222</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 p-3 border border-[#CBD5E1] rounded bg-white cursor-pointer">
+              <input [(ngModel)]="swiftMqEnabled" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <div>
+                <span class="text-[12px] font-bold text-slate-900 block">SWIFT Alliance MQ</span>
+                <span class="text-[11px] text-[#64748B] block mt-0.5">Real-time ISO15022 / MT940 statement message queues</span>
+              </div>
+            </label>
+            <label class="flex items-start gap-2.5 p-3 border border-[#CBD5E1] rounded bg-white cursor-pointer">
+              <input [(ngModel)]="portalInboxEnabled" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <div>
+                <span class="text-[12px] font-bold text-slate-900 block">Corporate Portal Inbox</span>
+                <span class="text-[11px] text-[#64748B] block mt-0.5">Archive PDF and MT940 to Tier 4 document repository</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 3: EXECUTION WINDOW & FAILOVER POLICIES -->
+    <section class="bg-white border border-[#CBD5E1] rounded">
+      <div class="h-9 px-3 bg-[#F8FAFC] border-b border-[#CBD5E1] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[#002D62] text-[16px]">date_range</span>
+          <h2 class="text-[11px] font-bold uppercase text-slate-700 tracking-wider m-0">Execution Window &amp; Calendar Failover Policies</h2>
+        </div>
+        <span class="text-[11px] text-[#64748B]">Section 3 of 4</span>
+      </div>
+      <div class="p-4 space-y-4">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+          <div class="space-y-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1 uppercase">Effective Start Date</label>
+              <input class="h-8 px-2 w-full max-w-xs bg-white border border-[#CBD5E1] rounded font-mono text-[12px]"
+                     [(ngModel)]="effectiveStartDate" type="text" />
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1.5 uppercase">Schedule Expiry Horizon</label>
+              <div class="space-y-2 border border-[#CBD5E1] rounded p-3 bg-[#FAFAFA]">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input checked name="expiry_option" class="text-[#0070BA]" type="radio" />
+                  <span class="text-[12px] font-semibold text-slate-900">No End Date (Run Indefinitely)</span>
+                </label>
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input name="expiry_option" class="text-[#0070BA]" type="radio" />
+                  <span class="text-[12px] text-slate-700">End After 12 Executions</span>
+                </label>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-3">
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1 uppercase">Holiday Handling Rule</label>
+              <select class="h-8 px-2 w-full bg-white border border-[#CBD5E1] rounded text-[12px]"
+                      [(ngModel)]="holidayHandling">
+                <option>Execute On Next Business Day - Citi Global Banking Calendar</option>
+                <option>Execute On Preceding Business Day</option>
+                <option>Omit Execution Entirely (Suppress Holiday Run)</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-[11px] font-semibold text-slate-600 mb-1 uppercase">Missed Execution Failover Policy</label>
+              <select class="h-8 px-2 w-full bg-white border border-[#CBD5E1] rounded text-[12px]"
+                      [(ngModel)]="failoverPolicy">
+                <option>Immediate Retrigger upon Gateway Recovery</option>
+                <option>Notify Operator &amp; Hold for Manual Release</option>
+                <option>Skip Missed Cycle &amp; Await Next Scheduled Window</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 4: DUAL-CONTROL MAKER-CHECKER NOTICE BANNER -->
+    <section class="bg-[#FEF3C7] border border-[#F59E0B] rounded p-3">
+      <div class="flex items-start gap-3">
+        <div class="p-1 rounded bg-[#F59E0B]/20 text-[#B45309] shrink-0 mt-0.5">
+          <span class="material-symbols-outlined text-[20px]">verified_user</span>
+        </div>
+        <div>
+          <h3 class="text-[13px] font-bold text-[#92400E] m-0">
+            Maker-Checker Requirement: Submitting this recurring schedule will register a "PENDING_APPROVAL" state.
+          </h3>
+          <p class="text-[12px] text-[#78350F] m-0 mt-0.5">
+            Dual-control authorization by an independent Checker is required before active execution. Four-eyes audit logging enforced. Your operator credentials (J. Vance • Tier 4) will be stamped as Maker; independent Tier 4 verification will be queued automatically.
+          </p>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- STICKY ACTION BAR FOOTER -->
+<footer class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#CBD5E1] shadow-lg">
+  <div class="px-4 py-2 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <a routerLink="/criteria" class="btn-citi-secondary h-8 text-[12px] flex items-center gap-1.5 text-decoration-none">
+        <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+        <span>Back to Criteria Form</span>
+      </a>
+      <div class="flex items-center gap-2 text-[11px] text-[#64748B]">
+        <span class="inline-block w-2 h-2 rounded-full bg-[#059669]"></span>
+        <span>Validation: Succeeded</span>
+      </div>
+    </div>
+    <div class="flex items-center gap-2">
+      <button routerLink="/reports" class="btn-citi-secondary h-8 text-[12px]">Cancel</button>
+      <button (click)="submitSchedule()" [disabled]="isSubmitting()" class="btn-citi-glossy h-8 text-[12px] flex items-center gap-1.5 shadow-sm">
+        <span class="material-symbols-outlined text-[16px]">verified</span>
+        <span>{{ isSubmitting() ? 'Submitting...' : 'Submit Schedule for Checker Authorization' }}</span>
+      </button>
+    </div>
+  </div>
+</footer>

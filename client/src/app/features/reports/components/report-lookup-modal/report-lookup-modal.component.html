@@ -1,0 +1,131 @@
+<div *ngIf="isOpen" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-[#00193C]/60 p-4">
+  <div class="modal-dialog w-[840px] max-w-[94vw] bg-white rounded-lg shadow-2xl border border-[#CBD5E1] overflow-hidden flex flex-col">
+    <!-- Modal Header -->
+    <div class="bg-[#002D62] text-white px-4 py-3 flex items-center justify-between border-b border-[#00193C]">
+      <div class="flex items-start gap-2.5">
+        <div class="p-1.5 bg-[#00193C]/50 rounded mt-0.5 text-white">
+          <span class="material-symbols-outlined text-[20px]">manage_search</span>
+        </div>
+        <div>
+          <h2 class="text-[16px] font-bold text-white tracking-tight flex items-center gap-2 m-0">
+            Base Report Name Lookup | Binocular Search
+          </h2>
+          <p class="text-[#CBD5E1] text-[11px] mt-0.5 mb-0">
+            Select pre-configured CitiDirect cash statement report template or MT940/BAI2 feed format
+          </p>
+        </div>
+      </div>
+      <button (click)="cancel()" class="text-white hover:bg-[#00193C] p-1 rounded transition-colors border-0 bg-transparent cursor-pointer" title="Close Dialog">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+
+    <!-- 4-Field Search Criteria Grid -->
+    <div class="p-3 bg-[#F1F5F9] border-b border-[#CBD5E1] space-y-2">
+      <div class="grid grid-cols-4 gap-3">
+        <div class="space-y-1">
+          <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Report Code</label>
+          <input class="w-full h-8 text-[12px] font-mono bg-white border border-[#CBD5E1] rounded px-2 focus:border-[#0070BA] focus:outline-none"
+                 placeholder="e.g. CASH_STMT_EOD" [(ngModel)]="searchCode" (input)="applyFilters()" type="text" />
+        </div>
+        <div class="space-y-1">
+          <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Report Name</label>
+          <input class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 focus:border-[#0070BA] focus:outline-none"
+                 placeholder="Search by name..." [(ngModel)]="searchName" (input)="applyFilters()" type="text" />
+        </div>
+        <div class="space-y-1">
+          <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Category</label>
+          <div class="relative">
+            <select class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 focus:border-[#0070BA] focus:outline-none"
+                    [(ngModel)]="selectedCategory" (change)="applyFilters()">
+              <option value="All Categories">All Categories</option>
+              <option value="Cash Statement">Cash Statement</option>
+              <option value="Liquidity Feeds">Liquidity Feeds</option>
+              <option value="Reconciliation">Reconciliation</option>
+              <option value="Interim Balance">Interim Balance</option>
+            </select>
+          </div>
+        </div>
+        <div class="space-y-1">
+          <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Branch Routing</label>
+          <div class="flex items-center">
+            <input class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded-l px-2 focus:border-[#0070BA] focus:outline-none"
+                   placeholder="Branch Code" [(ngModel)]="searchBranch" type="text" />
+            <button class="h-8 px-2 bg-[#E2E8F0] text-[#002D62] border border-l-0 border-[#CBD5E1] rounded-r hover:bg-[#CBD5E1] cursor-pointer" title="Lookup Routing Code">
+              <span class="material-symbols-outlined text-[15px]">search</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between pt-1">
+        <div class="flex items-center gap-3">
+          <button (click)="applyFilters()" class="btn-citi-primary h-8 text-[12px] px-3.5 rounded flex items-center gap-1.5 shadow-sm">
+            <span class="material-symbols-outlined text-[15px]">filter_alt</span>
+            <span>Search Templates</span>
+          </button>
+          <button (click)="resetFilters()" class="text-[12px] text-[#0070BA] hover:underline cursor-pointer border-0 bg-transparent font-medium">
+            Reset Criteria
+          </button>
+        </div>
+        <span class="text-[11px] text-[#64748B] font-medium">
+          {{ filteredTemplates().length }} matching templates found
+        </span>
+      </div>
+    </div>
+
+    <!-- Template Selection Table -->
+    <div class="p-3 bg-white overflow-x-auto max-h-[260px] custom-scroll">
+      <table class="w-full text-left border-collapse">
+        <thead class="bg-[#EDF2F7] border-b border-[#CBD5E1] text-[11px] font-bold uppercase text-[#475569] select-none">
+          <tr class="h-8">
+            <th class="w-10 px-2 text-center">Select</th>
+            <th class="px-3">Report Code</th>
+            <th class="px-3">Report Name</th>
+            <th class="px-3">Format Standard</th>
+            <th class="px-3">Category</th>
+            <th class="px-3">Default Frequency</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-[#E2E8F0] text-[12px]">
+          <tr *ngFor="let t of filteredTemplates()"
+              [class.bg-[#EBF3FB]]="selectedTemplate()?.id === t.id"
+              (click)="onSelectRadio(t)"
+              class="hover:bg-[#F1F5F9] transition-colors h-9 cursor-pointer">
+            <td class="px-2 text-center" (click)="$event.stopPropagation()">
+              <input type="radio" name="report_template" [checked]="selectedTemplate()?.id === t.id"
+                     (change)="onSelectRadio(t)" class="text-[#0070BA] cursor-pointer" />
+            </td>
+            <td class="px-3 font-mono font-semibold text-[#002D62] text-[11px]">{{ t.reportCode }}</td>
+            <td class="px-3 font-semibold text-[#002D62]">{{ t.name }}</td>
+            <td class="px-3">
+              <span class="bg-[#F1F5F9] text-[#002D62] border border-[#CBD5E1] px-2 py-0.5 rounded font-mono text-[10px] font-semibold">
+                {{ t.formatStandard }}
+              </span>
+            </td>
+            <td class="px-3 text-[#475569]">{{ t.category }}</td>
+            <td class="px-3 text-[#64748B] font-mono text-[11px]">{{ t.defaultFrequency }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-4 py-3 bg-[#F1F5F9] border-t border-[#CBD5E1] flex items-center justify-between">
+      <div class="flex items-center gap-1.5 text-[12px] text-[#002D62] font-medium">
+        <span class="material-symbols-outlined text-[16px] text-[#059669]">check_circle</span>
+        <span>
+          Selected: <strong class="font-mono text-[#002D62]">{{ selectedTemplate()?.reportCode || 'None' }}</strong>
+          ({{ selectedTemplate()?.name }})
+        </span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button (click)="cancel()" class="btn-citi-secondary h-8 text-[12px]">Cancel</button>
+        <button (click)="confirmSelection()" class="btn-citi-primary h-8 text-[12px] flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[15px]">task_alt</span>
+          <span>Select &amp; Apply Template</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

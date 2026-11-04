@@ -1,0 +1,527 @@
+<!-- 2. ENVIRONMENT & OPERATIONAL SUB-HEADER STRIP -->
+<div class="bg-[#F1F5F9] border-b border-[#CBD5E1] px-4 py-1 text-[11px] font-mono flex items-center justify-between select-none">
+  <div class="flex items-center space-x-3 overflow-hidden text-ellipsis whitespace-nowrap">
+    <div class="flex items-center space-x-1">
+      <span class="inline-block w-2 h-2 rounded-full bg-emerald-600"></span>
+      <span class="font-bold text-[#00193C]">ENV:</span>
+      <span>PROD - NY FED GATEWAY (NODE #4)</span>
+    </div>
+    <span class="text-[#CBD5E1]">|</span>
+    <div class="flex items-center space-x-1">
+      <span class="font-bold text-[#00193C]">LEGAL ENTITY:</span>
+      <span>CITIBANK N.A. (GLOBAL TREASURY OPERATIONS)</span>
+    </div>
+    <span class="text-[#CBD5E1]">|</span>
+    <div class="flex items-center space-x-1">
+      <span class="font-bold text-[#00193C]">CUT-OFF:</span>
+      <span class="text-[#E11D48] font-semibold">USD FEDWIRE 17:00 EST (-01:42:15)</span>
+    </div>
+  </div>
+  <div class="flex items-center space-x-3">
+    <span>SESSION EXPIRY: 48m</span>
+    <span class="text-[#CBD5E1]">|</span>
+    <button class="text-[#0070BA] hover:underline flex items-center gap-1 font-semibold border-0 bg-transparent cursor-pointer">
+      <span class="material-symbols-outlined text-[14px]">sync</span> Force Sync
+    </button>
+  </div>
+</div>
+
+<!-- MAIN APP WRAPPER: SideBar + Content Canvas -->
+<div class="flex flex-1 w-full min-h-[calc(100vh-86px)]">
+  <!-- LEFT COLLAPSIBLE SIDEBAR -->
+  <aside class="bg-white text-[#00193C] w-60 border-r border-[#CBD5E1] flex flex-col justify-between py-3 px-2 select-none shrink-0">
+    <div class="flex flex-col space-y-3">
+      <div class="px-2 pt-1 flex items-center space-x-2.5">
+        <div class="w-8 h-8 rounded bg-[#002D62] text-white flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[20px]">security</span>
+        </div>
+        <div class="flex flex-col overflow-hidden">
+          <span class="text-[12px] font-bold text-[#00193C] tracking-tight truncate">Treasury Services</span>
+          <span class="text-[10px] text-[#64748B] font-medium truncate">Global Liquidity &amp; Recon</span>
+        </div>
+      </div>
+      <div class="px-1">
+        <button routerLink="/reports" class="w-full bg-[#002D62] hover:bg-[#00193C] text-white text-[12px] py-1.5 px-3 rounded flex items-center justify-center space-x-2 transition-all shadow-sm cursor-pointer border-0">
+          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+          <span>View All Reports</span>
+        </button>
+      </div>
+      <nav class="flex flex-col space-y-0.5 mt-2">
+        <a routerLink="/reports" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">account_balance</span>
+          <span>Cash Statements</span>
+        </a>
+        <a routerLink="/criteria" class="bg-[#EAEDFF] text-[#00193C] font-semibold text-[13px] border-l-4 border-[#0070BA] pl-3 py-1.5 flex items-center gap-2 rounded-r-lg text-decoration-none">
+          <span class="material-symbols-outlined text-[#0070BA] text-[18px]">tune</span>
+          <span>Criteria Builder</span>
+        </a>
+        <a routerLink="/schedule" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">event_repeat</span>
+          <span>Schedule Builder</span>
+        </a>
+        <a routerLink="/delivery" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">verified_user</span>
+          <span>Dual Control Auth</span>
+        </a>
+      </nav>
+    </div>
+    <div class="border-t border-[#CBD5E1] pt-2 px-3 text-[10px] text-[#64748B] font-mono">
+      PORTAL v24.8.1 • ONLINE
+    </div>
+  </aside>
+
+  <!-- MAIN PAGE CONTENT CANVAS -->
+  <main class="flex-1 bg-[#F8FAFC] p-4 overflow-y-auto pb-24 custom-scroll" [formGroup]="criteriaForm">
+    <!-- Success Alert Banner -->
+    <div *ngIf="successMessage()" class="mb-3 p-3 bg-[#ECFDF5] border border-[#A7F3D0] rounded-lg text-[#059669] flex items-center gap-2">
+      <span class="material-symbols-outlined text-[20px]">check_circle</span>
+      <span class="font-semibold text-[13px]">{{ successMessage() }}</span>
+    </div>
+
+    <!-- BREADCRUMBS -->
+    <nav class="flex items-center space-x-1.5 text-[11px] text-[#64748B] mb-2">
+      <span routerLink="/reports" class="hover:text-[#00193C] cursor-pointer">Liquidity</span>
+      <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+      <span routerLink="/reports" class="hover:text-[#00193C] cursor-pointer">Cash Management</span>
+      <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+      <span routerLink="/reports" class="hover:text-[#00193C] cursor-pointer">Cash Statement Reports</span>
+      <span class="material-symbols-outlined text-[12px]">chevron_right</span>
+      <span class="text-[#00193C] font-bold">Create Account Statement Criteria</span>
+    </nav>
+
+    <!-- PAGE HEADER & ACTION CONTROLS -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-4 pb-3 border-b border-[#CBD5E1]">
+      <div>
+        <h1 class="text-[22px] font-bold text-[#00193C] tracking-tight m-0">Account Statement Criteria Form</h1>
+        <p class="text-[13px] text-[#475569] mt-0.5 mb-0">
+          Define parameters, account scopes, date matrices, and formatting rules for statement generation.
+        </p>
+      </div>
+      <div class="flex items-center space-x-2">
+        <button (click)="openLookup()" class="btn-citi-secondary h-8 text-[12px] flex items-center space-x-1.5 shadow-sm">
+          <span class="material-symbols-outlined text-[16px] text-[#0070BA]">bookmark</span>
+          <span>Base Report Lookup</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- FORM GRID: 2-COLUMN STRUCTURE -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+      <!-- LEFT COLUMN: Scope & Entity Parameters -->
+      <div class="bg-white border border-[#CBD5E1] rounded shadow-none flex flex-col">
+        <div class="h-9 px-3 bg-[#F1F5F9] border-b border-[#CBD5E1] flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-[16px] text-[#002D62]">corporate_fare</span>
+            <span class="text-[11px] font-bold uppercase text-[#002D62] tracking-wider">Scope &amp; Entity Parameters</span>
+          </div>
+          <span class="text-[10px] text-[#64748B] font-mono">SEC-SCOPE-01</span>
+        </div>
+        <div class="p-4 space-y-4">
+          <!-- 1. Base Report Template Group -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <label class="text-[11px] font-bold text-[#002D62] uppercase">
+                Base Report Template <span class="text-[#E11D48] font-bold">*</span>
+              </label>
+              <span class="text-[10px] text-[#0070BA] font-bold">MT940 COMPLIANT</span>
+            </div>
+            <div class="flex items-center rounded overflow-hidden">
+              <div class="relative flex-1">
+                <input class="w-full h-8 px-2.5 bg-[#F1F5F9] border border-r-0 border-[#CBD5E1] text-[#002D62] font-mono text-[12px] focus:outline-none font-medium"
+                       readonly type="text" [value]="criteriaForm.get('baseReportCode')?.value + ' - ' + criteriaForm.get('baseReportName')?.value" />
+                <span class="absolute right-2 top-1.5 px-1.5 py-0.5 bg-[#E2E8F0] text-[#002D62] text-[9px] rounded uppercase font-bold border border-[#CBD5E1]">
+                  SWIFT MT940
+                </span>
+              </div>
+              <!-- Binocular Lookup Button -->
+              <button (click)="openLookup()" class="h-8 px-3 bg-[#002D62] hover:bg-[#00193C] text-white border border-[#00193C] flex items-center justify-center cursor-pointer transition-colors" title="Lookup Base Report Template">
+                <span class="material-symbols-outlined text-[18px]">manage_search</span>
+              </button>
+            </div>
+            <p class="text-[11px] text-[#64748B] mt-1 mb-0">Pre-configured CitiDirect cash statement report template code.</p>
+          </div>
+
+          <!-- 2. Account Scope Selection -->
+          <div class="pt-2 border-t border-[#CBD5E1]/40">
+            <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
+              Account Scope Selection <span class="text-[#E11D48] font-bold">*</span>
+            </label>
+            <div class="grid grid-cols-3 gap-1 p-0.5 bg-[#F1F5F9] border border-[#CBD5E1] rounded mb-2.5">
+              <label class="flex items-center justify-center space-x-1.5 py-1 px-2 rounded bg-white text-[#002D62] shadow-xs cursor-pointer text-[11px] font-semibold">
+                <input checked class="text-[#0070BA]" name="scopeTypeRadio" type="radio" />
+                <span>Specific Accounts</span>
+              </label>
+              <label class="flex items-center justify-center space-x-1.5 py-1 px-2 rounded text-[#64748B] hover:text-[#002D62] cursor-pointer text-[11px]">
+                <input class="text-[#0070BA]" name="scopeTypeRadio" type="radio" />
+                <span>Account Group</span>
+              </label>
+              <label class="flex items-center justify-center space-x-1.5 py-1 px-2 rounded text-[#64748B] hover:text-[#002D62] cursor-pointer text-[11px]">
+                <input class="text-[#0070BA]" name="scopeTypeRadio" type="radio" />
+                <span>All Entitled</span>
+              </label>
+            </div>
+
+            <!-- Multi-select Account Pills -->
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] font-semibold text-[#475569]">
+                Target Account Numbers <span class="text-[#E11D48]">*</span> <span class="text-[#0070BA] font-bold">({{ selectedAccounts().length }} selected)</span>
+              </span>
+              <span class="text-[10px] text-[#64748B]">Max: 100 accounts per batch</span>
+            </div>
+            <div class="p-2 border border-[#CBD5E1] rounded bg-[#FAFAFA] min-h-[76px] flex flex-wrap gap-1.5 items-start">
+              <div *ngFor="let acc of selectedAccounts()" class="inline-flex items-center bg-white border border-[#CBD5E1] rounded px-2 py-1 shadow-xs">
+                <span class="material-symbols-outlined text-[14px] text-[#0070BA] mr-1">account_balance</span>
+                <span class="font-mono text-[11px] font-bold text-[#002D62]">{{ acc }}</span>
+                <button (click)="removeAccount(acc)" class="ml-2 text-[#94A3B8] hover:text-[#E11D48] border-0 bg-transparent cursor-pointer p-0.5 rounded" title="Remove account">
+                  <span class="material-symbols-outlined text-[14px]">close</span>
+                </button>
+              </div>
+
+              <!-- Add Account selector dropdown trigger -->
+              <select (change)="addAccount($any($event.target).value)" class="h-8 px-2 bg-white border border-dashed border-[#0070BA] text-[#0070BA] rounded text-[11px] font-semibold cursor-pointer">
+                <option value="" disabled selected>+ Select Account (Binocular search)</option>
+                <option *ngFor="let a of availableAccounts()" [value]="a.accountNumber">
+                  {{ a.accountNumber }} ({{ a.currency }} - {{ a.accountName }})
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- 3. Branch Routing & Settlement Currency -->
+          <div class="pt-2 border-t border-[#CBD5E1]/40 grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div>
+              <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
+                Branch Routing Code <span class="text-[#E11D48] font-bold">*</span>
+              </label>
+              <div class="flex items-center rounded overflow-hidden">
+                <input class="w-full h-8 px-2.5 bg-white border border-r-0 border-[#CBD5E1] text-[#002D62] text-[12px] focus:outline-none"
+                       formControlName="branchCode" type="text" />
+                <button (click)="openLookup()" class="h-8 px-2.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#002D62] border border-[#CBD5E1] flex items-center justify-center cursor-pointer" title="Lookup Routing Branch">
+                  <span class="material-symbols-outlined text-[16px]">search</span>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
+                Settlement Currency <span class="text-[#E11D48] font-bold">*</span>
+              </label>
+              <div class="relative">
+                <select class="w-full h-8 pl-2.5 pr-8 bg-white border border-[#CBD5E1] text-[#002D62] text-[12px] rounded focus:outline-none"
+                        formControlName="currency">
+                  <option value="USD">USD - US Dollar ($)</option>
+                  <option value="GBP">GBP - British Pound (£)</option>
+                  <option value="EUR">EUR - Euro (€)</option>
+                  <option value="JPY">JPY - Japanese Yen (¥)</option>
+                  <option value="CHF">CHF - Swiss Franc (Fr)</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <!-- Legal Entity Code (System-Locked) -->
+          <div>
+            <label class="text-[11px] font-bold text-[#64748B] uppercase block mb-1">
+              Legal Entity Code (System-Locked)
+            </label>
+            <div class="relative">
+              <input class="w-full h-8 px-2.5 bg-[#F1F5F9] border border-[#CBD5E1] text-[#475569] font-mono text-[12px] rounded cursor-not-allowed"
+                     formControlName="legalEntity" type="text" />
+              <span class="material-symbols-outlined absolute right-2.5 top-2 text-[#94A3B8] text-[14px]">lock</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RIGHT COLUMN: Date Window & Transaction Filters -->
+      <div class="bg-white border border-[#CBD5E1] rounded shadow-none flex flex-col">
+        <div class="h-9 px-3 bg-[#F1F5F9] border-b border-[#CBD5E1] flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-[16px] text-[#002D62]">calendar_month</span>
+            <span class="text-[11px] font-bold uppercase text-[#002D62] tracking-wider">Date Window &amp; Transaction Filters</span>
+          </div>
+          <span class="text-[10px] text-[#64748B] font-mono">SEC-FILTER-02</span>
+        </div>
+        <div class="p-4 space-y-4">
+          <!-- 1. Posting Window Selector -->
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-[11px] font-bold text-[#002D62] uppercase">
+                Posting Window Selector <span class="text-[#E11D48] font-bold">*</span>
+              </label>
+              <span class="text-[10px] text-[#64748B] font-mono">TIMEZONE: US/EASTERN (EST)</span>
+            </div>
+            <!-- Preset Radio Grid / Pills -->
+            <div class="grid grid-cols-5 gap-1.5 mb-3">
+              <button (click)="setDatePreset('Today')" [class.btn-citi-primary]="activeDatePreset() === 'Today'"
+                      class="py-1.5 px-2 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[11px] rounded font-medium cursor-pointer">
+                Today
+              </button>
+              <button (click)="setDatePreset('Yesterday')" [class.btn-citi-primary]="activeDatePreset() === 'Yesterday'"
+                      class="py-1.5 px-2 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[11px] rounded font-medium cursor-pointer">
+                Yesterday
+              </button>
+              <button (click)="setDatePreset('Last 7 Days')" [class.btn-citi-primary]="activeDatePreset() === 'Last 7 Days'"
+                      class="py-1.5 px-2 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[11px] rounded font-medium cursor-pointer">
+                Last 7 Days
+              </button>
+              <button (click)="setDatePreset('Last 30 Days')" [class.btn-citi-primary]="activeDatePreset() === 'Last 30 Days'"
+                      class="py-1.5 px-2 text-center border-2 border-[#002D62] bg-[#002D62] text-white text-[11px] rounded font-bold cursor-pointer">
+                Last 30 Days
+              </button>
+              <button (click)="setDatePreset('Current MTD')" [class.btn-citi-primary]="activeDatePreset() === 'Current MTD'"
+                      class="py-1.5 px-1.5 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[11px] rounded font-medium truncate cursor-pointer">
+                Current MTD
+              </button>
+            </div>
+
+            <!-- Custom Date Inputs -->
+            <div class="grid grid-cols-2 gap-3 p-2.5 bg-[#F1F5F9] rounded border border-[#CBD5E1]">
+              <div>
+                <span class="text-[11px] font-semibold text-[#64748B] block mb-1">From Date (Timestamp)</span>
+                <input class="w-full h-8 px-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[11px] rounded focus:outline-none"
+                       formControlName="dateFrom" type="text" />
+              </div>
+              <div>
+                <span class="text-[11px] font-semibold text-[#64748B] block mb-1">To Date (Timestamp)</span>
+                <input class="w-full h-8 px-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[11px] rounded focus:outline-none"
+                       formControlName="dateTo" type="text" />
+              </div>
+            </div>
+          </div>
+
+          <!-- 2. Transaction Type & Value Range [fx] -->
+          <div class="pt-2 border-t border-[#CBD5E1]/40">
+            <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1.5">
+              Transaction Type Classification <span class="text-[#E11D48] font-bold">*</span>
+            </label>
+            <div class="flex items-center space-x-6 mb-3">
+              <label class="flex items-center space-x-1.5 cursor-pointer">
+                <input formControlName="transactionType" value="ALL" class="text-[#0070BA]" type="radio" />
+                <span class="font-medium text-[#002D62] text-[12px]">ALL Transactions</span>
+              </label>
+              <label class="flex items-center space-x-1.5 cursor-pointer text-[#475569]">
+                <input formControlName="transactionType" value="CREDIT" class="text-[#0070BA]" type="radio" />
+                <span class="text-[12px]">Credits Only (+)</span>
+              </label>
+              <label class="flex items-center space-x-1.5 cursor-pointer text-[#475569]">
+                <input formControlName="transactionType" value="DEBIT" class="text-[#0070BA]" type="radio" />
+                <span class="text-[12px]">Debits Only (-)</span>
+              </label>
+            </div>
+
+            <!-- Value Threshold Filter with [fx] -->
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="text-[11px] font-bold text-[#002D62] uppercase">Value Threshold Filter</label>
+                <span class="text-[10px] text-[#64748B] font-mono">CURRENCY: USD</span>
+              </div>
+              <div class="flex items-center space-x-2">
+                <div class="flex-1 relative">
+                  <span class="absolute left-2.5 top-1.5 text-[#64748B] text-[12px] font-mono">$</span>
+                  <input class="w-full h-8 pl-6 pr-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[12px] rounded text-right focus:outline-none"
+                         formControlName="minAmount" type="number" />
+                </div>
+                <span class="text-[#64748B] text-[12px]">to</span>
+                <div class="flex-1 relative">
+                  <span class="absolute left-2.5 top-1.5 text-[#64748B] text-[12px] font-mono">$</span>
+                  <input class="w-full h-8 pl-6 pr-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[12px] rounded text-right font-semibold focus:outline-none"
+                         formControlName="maxAmount" type="number" />
+                </div>
+                <!-- Formula [fx] button -->
+                <div class="relative">
+                  <button (click)="toggleFxMenu()" class="h-8 px-3 bg-[#E2E8F0] hover:bg-[#CBD5E1] text-[#002D62] border border-[#CBD5E1] rounded flex items-center justify-center font-mono font-bold text-[12px] cursor-pointer" title="Formula &amp; Operator Logic">
+                    <span>[fx]</span>
+                  </button>
+                  <div *ngIf="isFxMenuOpen()" class="absolute right-0 top-9 z-50 bg-white border border-[#CBD5E1] shadow-lg rounded p-1 w-44 text-[12px]">
+                    <div (click)="selectFxOperator('Between Range')" class="p-1.5 hover:bg-[#F1F5F9] cursor-pointer rounded">✔ Between Range</div>
+                    <div (click)="selectFxOperator('Greater Than (>)')" class="p-1.5 hover:bg-[#F1F5F9] cursor-pointer rounded">Greater Than (&gt;)</div>
+                    <div (click)="selectFxOperator('Less Than (<)')" class="p-1.5 hover:bg-[#F1F5F9] cursor-pointer rounded">Less Than (&lt;)</div>
+                    <div (click)="selectFxOperator('Exact Amount (=)')" class="p-1.5 hover:bg-[#F1F5F9] cursor-pointer rounded">Exact Amount (=)</div>
+                  </div>
+                </div>
+              </div>
+              <p class="text-[11px] text-[#64748B] mt-1 mb-0">Set zero minimum to include micro-settlements and clearing adjustments.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 5. BOTTOM FULL-WIDTH SECTION - Output Formatting & Ledger Options -->
+    <div class="bg-white border border-[#CBD5E1] rounded shadow-none mb-6">
+      <div class="h-9 px-3 bg-[#F1F5F9] border-b border-[#CBD5E1] flex items-center justify-between">
+        <div class="flex items-center space-x-2">
+          <span class="material-symbols-outlined text-[16px] text-[#002D62]">output</span>
+          <span class="text-[11px] font-bold uppercase text-[#002D62] tracking-wider">Output Format &amp; Ledger Specification</span>
+        </div>
+        <span class="text-[10px] text-[#64748B] font-mono">SEC-FORMAT-03</span>
+      </div>
+      <div class="p-4 space-y-4">
+        <!-- 4 Deliverable Format Cards -->
+        <div>
+          <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-2">
+            Select Deliverable Ledger Format <span class="text-[#E11D48] font-bold">*</span>
+          </label>
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+            <!-- PDF Formal Ledger -->
+            <label (click)="setExportFormat('PDF')"
+                   [class.border-2]="criteriaForm.get('exportFormat')?.value === 'PDF'"
+                   [class.border-[#002D62]]="criteriaForm.get('exportFormat')?.value === 'PDF'"
+                   [class.bg-[#EBF3FB]]="criteriaForm.get('exportFormat')?.value === 'PDF'"
+                   class="relative flex flex-col p-3 rounded border border-[#CBD5E1] bg-white cursor-pointer shadow-xs transition-colors">
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center space-x-1.5">
+                  <span class="material-symbols-outlined text-[#E11D48] text-[20px]">picture_as_pdf</span>
+                  <span class="font-bold text-[13px] text-[#002D62]">PDF Formal Ledger</span>
+                </div>
+                <input formControlName="exportFormat" value="PDF" class="text-[#002D62]" type="radio" />
+              </div>
+              <p class="text-[11px] text-[#475569] leading-tight m-0">
+                9-Column Official Financial Ledger with Trailing Negatives &amp; Maker-Checker Seal.
+              </p>
+              <div class="mt-2.5 pt-1.5 border-t border-[#CBD5E1]/40 flex items-center justify-between text-[10px]">
+                <span class="text-[#0070BA] font-bold uppercase">Audited Copy</span>
+                <span class="text-[#64748B] font-mono">300 DPI Vector</span>
+              </div>
+            </label>
+
+            <!-- Excel Data Package -->
+            <label (click)="setExportFormat('EXCEL')"
+                   [class.border-2]="criteriaForm.get('exportFormat')?.value === 'EXCEL'"
+                   [class.border-[#002D62]]="criteriaForm.get('exportFormat')?.value === 'EXCEL'"
+                   [class.bg-[#EBF3FB]]="criteriaForm.get('exportFormat')?.value === 'EXCEL'"
+                   class="relative flex flex-col p-3 rounded border border-[#CBD5E1] bg-white cursor-pointer shadow-xs transition-colors">
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center space-x-1.5">
+                  <span class="material-symbols-outlined text-emerald-700 text-[20px]">table_view</span>
+                  <span class="font-bold text-[13px] text-[#002D62]">Excel Package (.xlsx)</span>
+                </div>
+                <input formControlName="exportFormat" value="EXCEL" class="text-[#002D62]" type="radio" />
+              </div>
+              <p class="text-[11px] text-[#475569] leading-tight m-0">
+                Raw tabular transaction listing with embedded metadata formulas and pivot tabs.
+              </p>
+              <div class="mt-2.5 pt-1.5 border-t border-[#CBD5E1]/40 flex items-center justify-between text-[10px]">
+                <span class="text-[#64748B] font-medium">Office Open XML</span>
+                <span class="text-[#64748B] font-mono">Multi-Sheet</span>
+              </div>
+            </label>
+
+            <!-- SWIFT MT940 / BAI2 -->
+            <label (click)="setExportFormat('SWIFT_MT940')"
+                   [class.border-2]="criteriaForm.get('exportFormat')?.value === 'SWIFT_MT940'"
+                   [class.border-[#002D62]]="criteriaForm.get('exportFormat')?.value === 'SWIFT_MT940'"
+                   [class.bg-[#EBF3FB]]="criteriaForm.get('exportFormat')?.value === 'SWIFT_MT940'"
+                   class="relative flex flex-col p-3 rounded border border-[#CBD5E1] bg-white cursor-pointer shadow-xs transition-colors">
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center space-x-1.5">
+                  <span class="material-symbols-outlined text-[#0070BA] text-[20px]">dataset</span>
+                  <span class="font-bold text-[13px] text-[#002D62]">SWIFT MT940 / BAI2</span>
+                </div>
+                <input formControlName="exportFormat" value="SWIFT_MT940" class="text-[#002D62]" type="radio" />
+              </div>
+              <p class="text-[11px] text-[#475569] leading-tight m-0">
+                Direct EDI bank-to-corporate flat file payload engineered for ERP automated clearing.
+              </p>
+              <div class="mt-2.5 pt-1.5 border-t border-[#CBD5E1]/40 flex items-center justify-between text-[10px]">
+                <span class="text-[#64748B] font-medium">Structured EDI</span>
+                <span class="text-[#64748B] font-mono">ISO 15022</span>
+              </div>
+            </label>
+
+            <!-- CSV Delimited Stream -->
+            <label (click)="setExportFormat('CSV')"
+                   [class.border-2]="criteriaForm.get('exportFormat')?.value === 'CSV'"
+                   [class.border-[#002D62]]="criteriaForm.get('exportFormat')?.value === 'CSV'"
+                   [class.bg-[#EBF3FB]]="criteriaForm.get('exportFormat')?.value === 'CSV'"
+                   class="relative flex flex-col p-3 rounded border border-[#CBD5E1] bg-white cursor-pointer shadow-xs transition-colors">
+              <div class="flex items-center justify-between mb-1.5">
+                <div class="flex items-center space-x-1.5">
+                  <span class="material-symbols-outlined text-[#64748B] text-[20px]">csv</span>
+                  <span class="font-bold text-[13px] text-[#002D62]">CSV Delimited Stream</span>
+                </div>
+                <input formControlName="exportFormat" value="CSV" class="text-[#002D62]" type="radio" />
+              </div>
+              <p class="text-[11px] text-[#475569] leading-tight m-0">
+                Standard comma-separated ledger feed with RFC 4180 strict column compliance.
+              </p>
+              <div class="mt-2.5 pt-1.5 border-t border-[#CBD5E1]/40 flex items-center justify-between text-[10px]">
+                <span class="text-[#64748B] font-medium">Lightweight</span>
+                <span class="text-[#64748B] font-mono">UTF-8 RAW</span>
+              </div>
+            </label>
+          </div>
+        </div>
+
+        <!-- Formatting Checkboxes -->
+        <div class="pt-3 border-t border-[#CBD5E1]/40">
+          <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-2">
+            Accounting Rules &amp; Cryptographic Assertions
+          </label>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5">
+            <label class="flex items-start space-x-2.5 p-2 rounded hover:bg-[#F1F5F9] cursor-pointer">
+              <input formControlName="includeOpeningClosing" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <div class="flex flex-col">
+                <span class="font-medium text-[#002D62] text-[12px]">Include Opening &amp; Closing Ledger Balances</span>
+                <span class="text-[11px] text-[#64748B]">Renders confirmed opening value balance, interim closing balance, and netted sum.</span>
+              </div>
+            </label>
+            <label class="flex items-start space-x-2.5 p-2 rounded hover:bg-[#F1F5F9] cursor-pointer">
+              <input formControlName="trailingNegative" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <div class="flex flex-col">
+                <span class="font-medium text-[#002D62] text-[12px]">Trailing Negative Format (e.g., 1,250.00- for institutional accounting)</span>
+                <span class="text-[11px] text-[#64748B]">Formats liabilities with legacy terminal hyphen required for ERP journal ingest.</span>
+              </div>
+            </label>
+            <label class="flex items-start space-x-2.5 p-2 rounded hover:bg-[#F1F5F9] cursor-pointer">
+              <input formControlName="appendCryptoSignature" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <div class="flex flex-col">
+                <span class="font-medium text-[#002D62] text-[12px]">Append Cryptographic Audit Verification Signature &amp; Timestamp</span>
+                <span class="text-[11px] text-[#64748B]">Includes SHA-256 integrity hash block validated by Citi Global Vault.</span>
+              </div>
+            </label>
+            <label class="flex items-start space-x-2.5 p-2 rounded hover:bg-[#F1F5F9] cursor-pointer">
+              <input formControlName="suppressZeroBalance" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <div class="flex flex-col">
+                <span class="font-medium text-[#002D62] text-[12px]">Suppress Zero-Balance Intraday Transactions</span>
+                <span class="text-[11px] text-[#64748B]">Filters out memo-postings and null balance journal adjustments from final stream.</span>
+              </div>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- 6. BOTTOM DOCKED / STICKY ACTION BAR FOOTER -->
+<footer class="fixed bottom-0 left-0 right-0 h-12 bg-white border-t border-[#CBD5E1] px-4 flex items-center justify-between z-40 shadow-lg">
+  <div class="flex items-center space-x-4">
+    <button (click)="resetToDefaults()" class="flex items-center space-x-1.5 text-[#0070BA] hover:text-[#002D62] text-[11px] font-semibold border-0 bg-transparent cursor-pointer">
+      <span class="material-symbols-outlined text-[16px]">restart_alt</span>
+      <span>Reset to Template Defaults</span>
+    </button>
+    <span class="text-[#CBD5E1]">|</span>
+    <div class="flex items-center space-x-2 text-[11px] text-[#475569]">
+      <span class="material-symbols-outlined text-[14px] text-[#059669]">check_circle</span>
+      <span class="text-[#059669] font-medium">Validation: All mandatory fields satisfied</span>
+    </div>
+  </div>
+
+  <div class="flex items-center space-x-2.5">
+    <button routerLink="/reports" class="btn-citi-secondary h-8 text-[12px]">
+      Cancel
+    </button>
+    <button (click)="saveCriteriaAndPreview()" [disabled]="isSubmitting()" class="btn-citi-glossy h-8 text-[12px]">
+      <span *ngIf="!isSubmitting()">Save Criteria &amp; Preview</span>
+      <span *ngIf="isSubmitting()">Generating...</span>
+    </button>
+    <button (click)="proceedToSchedule()" class="btn-citi-primary h-8 text-[12px] flex items-center space-x-1">
+      <span>Proceed to Schedule Builder</span>
+      <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+    </button>
+  </div>
+</footer>
+
+<!-- Template Lookup Modal -->
+<app-report-lookup-modal [isOpen]="isLookupOpen()" (close)="closeLookup()" (templateSelected)="onTemplateSelected($event)"></app-report-lookup-modal>

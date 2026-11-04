@@ -1,0 +1,393 @@
+<!-- SECONDARY CONTEXT / ENVIRONMENT BANNER STRIP -->
+<div class="bg-[#F1F5F9] border-b border-[#CBD5E1] px-4 h-[34px] flex items-center justify-between text-[11px] font-mono text-[#475569] select-none">
+  <div class="flex items-center gap-4">
+    <div class="flex items-center gap-1.5">
+      <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+      <span class="font-bold text-[#00193C]">ENV: PROD - NY FED GATEWAY (NODE #4)</span>
+    </div>
+    <span class="text-[#CBD5E1]">|</span>
+    <span>LEGAL ENTITY: <strong class="text-[#131B2E]">CITIBANK N.A. (GLOBAL TREASURY OPERATIONS)</strong></span>
+    <span class="text-[#CBD5E1]">|</span>
+    <span class="text-[#002D62] font-semibold">CUT-OFF: USD FEDWIRE 17:00 EST <span class="text-[#E11D48]">(-01:42:15)</span></span>
+  </div>
+  <div class="flex items-center gap-3">
+    <span>SESSION EXPIRY: 48m</span>
+    <span class="text-[#CBD5E1]">|</span>
+    <button class="text-[#0070BA] hover:underline flex items-center gap-1 font-semibold border-0 bg-transparent cursor-pointer">
+      <span class="material-symbols-outlined text-[14px]">sync</span> Force Sync
+    </button>
+  </div>
+</div>
+
+<!-- MAIN WORKSPACE CONTAINER (Sidebar + Canvas Grid) -->
+<div class="flex flex-1 overflow-hidden min-h-[calc(100vh-86px)]">
+  <!-- COLLAPSIBLE SIDE NAV RAIL -->
+  <aside class="w-60 bg-white border-r border-[#CBD5E1] flex flex-col justify-between py-3 px-2 select-none shrink-0">
+    <div class="space-y-4">
+      <!-- Shield Branding Pill -->
+      <div class="flex items-center gap-2 px-3 py-1 border-b border-[#CBD5E1] pb-3">
+        <div class="p-1.5 bg-[#002D62] text-white rounded">
+          <span class="material-symbols-outlined text-[20px]">account_balance</span>
+        </div>
+        <div>
+          <div class="text-[13px] text-[#00193C] font-bold">Treasury Services</div>
+          <div class="text-[10px] text-[#64748B] font-medium">Global Liquidity &amp; Recon</div>
+        </div>
+      </div>
+      <!-- Action CTA Button -->
+      <div class="px-1">
+        <button (click)="navigateToCriteria()" class="w-full bg-[#00193C] hover:bg-[#002D62] text-white py-1.5 px-3 rounded flex items-center justify-center gap-2 text-[12px] font-semibold shadow-sm transition-all cursor-pointer border-0">
+          <span class="material-symbols-outlined text-[16px]">add</span>
+          New Statement Request
+        </button>
+      </div>
+      <!-- Rail Navigation List -->
+      <nav class="space-y-1">
+        <a routerLink="/reports" class="bg-[#EAEDFF] text-[#00193C] font-semibold text-[13px] border-l-4 border-[#0070BA] pl-3 py-1.5 flex items-center gap-2 rounded-r-lg text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">account_balance</span>
+          <span>Cash Statements</span>
+        </a>
+        <a routerLink="/criteria" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">tune</span>
+          <span>Criteria Builder</span>
+        </a>
+        <a routerLink="/schedule" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">event_repeat</span>
+          <span>Schedule Builder</span>
+        </a>
+        <a routerLink="/delivery" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">verified_user</span>
+          <span>Dual Control Auth</span>
+        </a>
+      </nav>
+    </div>
+    <!-- Rail Footer Tabs -->
+    <div class="border-t border-[#CBD5E1] pt-2 space-y-1">
+      <div class="px-3 py-1 text-[10px] text-[#64748B] font-mono">
+        PORTAL v24.8.1 • ONLINE
+      </div>
+    </div>
+  </aside>
+
+  <!-- CONTENT CANVAS -->
+  <main class="flex-1 flex flex-col overflow-y-auto bg-[#F8FAFC] p-4 space-y-3 custom-scroll">
+    <!-- PENDING ACTIONS RIBBON -->
+    <app-pending-ribbon></app-pending-ribbon>
+
+    <!-- PAGE TITLE & PRIMARY ACTIONS -->
+    <div class="flex items-end justify-between border-b border-[#CBD5E1]/60 pb-3">
+      <div>
+        <!-- Breadcrumb -->
+        <nav class="flex items-center gap-1.5 text-[11px] text-[#64748B] mb-1">
+          <span class="hover:text-[#00193C] cursor-pointer">Liquidity</span>
+          <span>/</span>
+          <span class="hover:text-[#00193C] cursor-pointer">Cash Management</span>
+          <span>/</span>
+          <span class="text-[#00193C] font-bold">Cash Statement Reports</span>
+        </nav>
+        <h1 class="text-[22px] text-[#00193C] font-bold tracking-tight m-0">
+          Cash Statement Reports
+        </h1>
+        <p class="text-[13px] text-[#64748B] mt-0.5 mb-0">
+          Generate, view, and schedule MT940/BAI2 cash balance and transaction statements across global accounts.
+        </p>
+      </div>
+
+      <!-- Right Action Button Group -->
+      <div class="flex items-center gap-2">
+        <button (click)="openLookup()" class="btn-citi-secondary h-8 text-[12px] flex items-center gap-1.5 shadow-sm">
+          <span class="material-symbols-outlined text-[16px]">manage_search</span>
+          <span>Template Lookup</span>
+        </button>
+        <button (click)="navigateToCriteria()" class="btn-citi-glossy h-8 text-[12px] flex items-center gap-1.5 shadow-sm">
+          <span class="material-symbols-outlined text-[16px]">add</span>
+          <span>Create New Report</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MULTI-ATTRIBUTE FILTER TOOLBAR -->
+    <section class="bg-white border border-[#CBD5E1] rounded-lg p-3 space-y-3">
+      <div class="grid grid-cols-6 gap-3 items-end">
+        <!-- Filter 1: Account Selector -->
+        <div class="space-y-1">
+          <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Account Scope</label>
+          <div class="relative">
+            <select class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 pr-6 appearance-none focus:border-[#0070BA] focus:outline-none"
+                    [(ngModel)]="selectedAccount">
+              <option>All Accounts (14 Linked)</option>
+              <option>CITI-US-99201488 (USD Main)</option>
+              <option>CITI-GB-88402199 (GBP Treasury)</option>
+              <option>CITI-SG-44109833 (SGD Operational)</option>
+              <option>CITI-DE-11029481 (EUR Pooling)</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-1.5 top-2 pointer-events-none text-[#64748B] text-[16px]">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Filter 2: Date Range -->
+        <div class="space-y-1">
+          <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Posting Window</label>
+          <div class="relative">
+            <input class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded pl-7 pr-2 cursor-pointer focus:border-[#0070BA] focus:outline-none"
+                   [(ngModel)]="postingWindow" type="text" />
+            <span class="material-symbols-outlined absolute left-2 top-2 pointer-events-none text-[#64748B] text-[16px]">calendar_today</span>
+          </div>
+        </div>
+
+        <!-- Filter 3: Branch Lookup with Binocular Tool -->
+        <div class="space-y-1">
+          <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Branch Routing</label>
+          <div class="flex items-center">
+            <input class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded-l px-2 focus:border-[#0070BA] focus:outline-none"
+                   placeholder="NYC-001 / LON-044" [(ngModel)]="branchFilter" type="text" />
+            <button (click)="openLookup()" class="h-8 px-2.5 bg-[#F1F5F9] text-[#002D62] border border-l-0 border-[#CBD5E1] rounded-r hover:bg-[#E2E8F0] cursor-pointer" title="Branch Binocular Lookup">
+              <span class="material-symbols-outlined text-[16px]">manage_search</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter 4: Status Filter -->
+        <div class="space-y-1">
+          <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Lifecycle Status</label>
+          <div class="relative">
+            <select class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 pr-6 appearance-none focus:border-[#0070BA] focus:outline-none"
+                    [(ngModel)]="statusFilter" (change)="applyFilters()">
+              <option>Status: All</option>
+              <option>Completed</option>
+              <option>Pending Approval</option>
+              <option>Generating</option>
+              <option>Failed / Rejected</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-1.5 top-2 pointer-events-none text-[#64748B] text-[16px]">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Filter 5: Format/Frequency -->
+        <div class="space-y-1">
+          <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Standard / Cadence</label>
+          <div class="relative">
+            <select class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 pr-6 appearance-none focus:border-[#0070BA] focus:outline-none"
+                    [(ngModel)]="formatFilter">
+              <option>MT940 / End of Day</option>
+              <option>BAI2 / Intraday</option>
+              <option>MT942 / Interim Balance</option>
+              <option>CAMT.053 / XML</option>
+            </select>
+            <span class="material-symbols-outlined absolute right-1.5 top-2 pointer-events-none text-[#64748B] text-[16px]">expand_more</span>
+          </div>
+        </div>
+
+        <!-- Filter Buttons -->
+        <div class="flex items-center gap-2">
+          <button (click)="applyFilters()" class="btn-citi-primary flex-1 h-8 text-[12px] rounded flex items-center justify-center gap-1">
+            <span class="material-symbols-outlined text-[15px]">filter_alt</span>
+            <span>Apply Filters</span>
+          </button>
+          <button (click)="resetFilters()" class="h-8 px-3 text-[#64748B] hover:text-[#00193C] text-[12px] border-0 bg-transparent cursor-pointer font-medium">
+            Reset
+          </button>
+        </div>
+      </div>
+
+      <!-- Active Filter Chips Tag Bar -->
+      <div class="flex items-center gap-2 pt-2 border-t border-[#CBD5E1]/40 text-[11px]">
+        <span class="text-[#64748B] uppercase text-[10px] font-bold">Active Parameters:</span>
+        <span class="inline-flex items-center gap-1 bg-[#F1F5F9] text-[#00193C] px-2 py-0.5 rounded border border-[#CBD5E1]">
+          Account: {{ selectedAccount() }}
+        </span>
+        <span class="inline-flex items-center gap-1 bg-[#F1F5F9] text-[#00193C] px-2 py-0.5 rounded border border-[#CBD5E1]">
+          Date: {{ postingWindow() }}
+        </span>
+        <span class="inline-flex items-center gap-1 bg-[#F1F5F9] text-[#00193C] px-2 py-0.5 rounded border border-[#CBD5E1]">
+          Branch: {{ branchFilter() || 'All' }}
+        </span>
+        <span class="inline-flex items-center gap-1 bg-[#F1F5F9] text-[#00193C] px-2 py-0.5 rounded border border-[#CBD5E1]">
+          Status: {{ statusFilter() }}
+        </span>
+        <button (click)="resetFilters()" class="text-[#0070BA] text-[11px] hover:underline ml-auto font-semibold border-0 bg-transparent cursor-pointer">
+          Reset Filter Template
+        </button>
+      </div>
+    </section>
+
+    <!-- INSTITUTIONAL DATA GRID TABLE (8 Columns) -->
+    <section class="bg-white border border-[#CBD5E1] rounded-lg overflow-hidden flex flex-col shadow-sm">
+      <!-- Table Control Head -->
+      <div class="px-3 py-2 bg-[#F1F5F9] border-b border-[#CBD5E1] flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <span class="text-[13px] font-bold text-[#002D62]">Generated Ledgers &amp; Feeds</span>
+          <span class="bg-[#002D62]/10 text-[#002D62] text-[11px] font-semibold px-2 py-0.5 rounded-full">
+            {{ filteredReports().length }} Reports Registered
+          </span>
+        </div>
+        <div class="flex items-center gap-3">
+          <label class="flex items-center gap-1 text-[11px] text-[#64748B] cursor-pointer">
+            <input checked class="rounded border-[#CBD5E1] text-[#0070BA]" type="checkbox" />
+            <span>Auto-refresh feed</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Table Container -->
+      <div class="overflow-x-auto custom-scroll">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-[#EDF2F7] border-b-2 border-[#CBD5E1] text-[11px] font-bold uppercase text-[#475569] h-8 select-none">
+              <th class="w-10 px-2 text-center">
+                <input (change)="toggleSelectAll($event)" class="rounded border-[#CBD5E1] text-[#0070BA]" type="checkbox" />
+              </th>
+              <th class="px-3 font-bold tracking-wider">Report Name</th>
+              <th class="px-3 font-bold tracking-wider">Account Number</th>
+              <th class="px-3 font-bold tracking-wider">Branch Code</th>
+              <th class="px-3 font-bold tracking-wider">Frequency / Type</th>
+              <th class="px-3 font-bold tracking-wider text-center">Status</th>
+              <th class="px-3 font-bold tracking-wider">Created Date (EST)</th>
+              <th class="px-3 font-bold tracking-wider">Created By</th>
+              <th class="px-3 font-bold tracking-wider text-right pr-4">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-[#E2E8F0] text-[12px]">
+            <tr *ngFor="let report of filteredReports()"
+                [class.bg-[#FFFDF5]]="report.status === 'PENDING_APPROVAL'"
+                [class.bg-[#FFF5F5]]="report.status === 'REJECTED'"
+                class="hover:bg-[#F1F5F9] transition-colors h-9">
+              <td class="px-2 text-center">
+                <input type="checkbox" [checked]="isReportSelected(report.id)" (change)="toggleReportSelection(report.id)"
+                       class="rounded border-[#CBD5E1] text-[#0070BA] cursor-pointer" />
+              </td>
+              <td class="px-3 font-semibold text-[#002D62] cursor-pointer flex items-center gap-1.5 pt-2"
+                  (click)="viewReportPreview(report)">
+                <span class="material-symbols-outlined text-[16px] text-[#64748B]">description</span>
+                <span>{{ report.reportName }}</span>
+              </td>
+              <td class="px-3 font-mono text-[11px] text-[#131B2E]">
+                {{ report.accountNumbers ? report.accountNumbers.join(', ') : 'All Accounts' }}
+              </td>
+              <td class="px-3 font-mono text-[11px] text-[#64748B]">{{ report.branchCode || 'NYC-001' }}</td>
+              <td class="px-3 text-[#475569]">{{ report.frequency }}</td>
+              <td class="px-3 text-center">
+                <!-- Status Pills -->
+                <span *ngIf="report.status === 'COMPLETED'" class="inline-flex items-center gap-1 bg-[#ECFDF5] text-[#059669] border border-[#A7F3D0] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">
+                  <span class="material-symbols-outlined text-[12px]">check_circle</span> Completed
+                </span>
+                <span *ngIf="report.status === 'PENDING_APPROVAL'" class="inline-flex items-center gap-1 bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">
+                  <span class="material-symbols-outlined text-[12px]">schedule</span> Pending Approval
+                </span>
+                <span *ngIf="report.status === 'GENERATING'" class="inline-flex items-center gap-1 bg-[#F0F9FF] text-[#0284C7] border border-[#BAE6FD] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">
+                  <span class="w-1.5 h-1.5 rounded-full bg-[#0284C7] animate-ping"></span> Generating
+                </span>
+                <span *ngIf="report.status === 'REJECTED' || report.status === 'FAILED'" class="inline-flex items-center gap-1 bg-[#FFF1F2] text-[#E11D48] border border-[#FECDD3] px-2 py-0.5 rounded-full text-[10px] font-bold uppercase">
+                  <span class="material-symbols-outlined text-[12px]">cancel</span> Rejected
+                </span>
+              </td>
+              <td class="px-3 font-mono text-[11px] text-[#64748B]">{{ report.createdAt }}</td>
+              <td class="px-3 text-[#131B2E]">{{ report.createdBy }}</td>
+              <td class="px-3 text-right pr-4">
+                <div class="inline-flex items-center gap-1">
+                  <button (click)="viewReportPreview(report)" class="p-1 hover:bg-[#E2E8F0] rounded text-[#64748B] hover:text-[#002D62] border-0 bg-transparent cursor-pointer" title="View Financial Ledger Preview">
+                    <span class="material-symbols-outlined text-[16px]">visibility</span>
+                  </button>
+                  <button (click)="downloadReport(report, 'PDF')" class="p-1 hover:bg-[#E2E8F0] rounded text-[#64748B] hover:text-[#002D62] border-0 bg-transparent cursor-pointer" title="Download Official PDF">
+                    <span class="material-symbols-outlined text-[16px]">download</span>
+                  </button>
+                  <button (click)="downloadReport(report, 'EXCEL')" class="p-1 hover:bg-[#E2E8F0] rounded text-[#64748B] hover:text-[#002D62] border-0 bg-transparent cursor-pointer" title="Export Excel">
+                    <span class="material-symbols-outlined text-[16px]">table_view</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- TABLE PAGINATION & FOOTER BAR -->
+      <div class="px-3 py-2 bg-[#F1F5F9] border-t border-[#CBD5E1] flex items-center justify-between text-[12px]">
+        <div class="flex items-center gap-4 text-[#64748B]">
+          <span>Showing <strong class="text-[#131B2E] font-semibold">1-{{ filteredReports().length }}</strong> of <strong class="text-[#131B2E] font-semibold">{{ totalReports() }}</strong> reports</span>
+          <div class="flex items-center gap-1.5">
+            <span>Rows per page:</span>
+            <select class="bg-white border border-[#CBD5E1] rounded px-2 py-0.5 text-[11px]">
+              <option>10 per page</option>
+              <option>25 per page</option>
+              <option>50 per page</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Page Switcher -->
+        <div class="flex items-center gap-1">
+          <button class="px-2 py-1 border border-[#CBD5E1] rounded text-[#64748B] text-[11px] bg-white cursor-pointer" disabled>
+            Prev
+          </button>
+          <button class="px-2.5 py-1 bg-[#002D62] text-white rounded font-bold text-[11px] border-0">
+            1
+          </button>
+          <button class="px-2.5 py-1 border border-[#CBD5E1] rounded text-[#131B2E] text-[11px] bg-white cursor-pointer">
+            2
+          </button>
+          <button class="px-2 py-1 border border-[#CBD5E1] rounded text-[#131B2E] text-[11px] bg-white cursor-pointer">
+            Next
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- SYSTEM STATUS & AUDIT STRIP -->
+    <footer class="pt-1 pb-2 flex items-center justify-between text-[11px] font-mono text-[#64748B] border-t border-[#CBD5E1]/40">
+      <div class="flex items-center gap-2">
+        <span class="inline-block w-2 h-2 rounded-full bg-emerald-500"></span>
+        <span>Last sync: Just now | Data Feed: Real-time SWIFT Alliance Gateway | Encryption: TLS 1.3 / FIPS 140-2</span>
+      </div>
+      <div class="flex items-center gap-4">
+        <span>Security Cert: DIGICERT-SHA256-EV</span>
+        <span>© 2024 Citigroup Inc. CitiDirect® Treasury Services. All rights reserved.</span>
+      </div>
+    </footer>
+  </main>
+</div>
+
+<!-- Template Lookup Modal -->
+<app-report-lookup-modal [isOpen]="isLookupOpen()" (close)="closeLookup()"></app-report-lookup-modal>
+
+<!-- Preview Modal -->
+<div *ngIf="previewReport()" class="fixed inset-0 z-50 flex items-center justify-center bg-[#00193C]/60 p-4">
+  <div class="w-[780px] max-w-[94vw] bg-white rounded-lg shadow-2xl border border-[#CBD5E1] overflow-hidden flex flex-col">
+    <div class="bg-[#002D62] text-white px-4 py-3 flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[20px]">picture_as_pdf</span>
+        <h3 class="text-[15px] font-bold text-white m-0">Citibank 9-Column Financial Ledger Preview</h3>
+      </div>
+      <button (click)="closePreview()" class="text-white hover:bg-[#00193C] p-1 rounded border-0 bg-transparent cursor-pointer">
+        <span class="material-symbols-outlined text-[20px]">close</span>
+      </button>
+    </div>
+    <div class="p-4 space-y-3 bg-[#F8FAFC]">
+      <div class="border border-[#CBD5E1] rounded bg-white p-4 font-mono text-[11px] space-y-2">
+        <div class="flex justify-between border-b pb-2">
+          <div>
+            <div class="font-bold text-[14px] text-[#002D62]">CITIBANK N.A. NEW YORK</div>
+            <div>Account Statement • SWIFT MT940</div>
+          </div>
+          <div class="text-right">
+            <div>Report: {{ previewReport()?.reportName }}</div>
+            <div>Generated: {{ previewReport()?.createdAt }}</div>
+          </div>
+        </div>
+        <div class="grid grid-cols-4 gap-2 py-2 bg-[#F1F5F9] px-2 rounded">
+          <div>Opening: $14,250,000.00</div>
+          <div>Total Debits: 1,840,200.00-</div>
+          <div>Total Credits: $4,920,500.00</div>
+          <div>Closing: $17,330,300.00</div>
+        </div>
+        <div class="text-center text-[#64748B] pt-2">
+          *** Official 9-Column Ledger with Trailing Negatives and Cryptographic Hash ***
+        </div>
+      </div>
+    </div>
+    <div class="px-4 py-2.5 bg-[#F1F5F9] border-t border-[#CBD5E1] flex justify-end gap-2">
+      <button (click)="closePreview()" class="btn-citi-secondary h-8 text-[12px]">Close Preview</button>
+      <button (click)="downloadReport(previewReport()!, 'PDF')" class="btn-citi-primary h-8 text-[12px]">Download Official PDF</button>
+    </div>
+  </div>
+</div>

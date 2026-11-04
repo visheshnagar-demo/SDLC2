@@ -1,0 +1,403 @@
+<!-- SUB-BAR: LIVE INSTITUTIONAL STATUS -->
+<div class="h-9 bg-[#F1F5F9] border-b border-[#CBD5E1] px-4 flex items-center justify-between text-[11px] font-mono text-slate-700 select-none">
+  <div class="flex items-center gap-4 overflow-x-auto whitespace-nowrap">
+    <div class="flex items-center gap-1.5">
+      <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+      <span class="text-slate-500 font-medium">ENV:</span>
+      <span class="font-bold text-slate-900">PROD - NY FED GATEWAY (NODE #4)</span>
+    </div>
+    <span class="text-slate-300">|</span>
+    <div class="flex items-center gap-1.5">
+      <span class="material-symbols-outlined text-[14px] text-[#0070BA]">domain</span>
+      <span class="text-slate-500 font-medium">LEGAL ENTITY:</span>
+      <span class="font-semibold text-slate-900">CITIBANK N.A. (GLOBAL TREASURY OPERATIONS)</span>
+    </div>
+    <span class="text-slate-300">|</span>
+    <div class="flex items-center gap-1.5 bg-amber-50 px-2 py-0.5 rounded border border-amber-200 text-amber-900">
+      <span class="material-symbols-outlined text-[14px] text-amber-700">timer</span>
+      <span class="font-medium">CUT-OFF: USD FEDWIRE 17:00 EST</span>
+      <span class="font-bold text-[#E11D48] bg-rose-100 px-1 rounded">(-01:42:15)</span>
+    </div>
+  </div>
+  <div class="flex items-center gap-3">
+    <span>SESSION EXPIRY: 48m</span>
+    <button class="h-6 px-2 bg-white text-slate-700 border border-slate-300 rounded flex items-center gap-1 text-[11px] font-semibold cursor-pointer">
+      <span class="material-symbols-outlined text-[13px] text-[#0070BA]">sync</span> Force Sync
+    </button>
+  </div>
+</div>
+
+<!-- MAIN WORKSPACE WITH SIDE NAV RAIL -->
+<div class="flex flex-1 overflow-hidden min-h-[calc(100vh-88px)]">
+  <!-- SIDEBAR -->
+  <aside class="flex flex-col justify-between w-60 py-3 px-2 bg-white border-r border-[#CBD5E1] shrink-0 select-none">
+    <div class="space-y-3">
+      <div class="px-3 py-1 border-b border-slate-100 flex items-center gap-2.5">
+        <div class="w-7 h-7 rounded bg-[#002D62] text-white flex items-center justify-center shrink-0">
+          <span class="material-symbols-outlined text-[18px]">verified_user</span>
+        </div>
+        <div class="leading-tight">
+          <div class="text-[13px] font-bold text-[#00193C]">Treasury Services</div>
+          <div class="text-[10px] text-[#64748B]">Global Liquidity &amp; Recon</div>
+        </div>
+      </div>
+      <div class="px-1">
+        <button routerLink="/reports" class="w-full h-8 bg-[#00193C] hover:bg-[#002D62] text-white rounded text-[12px] flex items-center justify-center gap-1.5 border-0 cursor-pointer">
+          <span class="material-symbols-outlined text-[16px]">arrow_back</span>
+          <span>View All Reports</span>
+        </button>
+      </div>
+      <nav class="space-y-1">
+        <a routerLink="/reports" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">account_balance</span>
+          <span>Cash Statements</span>
+        </a>
+        <a routerLink="/criteria" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">tune</span>
+          <span>Criteria Builder</span>
+        </a>
+        <a routerLink="/schedule" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
+          <span class="material-symbols-outlined text-[18px]">event_repeat</span>
+          <span>Schedule Builder</span>
+        </a>
+        <a routerLink="/delivery" class="bg-[#EAEDFF] text-[#00193C] font-semibold text-[13px] border-l-4 border-[#0070BA] pl-3 py-1.5 flex items-center gap-2 rounded-r-lg text-decoration-none">
+          <span class="material-symbols-outlined text-[#0070BA] text-[18px]">verified_user</span>
+          <span>Dual Control Auth</span>
+        </a>
+      </nav>
+    </div>
+    <div class="border-t border-slate-200 pt-2 px-3 text-[10px] text-slate-400 font-mono">
+      CitiDirect Core v24.8.1-GA
+    </div>
+  </aside>
+
+  <!-- MAIN SCROLLABLE CONTENT CANVAS -->
+  <main class="flex-1 overflow-y-auto bg-[#F8FAFC] p-4 lg:p-6 space-y-4 pb-24 custom-scroll">
+    <!-- Action Status Banner -->
+    <div *ngIf="actionMessage()"
+         [class.bg-[#ECFDF5]]="actionMessage()?.type === 'success'"
+         [class.border-[#A7F3D0]]="actionMessage()?.type === 'success'"
+         [class.text-[#059669]]="actionMessage()?.type === 'success'"
+         [class.bg-[#FFFBEB]]="actionMessage()?.type === 'warning'"
+         [class.border-[#FDE68A]]="actionMessage()?.type === 'warning'"
+         [class.text-[#D97706]]="actionMessage()?.type === 'warning'"
+         class="p-3 border rounded-lg flex items-center gap-2">
+      <span class="material-symbols-outlined text-[20px]">
+        {{ actionMessage()?.type === 'success' ? 'check_circle' : 'warning' }}
+      </span>
+      <span class="font-semibold text-[13px]">{{ actionMessage()?.text }}</span>
+    </div>
+
+    <!-- BREADCRUMBS & BATCH HEADER -->
+    <div>
+      <nav class="flex items-center gap-1.5 text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-1">
+        <span routerLink="/reports" class="hover:text-[#00193C] cursor-pointer">Liquidity</span>
+        <span class="text-slate-300">/</span>
+        <span routerLink="/reports" class="hover:text-[#00193C] cursor-pointer">Cash Management</span>
+        <span class="text-slate-300">/</span>
+        <span routerLink="/reports" class="hover:text-[#00193C] cursor-pointer">Cash Statement Reports</span>
+        <span class="text-slate-300">/</span>
+        <span class="text-slate-800 font-bold">Delivery Options Management</span>
+      </nav>
+      <div class="flex flex-col xl:flex-row xl:items-center justify-between gap-3 pb-3 border-b border-slate-200">
+        <div>
+          <h1 class="text-[22px] font-bold text-slate-900 tracking-tight m-0">
+            Delivery Options Management &amp; Maker-Checker Authorization
+          </h1>
+          <p class="text-[13px] text-slate-600 mt-0.5 mb-0">
+            Configure secure automated statement distribution channels and execute four-eyes dual-control approvals.
+          </p>
+        </div>
+        <div class="flex items-center gap-2 shrink-0">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 bg-white border border-slate-300 rounded font-mono text-[11px] text-slate-700 shadow-xs">
+            <span class="text-slate-400">SCHEDULE-UID:</span>
+            <span class="font-bold text-[#002D62]">{{ activeDelivery()?.scheduleId || 'SCHED-MT940-WEEKLY-001' }}</span>
+          </span>
+          <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-emerald-50 border border-emerald-300 text-emerald-800 rounded font-mono text-[11px] font-semibold">
+            <span class="material-symbols-outlined text-[14px] text-emerald-600">lock</span>
+            ENVIRONMENT: PROD ENCRYPTED
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <!-- PENDING ITEMS QUICK SELECTOR -->
+    <div class="bg-[#FFFDF5] border border-[#FDE68A] p-2.5 rounded-lg flex items-center justify-between">
+      <div class="flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px] text-[#D97706]">pending_actions</span>
+        <span class="text-[12px] font-bold text-[#78350F]">Select Pending Authorization Queue:</span>
+      </div>
+      <div class="flex items-center gap-2">
+        <button *ngFor="let d of pendingDeliveries()"
+                (click)="selectDelivery(d)"
+                [class.bg-[#002D62]]="activeDelivery()?.id === d.id"
+                [class.text-white]="activeDelivery()?.id === d.id"
+                class="px-2.5 py-1 rounded text-[11px] font-mono border border-[#CBD5E1] bg-white text-[#002D62] cursor-pointer">
+          {{ d.scheduleId }} ({{ d.deliveryChannel }})
+        </button>
+      </div>
+    </div>
+
+    <!-- SECTION 1: DELIVERY CHANNEL DISTRIBUTION MATRIX -->
+    <section class="bg-white border border-slate-200 rounded shadow-xs overflow-hidden">
+      <div class="h-9 px-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-[13px] font-bold text-slate-800">
+          <span class="material-symbols-outlined text-[#0070BA] text-[18px]">hub</span>
+          <span>1. Delivery Channel Distribution Matrix</span>
+        </div>
+        <div class="text-[11px] text-slate-500">
+          Protocol: <span class="font-semibold text-slate-700">Automated Push / Pull Gateway</span>
+        </div>
+      </div>
+      <div class="p-4 space-y-4">
+        <!-- 3 Delivery Channel Selection Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <!-- Channel 1: Email Dispatch -->
+          <div (click)="selectedChannel.set('EMAIL')"
+               [class.border-2]="selectedChannel() === 'EMAIL'"
+               [class.border-[#002D62]]="selectedChannel() === 'EMAIL'"
+               [class.bg-blue-50]="selectedChannel() === 'EMAIL'"
+               class="relative border border-slate-200 rounded p-3.5 bg-slate-50/50 hover:bg-slate-50 transition-colors cursor-pointer">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <input [checked]="selectedChannel() === 'EMAIL'" name="channelRadio" class="h-4 w-4 text-[#0070BA]" type="radio" />
+                <label class="text-[13px] font-bold text-slate-800 cursor-pointer flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px] text-slate-500">mail</span>
+                  Email Dispatch
+                </label>
+              </div>
+              <span class="text-[10px] uppercase font-bold text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded">Optional</span>
+            </div>
+            <p class="mt-2 text-[12px] text-slate-600 pl-6 m-0">
+              Encrypted PDF with password/PGP protection and corporate distribution list routing.
+            </p>
+          </div>
+
+          <!-- Channel 2: Secure SFTP Transfer (Active) -->
+          <div (click)="selectedChannel.set('SFTP')"
+               [class.border-2]="selectedChannel() === 'SFTP'"
+               [class.border-[#002D62]]="selectedChannel() === 'SFTP'"
+               [class.bg-blue-50]="selectedChannel() === 'SFTP'"
+               class="relative border-2 border-[#002D62] bg-blue-50/20 rounded p-3.5 shadow-xs cursor-pointer">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <input [checked]="selectedChannel() === 'SFTP'" name="channelRadio" class="h-4 w-4 text-[#002D62]" type="radio" />
+                <label class="text-[13px] font-bold text-slate-900 cursor-pointer flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px] text-[#0070BA]">terminal</span>
+                  Secure SFTP Transfer
+                </label>
+              </div>
+              <span class="text-[10px] font-bold text-white bg-[#002D62] px-2 py-0.5 rounded uppercase">
+                ACTIVE SELECTION
+              </span>
+            </div>
+            <p class="mt-2 text-[12px] text-slate-700 pl-6 m-0">
+              Automated encrypted batch transfer to corporate SFTP endpoint with TLS 1.3 / SSH-RSA key authentication.
+            </p>
+            <div class="mt-2 pl-6 flex items-center gap-2 text-[11px] text-emerald-700 font-semibold font-mono">
+              <span class="inline-flex items-center gap-1 bg-emerald-100 px-1.5 py-0.5 rounded border border-emerald-300">
+                <span class="material-symbols-outlined text-[13px] text-emerald-700">check_circle</span>
+                SSH Key Verified
+              </span>
+              <span>Port 22 Hardened</span>
+            </div>
+          </div>
+
+          <!-- Channel 3: Direct Portal Download -->
+          <div (click)="selectedChannel.set('PORTAL')"
+               [class.border-2]="selectedChannel() === 'PORTAL'"
+               [class.border-[#002D62]]="selectedChannel() === 'PORTAL'"
+               [class.bg-blue-50]="selectedChannel() === 'PORTAL'"
+               class="relative border border-slate-200 rounded p-3.5 bg-slate-50/50 hover:bg-slate-50 transition-colors cursor-pointer">
+            <div class="flex items-start justify-between">
+              <div class="flex items-center gap-2.5">
+                <input [checked]="selectedChannel() === 'PORTAL'" name="channelRadio" class="h-4 w-4 text-[#0070BA]" type="radio" />
+                <label class="text-[13px] font-bold text-slate-800 cursor-pointer flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[18px] text-slate-500">cloud_download</span>
+                  Direct Portal Download
+                </label>
+              </div>
+              <span class="text-[10px] uppercase font-bold text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded">Manual Pull</span>
+            </div>
+            <p class="mt-2 text-[12px] text-slate-600 pl-6 m-0">
+              Encrypted vault storage with on-demand download via CitiDirect web portal.
+            </p>
+          </div>
+        </div>
+
+        <!-- SFTP Parameters Sub-panel -->
+        <div class="mt-3 border border-slate-200 rounded bg-[#F8FAFC] overflow-hidden">
+          <div class="h-8 px-3 bg-slate-100 border-b border-slate-200 flex items-center justify-between">
+            <div class="flex items-center gap-1.5 text-[12px] font-bold text-slate-800">
+              <span class="material-symbols-outlined text-[16px] text-[#002D62]">lock</span>
+              <span>Configured SFTP Connection Parameters</span>
+            </div>
+            <span class="text-[11px] font-mono text-slate-500">Payload Format: SWIFT MT940 Consolidated (ISO 15022)</span>
+          </div>
+          <div class="p-3.5 space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                  SFTP Host Name / FQDN <span class="text-rose-600">*</span>
+                </label>
+                <input class="w-full h-8 px-2.5 bg-white border border-[#CBD5E1] rounded text-[12px] font-mono text-slate-800 focus:outline-none"
+                       [(ngModel)]="sftpHost" type="text" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Destination Port <span class="text-rose-600">*</span>
+                </label>
+                <input class="w-full h-8 px-2.5 bg-white border border-[#CBD5E1] rounded text-[12px] font-mono text-slate-800 focus:outline-none"
+                       [(ngModel)]="sftpPort" type="number" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Remote Ingestion Path <span class="text-rose-600">*</span>
+                </label>
+                <input class="w-full h-8 px-2.5 bg-white border border-[#CBD5E1] rounded text-[12px] font-mono text-slate-800 focus:outline-none"
+                       [(ngModel)]="sftpRemotePath" type="text" />
+              </div>
+              <div>
+                <label class="block text-[11px] font-semibold text-slate-600 mb-1">
+                  Authentication Scheme
+                </label>
+                <div class="h-8 px-2.5 bg-slate-100 border border-[#CBD5E1] rounded flex items-center justify-between text-[12px] text-slate-800 font-medium">
+                  <span>Dual-Key PGP / SSH Certificate</span>
+                  <span class="material-symbols-outlined text-[16px] text-emerald-600">verified</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- PGP & Test Connection -->
+            <div class="pt-2 border-t border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div class="flex items-center gap-3">
+                <label class="flex items-center gap-2 cursor-pointer">
+                  <input [(ngModel)]="pgpEncryption" class="text-[#0070BA] rounded" type="checkbox" />
+                  <span class="text-[12px] font-bold text-slate-800">PGP File-Level Payload Encryption:</span>
+                </label>
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 border border-blue-300 text-blue-900 font-mono text-[11px]">
+                  <span class="material-symbols-outlined text-[13px] text-blue-700">key</span>
+                  Citibank_Corporate_2026.pub (4096-bit RSA)
+                </span>
+              </div>
+              <div class="flex items-center gap-2">
+                <span *ngIf="testStatus()" class="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded">
+                  {{ testStatus() }}
+                </span>
+                <button (click)="testSftpConnection()" class="btn-citi-secondary h-8 text-[12px] flex items-center gap-1 shadow-xs">
+                  <span class="material-symbols-outlined text-[15px] text-[#0070BA]">cable</span>
+                  <span>Test SFTP Connection</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SECTION 2: MAKER-CHECKER DUAL-CONTROL AUTHORIZATION PANEL -->
+    <section class="bg-white border border-slate-200 rounded shadow-xs overflow-hidden">
+      <div class="h-9 px-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+        <div class="flex items-center gap-2 text-[13px] font-bold text-slate-900">
+          <span class="material-symbols-outlined text-[#0070BA] text-[18px]">verified_user</span>
+          <span>2. Maker-Checker Four-Eyes Verification (Dual Control)</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <div class="h-6 px-2.5 bg-[#FFFBEB] text-[#D97706] border border-[#FDE68A] rounded-full flex items-center gap-1.5 text-[11px] font-bold uppercase">
+            <span class="material-symbols-outlined text-[15px] text-amber-600">shield_with_heart</span>
+            <span>{{ activeDelivery()?.status || 'PENDING_APPROVAL' }}</span>
+          </div>
+        </div>
+      </div>
+      <div class="p-4 space-y-4">
+        <!-- Audit History & Maker Details Grid -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 p-3 bg-slate-50 border border-slate-200 rounded">
+          <div class="space-y-1">
+            <span class="text-[10px] uppercase font-bold text-slate-500">Maker User (Originator)</span>
+            <div class="flex items-center gap-2">
+              <div class="w-6 h-6 rounded-full bg-slate-200 text-slate-700 flex items-center justify-center font-bold text-[10px]">
+                MS
+              </div>
+              <div>
+                <div class="text-[12px] font-bold text-slate-900">{{ activeDelivery()?.makerName || 'M. Sterling' }}</div>
+                <div class="text-[11px] font-mono text-slate-600">ID: usr_maker_01 • Senior Analyst</div>
+              </div>
+            </div>
+          </div>
+          <div class="space-y-1 border-t md:border-t-0 md:border-l border-slate-200 md:pl-3 pt-2 md:pt-0">
+            <span class="text-[10px] uppercase font-bold text-slate-500">Submission Timestamp</span>
+            <div class="flex items-center gap-1.5 text-slate-800">
+              <span class="material-symbols-outlined text-[15px] text-slate-500">schedule</span>
+              <div class="font-mono text-[12px] font-semibold">{{ activeDelivery()?.createdAt || '2026-05-18 10:00:00 UTC' }}</div>
+            </div>
+          </div>
+          <div class="space-y-1 border-t md:border-t-0 md:border-l border-slate-200 md:pl-3 pt-2 md:pt-0">
+            <span class="text-[10px] uppercase font-bold text-slate-500">Target Schedule</span>
+            <div class="font-mono text-[12px] font-bold text-[#002D62]">{{ activeDelivery()?.scheduleId }}</div>
+          </div>
+        </div>
+
+        <!-- SoD Rule Notice -->
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded flex items-start gap-2.5">
+          <span class="material-symbols-outlined text-[20px] text-emerald-700 shrink-0 mt-0.5">verified</span>
+          <div class="text-[12px] text-emerald-950 leading-relaxed">
+            <span class="font-bold text-emerald-900">✓ Segregation of Duties Enforcement:</span>
+            Current Authorized User <strong class="font-mono">'J. Vance' (Tier 4 Checker)</strong> is strictly distinct from Maker <strong class="font-mono">'M. Sterling'</strong>. Dual-control four-eyes verification rule <strong>Citi-SoD-882</strong> is satisfied. Authorization will cryptographically sign and commit the delivery schedule.
+          </div>
+        </div>
+
+        <!-- Checker Approval Controls -->
+        <div class="border border-slate-200 rounded p-3.5 bg-slate-50/30 space-y-3">
+          <div>
+            <label class="block text-[12px] font-bold text-slate-800 mb-1">
+              Checker Approval Comments <span class="text-rose-600">*</span>
+            </label>
+            <textarea class="w-full p-2 bg-white border border-[#CBD5E1] rounded text-[12px] text-slate-900 focus:outline-none"
+                      [(ngModel)]="checkerComments" rows="2"></textarea>
+          </div>
+          <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200">
+            <div class="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+              <span class="material-symbols-outlined text-[15px] text-slate-400">security_update_good</span>
+              <span>Signature: ECDSA-SECP256R1 • Token Key: YubiKey-HSM-P882</span>
+            </div>
+            <div class="flex items-center gap-2">
+              <button (click)="requestRevision()" class="btn-citi-secondary h-8 text-[12px]">Request Revision</button>
+              <button (click)="rejectDelivery()" [disabled]="isAuthorizing()" class="h-8 px-3 bg-white hover:bg-rose-50 text-[#E11D48] border border-[#FECDD3] rounded text-[12px] font-semibold cursor-pointer">
+                Reject with Comments
+              </button>
+              <button (click)="authorizeDelivery()" [disabled]="isAuthorizing()" class="h-8 px-4 bg-[#059669] hover:bg-[#047857] text-white border border-[#047857] rounded text-[13px] font-bold cursor-pointer flex items-center gap-1.5 shadow-sm">
+                <span class="material-symbols-outlined text-[16px]">verified</span>
+                <span>{{ isAuthorizing() ? 'Signing...' : 'Authorize Delivery Option' }}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- STICKY ACTION BAR FOOTER -->
+<footer class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-slate-300 shadow-md select-none">
+  <div class="h-10 px-4 flex items-center justify-between text-[12px] bg-slate-50">
+    <div class="flex items-center gap-4">
+      <a routerLink="/schedule" class="font-semibold text-[#0070BA] hover:text-[#002D62] flex items-center gap-1 text-decoration-none">
+        <span class="material-symbols-outlined text-[15px]">arrow_back</span>
+        <span>Back to Schedule Builder</span>
+      </a>
+      <span class="text-slate-300">|</span>
+      <a routerLink="/reports" class="text-slate-600 hover:text-slate-900 text-decoration-none">
+        View All Generated Reports
+      </a>
+    </div>
+    <div class="flex items-center gap-3">
+      <div class="flex items-center gap-1.5 text-[11px] font-mono text-emerald-800 bg-emerald-100 border border-emerald-300 px-2 py-0.5 rounded">
+        <span class="material-symbols-outlined text-[14px] text-emerald-700">memory</span>
+        <span>FIPS 140-2 Level 3 Active</span>
+      </div>
+      <button routerLink="/reports" class="btn-citi-secondary h-7 text-[11px]">
+        Close Window
+      </button>
+    </div>
+  </div>
+</footer>
