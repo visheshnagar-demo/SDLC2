@@ -12,11 +12,20 @@ import { RouterModule } from '@angular/router';
 })
 export class NavbarComponent {
   activeNav = signal<string>('reports');
+  activeMegaMenu = signal<string | null>(null);
   isProfileMenuOpen = signal<boolean>(false);
   pendingCount = signal<number>(3);
 
-  setActiveNav(nav: string): void {
-    this.activeNav.set(nav);
+  toggleMegaMenu(menuName: string): void {
+    if (this.activeMegaMenu() === menuName) {
+      this.activeMegaMenu.set(null);
+    } else {
+      this.activeMegaMenu.set(menuName);
+    }
+  }
+
+  closeMegaMenu(): void {
+    this.activeMegaMenu.set(null);
   }
 
   toggleProfileMenu(): void {

@@ -1,4 +1,4 @@
-<div *ngIf="isOpen" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-[#00193C]/60 p-4">
+<div *ngIf="isOpen" class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center bg-[#00193C]/60 p-4 select-none">
   <div class="modal-dialog w-[840px] max-w-[94vw] bg-white rounded-lg shadow-2xl border border-[#CBD5E1] overflow-hidden flex flex-col">
     <!-- Modal Header -->
     <div class="bg-[#002D62] text-white px-4 py-3 flex items-center justify-between border-b border-[#00193C]">
@@ -22,7 +22,7 @@
 
     <!-- 4-Field Search Criteria Grid -->
     <div class="p-3 bg-[#F1F5F9] border-b border-[#CBD5E1] space-y-2">
-      <div class="grid grid-cols-4 gap-3">
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
         <div class="space-y-1">
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Report Code</label>
           <input class="w-full h-8 text-[12px] font-mono bg-white border border-[#CBD5E1] rounded px-2 focus:border-[#0070BA] focus:outline-none"
@@ -49,9 +49,9 @@
         <div class="space-y-1">
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Branch Routing</label>
           <div class="flex items-center">
-            <input class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded-l px-2 focus:border-[#0070BA] focus:outline-none"
+            <input class="w-full h-8 text-[12px] bg-white border border-r-0 border-[#CBD5E1] rounded-l px-2 focus:border-[#0070BA] focus:outline-none"
                    placeholder="Branch Code" [(ngModel)]="searchBranch" type="text" />
-            <button class="h-8 px-2 bg-[#E2E8F0] text-[#002D62] border border-l-0 border-[#CBD5E1] rounded-r hover:bg-[#CBD5E1] cursor-pointer" title="Lookup Routing Code">
+            <button class="btn-binocular-lookup" title="Lookup Routing Code">
               <span class="material-symbols-outlined text-[15px]">search</span>
             </button>
           </div>
@@ -60,7 +60,7 @@
 
       <div class="flex items-center justify-between pt-1">
         <div class="flex items-center gap-3">
-          <button (click)="applyFilters()" class="btn-citi-primary h-8 text-[12px] px-3.5 rounded flex items-center gap-1.5 shadow-sm">
+          <button (click)="applyFilters()" class="btn-style-b flex items-center gap-1.5 shadow-sm">
             <span class="material-symbols-outlined text-[15px]">filter_alt</span>
             <span>Search Templates</span>
           </button>
@@ -74,22 +74,24 @@
       </div>
     </div>
 
-    <!-- Template Selection Table -->
+    <!-- Template Selection Table (Exact 30px HTML <th> headers, sort indicators, zebra striping #FAFBFC) -->
     <div class="p-3 bg-white overflow-x-auto max-h-[260px] custom-scroll">
-      <table class="w-full text-left border-collapse">
-        <thead class="bg-[#EDF2F7] border-b border-[#CBD5E1] text-[11px] font-bold uppercase text-[#475569] select-none">
-          <tr class="h-8">
-            <th class="w-10 px-2 text-center">Select</th>
-            <th class="px-3">Report Code</th>
-            <th class="px-3">Report Name</th>
-            <th class="px-3">Format Standard</th>
-            <th class="px-3">Category</th>
-            <th class="px-3">Default Frequency</th>
+      <table class="citi-data-table w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-[#EDF2F7] border-b-2 border-[#CBD5E1] text-[11px] font-bold uppercase text-[#475569] h-[30px] select-none" style="height: 30px;">
+            <th class="w-10 px-2 text-center" style="height: 30px;">Select</th>
+            <th class="px-3" style="height: 30px;">Report Code <span class="sort-indicator text-[#0070BA] font-bold">1▲</span></th>
+            <th class="px-3" style="height: 30px;">Report Name <span class="sort-indicator text-[#0070BA] font-bold">2▲</span></th>
+            <th class="px-3" style="height: 30px;">Format Standard <span class="sort-indicator text-[#94A3B8]">▲</span></th>
+            <th class="px-3" style="height: 30px;">Category <span class="sort-indicator text-[#94A3B8]">▲</span></th>
+            <th class="px-3" style="height: 30px;">Default Frequency <span class="sort-indicator text-[#94A3B8]">▲</span></th>
           </tr>
         </thead>
         <tbody class="divide-y divide-[#E2E8F0] text-[12px]">
-          <tr *ngFor="let t of filteredTemplates()"
+          <tr *ngFor="let t of filteredTemplates(); let even = even"
               [class.bg-[#EBF3FB]]="selectedTemplate()?.id === t.id"
+              [class.bg-[#FAFBFC]]="even && selectedTemplate()?.id !== t.id"
+              [class.bg-white]="!even && selectedTemplate()?.id !== t.id"
               (click)="onSelectRadio(t)"
               class="hover:bg-[#F1F5F9] transition-colors h-9 cursor-pointer">
             <td class="px-2 text-center" (click)="$event.stopPropagation()">
@@ -120,8 +122,8 @@
         </span>
       </div>
       <div class="flex items-center gap-2">
-        <button (click)="cancel()" class="btn-citi-secondary h-8 text-[12px]">Cancel</button>
-        <button (click)="confirmSelection()" class="btn-citi-primary h-8 text-[12px] flex items-center gap-1.5">
+        <button (click)="cancel()" class="btn-citi-secondary">Cancel</button>
+        <button (click)="confirmSelection()" class="btn-style-b flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[15px]">task_alt</span>
           <span>Select &amp; Apply Template</span>
         </button>

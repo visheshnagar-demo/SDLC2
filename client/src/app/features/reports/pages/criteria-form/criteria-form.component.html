@@ -1,5 +1,5 @@
 <!-- 2. ENVIRONMENT & OPERATIONAL SUB-HEADER STRIP -->
-<div class="bg-[#F1F5F9] border-b border-[#CBD5E1] px-4 py-1 text-[11px] font-mono flex items-center justify-between select-none">
+<div class="bg-[#F1F5F9] border-b border-[#CBD5E1] px-4 py-1 text-[11px] font-mono flex items-center justify-between select-none shrink-0">
   <div class="flex items-center space-x-3 overflow-hidden text-ellipsis whitespace-nowrap">
     <div class="flex items-center space-x-1">
       <span class="inline-block w-2 h-2 rounded-full bg-emerald-600"></span>
@@ -41,7 +41,7 @@
         </div>
       </div>
       <div class="px-1">
-        <button routerLink="/reports" class="w-full bg-[#002D62] hover:bg-[#00193C] text-white text-[12px] py-1.5 px-3 rounded flex items-center justify-center space-x-2 transition-all shadow-sm cursor-pointer border-0">
+        <button routerLink="/reports" class="btn-style-b w-full flex items-center justify-center space-x-2 text-[12px]">
           <span class="material-symbols-outlined text-[16px]">arrow_back</span>
           <span>View All Reports</span>
         </button>
@@ -98,21 +98,21 @@
         </p>
       </div>
       <div class="flex items-center space-x-2">
-        <button (click)="openLookup()" class="btn-citi-secondary h-8 text-[12px] flex items-center space-x-1.5 shadow-sm">
+        <button (click)="openLookup()" class="btn-citi-secondary flex items-center space-x-1.5">
           <span class="material-symbols-outlined text-[16px] text-[#0070BA]">bookmark</span>
           <span>Base Report Lookup</span>
         </button>
       </div>
     </div>
 
-    <!-- FORM GRID: 2-COLUMN STRUCTURE -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-      <!-- LEFT COLUMN: Scope & Entity Parameters -->
+    <!-- 3-COLUMN STRUCTURE CRITERIA FORM -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+      <!-- COLUMN 1: Scope & Template Parameters -->
       <div class="bg-white border border-[#CBD5E1] rounded shadow-none flex flex-col">
         <div class="h-9 px-3 bg-[#F1F5F9] border-b border-[#CBD5E1] flex items-center justify-between">
           <div class="flex items-center space-x-2">
             <span class="material-symbols-outlined text-[16px] text-[#002D62]">corporate_fare</span>
-            <span class="text-[11px] font-bold uppercase text-[#002D62] tracking-wider">Scope &amp; Entity Parameters</span>
+            <span class="text-[11px] font-bold uppercase text-[#002D62] tracking-wider">1. Template &amp; Entity Scope</span>
           </div>
           <span class="text-[10px] text-[#64748B] font-mono">SEC-SCOPE-01</span>
         </div>
@@ -129,93 +129,13 @@
               <div class="relative flex-1">
                 <input class="w-full h-8 px-2.5 bg-[#F1F5F9] border border-r-0 border-[#CBD5E1] text-[#002D62] font-mono text-[12px] focus:outline-none font-medium"
                        readonly type="text" [value]="criteriaForm.get('baseReportCode')?.value + ' - ' + criteriaForm.get('baseReportName')?.value" />
-                <span class="absolute right-2 top-1.5 px-1.5 py-0.5 bg-[#E2E8F0] text-[#002D62] text-[9px] rounded uppercase font-bold border border-[#CBD5E1]">
-                  SWIFT MT940
-                </span>
               </div>
               <!-- Binocular Lookup Button -->
-              <button (click)="openLookup()" class="h-8 px-3 bg-[#002D62] hover:bg-[#00193C] text-white border border-[#00193C] flex items-center justify-center cursor-pointer transition-colors" title="Lookup Base Report Template">
-                <span class="material-symbols-outlined text-[18px]">manage_search</span>
+              <button (click)="openLookup()" class="btn-binocular-lookup" title="Lookup Base Report Template">
+                <span class="material-symbols-outlined text-[16px]">manage_search</span>
               </button>
             </div>
             <p class="text-[11px] text-[#64748B] mt-1 mb-0">Pre-configured CitiDirect cash statement report template code.</p>
-          </div>
-
-          <!-- 2. Account Scope Selection -->
-          <div class="pt-2 border-t border-[#CBD5E1]/40">
-            <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
-              Account Scope Selection <span class="text-[#E11D48] font-bold">*</span>
-            </label>
-            <div class="grid grid-cols-3 gap-1 p-0.5 bg-[#F1F5F9] border border-[#CBD5E1] rounded mb-2.5">
-              <label class="flex items-center justify-center space-x-1.5 py-1 px-2 rounded bg-white text-[#002D62] shadow-xs cursor-pointer text-[11px] font-semibold">
-                <input checked class="text-[#0070BA]" name="scopeTypeRadio" type="radio" />
-                <span>Specific Accounts</span>
-              </label>
-              <label class="flex items-center justify-center space-x-1.5 py-1 px-2 rounded text-[#64748B] hover:text-[#002D62] cursor-pointer text-[11px]">
-                <input class="text-[#0070BA]" name="scopeTypeRadio" type="radio" />
-                <span>Account Group</span>
-              </label>
-              <label class="flex items-center justify-center space-x-1.5 py-1 px-2 rounded text-[#64748B] hover:text-[#002D62] cursor-pointer text-[11px]">
-                <input class="text-[#0070BA]" name="scopeTypeRadio" type="radio" />
-                <span>All Entitled</span>
-              </label>
-            </div>
-
-            <!-- Multi-select Account Pills -->
-            <div class="flex items-center justify-between mb-1">
-              <span class="text-[11px] font-semibold text-[#475569]">
-                Target Account Numbers <span class="text-[#E11D48]">*</span> <span class="text-[#0070BA] font-bold">({{ selectedAccounts().length }} selected)</span>
-              </span>
-              <span class="text-[10px] text-[#64748B]">Max: 100 accounts per batch</span>
-            </div>
-            <div class="p-2 border border-[#CBD5E1] rounded bg-[#FAFAFA] min-h-[76px] flex flex-wrap gap-1.5 items-start">
-              <div *ngFor="let acc of selectedAccounts()" class="inline-flex items-center bg-white border border-[#CBD5E1] rounded px-2 py-1 shadow-xs">
-                <span class="material-symbols-outlined text-[14px] text-[#0070BA] mr-1">account_balance</span>
-                <span class="font-mono text-[11px] font-bold text-[#002D62]">{{ acc }}</span>
-                <button (click)="removeAccount(acc)" class="ml-2 text-[#94A3B8] hover:text-[#E11D48] border-0 bg-transparent cursor-pointer p-0.5 rounded" title="Remove account">
-                  <span class="material-symbols-outlined text-[14px]">close</span>
-                </button>
-              </div>
-
-              <!-- Add Account selector dropdown trigger -->
-              <select (change)="addAccount($any($event.target).value)" class="h-8 px-2 bg-white border border-dashed border-[#0070BA] text-[#0070BA] rounded text-[11px] font-semibold cursor-pointer">
-                <option value="" disabled selected>+ Select Account (Binocular search)</option>
-                <option *ngFor="let a of availableAccounts()" [value]="a.accountNumber">
-                  {{ a.accountNumber }} ({{ a.currency }} - {{ a.accountName }})
-                </option>
-              </select>
-            </div>
-          </div>
-
-          <!-- 3. Branch Routing & Settlement Currency -->
-          <div class="pt-2 border-t border-[#CBD5E1]/40 grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div>
-              <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
-                Branch Routing Code <span class="text-[#E11D48] font-bold">*</span>
-              </label>
-              <div class="flex items-center rounded overflow-hidden">
-                <input class="w-full h-8 px-2.5 bg-white border border-r-0 border-[#CBD5E1] text-[#002D62] text-[12px] focus:outline-none"
-                       formControlName="branchCode" type="text" />
-                <button (click)="openLookup()" class="h-8 px-2.5 bg-[#F1F5F9] hover:bg-[#E2E8F0] text-[#002D62] border border-[#CBD5E1] flex items-center justify-center cursor-pointer" title="Lookup Routing Branch">
-                  <span class="material-symbols-outlined text-[16px]">search</span>
-                </button>
-              </div>
-            </div>
-            <div>
-              <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
-                Settlement Currency <span class="text-[#E11D48] font-bold">*</span>
-              </label>
-              <div class="relative">
-                <select class="w-full h-8 pl-2.5 pr-8 bg-white border border-[#CBD5E1] text-[#002D62] text-[12px] rounded focus:outline-none"
-                        formControlName="currency">
-                  <option value="USD">USD - US Dollar ($)</option>
-                  <option value="GBP">GBP - British Pound (£)</option>
-                  <option value="EUR">EUR - Euro (€)</option>
-                  <option value="JPY">JPY - Japanese Yen (¥)</option>
-                  <option value="CHF">CHF - Swiss Franc (Fr)</option>
-                </select>
-              </div>
-            </div>
           </div>
 
           <!-- Legal Entity Code (System-Locked) -->
@@ -229,83 +149,174 @@
               <span class="material-symbols-outlined absolute right-2.5 top-2 text-[#94A3B8] text-[14px]">lock</span>
             </div>
           </div>
+
+          <!-- Account Scope Selection Type -->
+          <div class="pt-2 border-t border-[#CBD5E1]/40">
+            <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
+              Account Scope Type <span class="text-[#E11D48] font-bold">*</span>
+            </label>
+            <div class="grid grid-cols-3 gap-1 p-0.5 bg-[#F1F5F9] border border-[#CBD5E1] rounded">
+              <label class="flex items-center justify-center space-x-1 py-1 px-1 rounded bg-white text-[#002D62] shadow-xs cursor-pointer text-[10px] font-semibold">
+                <input checked class="text-[#0070BA]" name="scopeTypeRadio" type="radio" />
+                <span>Specific</span>
+              </label>
+              <label class="flex items-center justify-center space-x-1 py-1 px-1 rounded text-[#64748B] hover:text-[#002D62] cursor-pointer text-[10px]">
+                <input class="text-[#0070BA]" name="scopeTypeRadio" type="radio" />
+                <span>Group</span>
+              </label>
+              <label class="flex items-center justify-center space-x-1 py-1 px-1 rounded text-[#64748B] hover:text-[#002D62] cursor-pointer text-[10px]">
+                <input class="text-[#0070BA]" name="scopeTypeRadio" type="radio" />
+                <span>All Entitled</span>
+              </label>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- RIGHT COLUMN: Date Window & Transaction Filters -->
+      <!-- COLUMN 2: Account Selection & Routing -->
+      <div class="bg-white border border-[#CBD5E1] rounded shadow-none flex flex-col">
+        <div class="h-9 px-3 bg-[#F1F5F9] border-b border-[#CBD5E1] flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <span class="material-symbols-outlined text-[16px] text-[#002D62]">account_balance</span>
+            <span class="text-[11px] font-bold uppercase text-[#002D62] tracking-wider">2. Account Scope &amp; Routing</span>
+          </div>
+          <span class="text-[10px] text-[#64748B] font-mono">SEC-ROUTE-02</span>
+        </div>
+        <div class="p-4 space-y-4">
+          <!-- Target Account Numbers Pills -->
+          <div>
+            <div class="flex items-center justify-between mb-1">
+              <span class="text-[11px] font-bold text-[#002D62] uppercase">
+                Target Accounts <span class="text-[#E11D48]">*</span> <span class="text-[#0070BA] font-bold">({{ selectedAccounts().length }})</span>
+              </span>
+              <span class="text-[10px] text-[#64748B]">Max: 100</span>
+            </div>
+            <div class="p-2 border border-[#CBD5E1] rounded bg-[#FAFAFA] min-h-[76px] flex flex-wrap gap-1.5 items-start">
+              <div *ngFor="let acc of selectedAccounts()" class="inline-flex items-center bg-white border border-[#CBD5E1] rounded px-2 py-1 shadow-xs">
+                <span class="material-symbols-outlined text-[14px] text-[#0070BA] mr-1">account_balance</span>
+                <span class="font-mono text-[11px] font-bold text-[#002D62]">{{ acc }}</span>
+                <button (click)="removeAccount(acc)" class="ml-1.5 text-[#94A3B8] hover:text-[#E11D48] border-0 bg-transparent cursor-pointer p-0.5 rounded" title="Remove account">
+                  <span class="material-symbols-outlined text-[14px]">close</span>
+                </button>
+              </div>
+
+              <!-- Add Account dropdown trigger -->
+              <select (change)="addAccount($any($event.target).value)" class="h-7 px-2 bg-white border border-dashed border-[#0070BA] text-[#0070BA] rounded text-[11px] font-semibold cursor-pointer">
+                <option value="" disabled selected>+ Add Account</option>
+                <option *ngFor="let a of availableAccounts()" [value]="a.accountNumber">
+                  {{ a.accountNumber }} ({{ a.currency }})
+                </option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Branch Routing Code with Binocular Button -->
+          <div class="pt-2 border-t border-[#CBD5E1]/40">
+            <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
+              Branch Routing Code <span class="text-[#E11D48] font-bold">*</span>
+            </label>
+            <div class="flex items-center rounded overflow-hidden">
+              <input class="w-full h-8 px-2.5 bg-white border border-r-0 border-[#CBD5E1] text-[#002D62] text-[12px] focus:outline-none"
+                     formControlName="branchCode" type="text" />
+              <button (click)="openLookup()" class="btn-binocular-lookup" title="Lookup Routing Branch">
+                <span class="material-symbols-outlined text-[16px]">manage_search</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Settlement Currency -->
+          <div>
+            <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
+              Settlement Currency <span class="text-[#E11D48] font-bold">*</span>
+            </label>
+            <div class="relative">
+              <select class="w-full h-8 pl-2.5 pr-8 bg-white border border-[#CBD5E1] text-[#002D62] text-[12px] rounded focus:outline-none"
+                      formControlName="currency">
+                <option value="USD">USD - US Dollar ($)</option>
+                <option value="GBP">GBP - British Pound (£)</option>
+                <option value="EUR">EUR - Euro (€)</option>
+                <option value="JPY">JPY - Japanese Yen (¥)</option>
+                <option value="CHF">CHF - Swiss Franc (Fr)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- COLUMN 3: Date Window & Transaction Filters -->
       <div class="bg-white border border-[#CBD5E1] rounded shadow-none flex flex-col">
         <div class="h-9 px-3 bg-[#F1F5F9] border-b border-[#CBD5E1] flex items-center justify-between">
           <div class="flex items-center space-x-2">
             <span class="material-symbols-outlined text-[16px] text-[#002D62]">calendar_month</span>
-            <span class="text-[11px] font-bold uppercase text-[#002D62] tracking-wider">Date Window &amp; Transaction Filters</span>
+            <span class="text-[11px] font-bold uppercase text-[#002D62] tracking-wider">3. Date Window &amp; Filters</span>
           </div>
-          <span class="text-[10px] text-[#64748B] font-mono">SEC-FILTER-02</span>
+          <span class="text-[10px] text-[#64748B] font-mono">SEC-FILTER-03</span>
         </div>
         <div class="p-4 space-y-4">
-          <!-- 1. Posting Window Selector -->
+          <!-- Posting Window Selector -->
           <div>
             <div class="flex items-center justify-between mb-1.5">
               <label class="text-[11px] font-bold text-[#002D62] uppercase">
-                Posting Window Selector <span class="text-[#E11D48] font-bold">*</span>
+                Posting Window <span class="text-[#E11D48] font-bold">*</span>
               </label>
-              <span class="text-[10px] text-[#64748B] font-mono">TIMEZONE: US/EASTERN (EST)</span>
+              <span class="text-[10px] text-[#64748B] font-mono">US/EASTERN</span>
             </div>
-            <!-- Preset Radio Grid / Pills -->
-            <div class="grid grid-cols-5 gap-1.5 mb-3">
-              <button (click)="setDatePreset('Today')" [class.btn-citi-primary]="activeDatePreset() === 'Today'"
-                      class="py-1.5 px-2 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[11px] rounded font-medium cursor-pointer">
+            <!-- Preset Pills -->
+            <div class="grid grid-cols-5 gap-1 mb-2">
+              <button (click)="setDatePreset('Today')" [class.btn-style-b]="activeDatePreset() === 'Today'"
+                      class="py-1 px-1 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[10px] rounded font-medium cursor-pointer">
                 Today
               </button>
-              <button (click)="setDatePreset('Yesterday')" [class.btn-citi-primary]="activeDatePreset() === 'Yesterday'"
-                      class="py-1.5 px-2 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[11px] rounded font-medium cursor-pointer">
-                Yesterday
+              <button (click)="setDatePreset('Yesterday')" [class.btn-style-b]="activeDatePreset() === 'Yesterday'"
+                      class="py-1 px-1 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[10px] rounded font-medium cursor-pointer">
+                Yday
               </button>
-              <button (click)="setDatePreset('Last 7 Days')" [class.btn-citi-primary]="activeDatePreset() === 'Last 7 Days'"
-                      class="py-1.5 px-2 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[11px] rounded font-medium cursor-pointer">
-                Last 7 Days
+              <button (click)="setDatePreset('Last 7 Days')" [class.btn-style-b]="activeDatePreset() === 'Last 7 Days'"
+                      class="py-1 px-1 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[10px] rounded font-medium cursor-pointer">
+                7 Days
               </button>
-              <button (click)="setDatePreset('Last 30 Days')" [class.btn-citi-primary]="activeDatePreset() === 'Last 30 Days'"
-                      class="py-1.5 px-2 text-center border-2 border-[#002D62] bg-[#002D62] text-white text-[11px] rounded font-bold cursor-pointer">
-                Last 30 Days
+              <button (click)="setDatePreset('Last 30 Days')" [class.btn-style-b]="activeDatePreset() === 'Last 30 Days'"
+                      class="py-1 px-1 text-center border-2 border-[#002D62] bg-[#002D62] text-white text-[10px] rounded font-bold cursor-pointer">
+                30 Days
               </button>
-              <button (click)="setDatePreset('Current MTD')" [class.btn-citi-primary]="activeDatePreset() === 'Current MTD'"
-                      class="py-1.5 px-1.5 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[11px] rounded font-medium truncate cursor-pointer">
-                Current MTD
+              <button (click)="setDatePreset('Current MTD')" [class.btn-style-b]="activeDatePreset() === 'Current MTD'"
+                      class="py-1 px-1 text-center border border-[#CBD5E1] bg-white text-[#002D62] text-[10px] rounded font-medium truncate cursor-pointer">
+                MTD
               </button>
             </div>
 
             <!-- Custom Date Inputs -->
-            <div class="grid grid-cols-2 gap-3 p-2.5 bg-[#F1F5F9] rounded border border-[#CBD5E1]">
+            <div class="grid grid-cols-2 gap-2 p-2 bg-[#F1F5F9] rounded border border-[#CBD5E1]">
               <div>
-                <span class="text-[11px] font-semibold text-[#64748B] block mb-1">From Date (Timestamp)</span>
-                <input class="w-full h-8 px-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[11px] rounded focus:outline-none"
+                <span class="text-[10px] font-semibold text-[#64748B] block mb-0.5">From Date</span>
+                <input class="w-full h-7 px-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[11px] rounded focus:outline-none"
                        formControlName="dateFrom" type="text" />
               </div>
               <div>
-                <span class="text-[11px] font-semibold text-[#64748B] block mb-1">To Date (Timestamp)</span>
-                <input class="w-full h-8 px-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[11px] rounded focus:outline-none"
+                <span class="text-[10px] font-semibold text-[#64748B] block mb-0.5">To Date</span>
+                <input class="w-full h-7 px-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[11px] rounded focus:outline-none"
                        formControlName="dateTo" type="text" />
               </div>
             </div>
           </div>
 
-          <!-- 2. Transaction Type & Value Range [fx] -->
+          <!-- Transaction Type Classification -->
           <div class="pt-2 border-t border-[#CBD5E1]/40">
-            <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1.5">
-              Transaction Type Classification <span class="text-[#E11D48] font-bold">*</span>
+            <label class="text-[11px] font-bold text-[#002D62] uppercase block mb-1">
+              Transaction Classification <span class="text-[#E11D48] font-bold">*</span>
             </label>
-            <div class="flex items-center space-x-6 mb-3">
-              <label class="flex items-center space-x-1.5 cursor-pointer">
+            <div class="flex items-center space-x-3 mb-2 text-[11px]">
+              <label class="flex items-center space-x-1 cursor-pointer">
                 <input formControlName="transactionType" value="ALL" class="text-[#0070BA]" type="radio" />
-                <span class="font-medium text-[#002D62] text-[12px]">ALL Transactions</span>
+                <span class="font-medium text-[#002D62]">ALL</span>
               </label>
-              <label class="flex items-center space-x-1.5 cursor-pointer text-[#475569]">
+              <label class="flex items-center space-x-1 cursor-pointer text-[#475569]">
                 <input formControlName="transactionType" value="CREDIT" class="text-[#0070BA]" type="radio" />
-                <span class="text-[12px]">Credits Only (+)</span>
+                <span>Credits (+)</span>
               </label>
-              <label class="flex items-center space-x-1.5 cursor-pointer text-[#475569]">
+              <label class="flex items-center space-x-1 cursor-pointer text-[#475569]">
                 <input formControlName="transactionType" value="DEBIT" class="text-[#0070BA]" type="radio" />
-                <span class="text-[12px]">Debits Only (-)</span>
+                <span>Debits (-)</span>
               </label>
             </div>
 
@@ -313,23 +324,23 @@
             <div>
               <div class="flex items-center justify-between mb-1">
                 <label class="text-[11px] font-bold text-[#002D62] uppercase">Value Threshold Filter</label>
-                <span class="text-[10px] text-[#64748B] font-mono">CURRENCY: USD</span>
+                <span class="text-[10px] text-[#64748B] font-mono">USD</span>
               </div>
-              <div class="flex items-center space-x-2">
+              <div class="flex items-center space-x-1.5">
                 <div class="flex-1 relative">
-                  <span class="absolute left-2.5 top-1.5 text-[#64748B] text-[12px] font-mono">$</span>
-                  <input class="w-full h-8 pl-6 pr-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[12px] rounded text-right focus:outline-none"
+                  <span class="absolute left-2 top-1.5 text-[#64748B] text-[11px] font-mono">$</span>
+                  <input class="w-full h-8 pl-5 pr-1 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[11px] rounded text-right focus:outline-none"
                          formControlName="minAmount" type="number" />
                 </div>
-                <span class="text-[#64748B] text-[12px]">to</span>
+                <span class="text-[#64748B] text-[11px]">to</span>
                 <div class="flex-1 relative">
-                  <span class="absolute left-2.5 top-1.5 text-[#64748B] text-[12px] font-mono">$</span>
-                  <input class="w-full h-8 pl-6 pr-2 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[12px] rounded text-right font-semibold focus:outline-none"
+                  <span class="absolute left-2 top-1.5 text-[#64748B] text-[11px] font-mono">$</span>
+                  <input class="w-full h-8 pl-5 pr-1 bg-white border border-[#CBD5E1] text-[#002D62] font-mono text-[11px] rounded text-right font-semibold focus:outline-none"
                          formControlName="maxAmount" type="number" />
                 </div>
                 <!-- Formula [fx] button -->
                 <div class="relative">
-                  <button (click)="toggleFxMenu()" class="h-8 px-3 bg-[#E2E8F0] hover:bg-[#CBD5E1] text-[#002D62] border border-[#CBD5E1] rounded flex items-center justify-center font-mono font-bold text-[12px] cursor-pointer" title="Formula &amp; Operator Logic">
+                  <button (click)="toggleFxMenu()" class="btn-fx-operator" title="Formula &amp; Operator Logic">
                     <span>[fx]</span>
                   </button>
                   <div *ngIf="isFxMenuOpen()" class="absolute right-0 top-9 z-50 bg-white border border-[#CBD5E1] shadow-lg rounded p-1 w-44 text-[12px]">
@@ -340,7 +351,6 @@
                   </div>
                 </div>
               </div>
-              <p class="text-[11px] text-[#64748B] mt-1 mb-0">Set zero minimum to include micro-settlements and clearing adjustments.</p>
             </div>
           </div>
         </div>
@@ -354,7 +364,7 @@
           <span class="material-symbols-outlined text-[16px] text-[#002D62]">output</span>
           <span class="text-[11px] font-bold uppercase text-[#002D62] tracking-wider">Output Format &amp; Ledger Specification</span>
         </div>
-        <span class="text-[10px] text-[#64748B] font-mono">SEC-FORMAT-03</span>
+        <span class="text-[10px] text-[#64748B] font-mono">SEC-FORMAT-04</span>
       </div>
       <div class="p-4 space-y-4">
         <!-- 4 Deliverable Format Cards -->
@@ -495,7 +505,7 @@
 </div>
 
 <!-- 6. BOTTOM DOCKED / STICKY ACTION BAR FOOTER -->
-<footer class="fixed bottom-0 left-0 right-0 h-12 bg-white border-t border-[#CBD5E1] px-4 flex items-center justify-between z-40 shadow-lg">
+<footer class="fixed bottom-0 left-0 right-0 h-12 bg-white border-t border-[#CBD5E1] px-4 flex items-center justify-between z-40 shadow-lg select-none">
   <div class="flex items-center space-x-4">
     <button (click)="resetToDefaults()" class="flex items-center space-x-1.5 text-[#0070BA] hover:text-[#002D62] text-[11px] font-semibold border-0 bg-transparent cursor-pointer">
       <span class="material-symbols-outlined text-[16px]">restart_alt</span>
@@ -509,14 +519,14 @@
   </div>
 
   <div class="flex items-center space-x-2.5">
-    <button routerLink="/reports" class="btn-citi-secondary h-8 text-[12px]">
+    <button routerLink="/reports" class="btn-citi-secondary">
       Cancel
     </button>
-    <button (click)="saveCriteriaAndPreview()" [disabled]="isSubmitting()" class="btn-citi-glossy h-8 text-[12px]">
+    <button (click)="saveCriteriaAndPreview()" [disabled]="isSubmitting()" class="btn-style-a">
       <span *ngIf="!isSubmitting()">Save Criteria &amp; Preview</span>
       <span *ngIf="isSubmitting()">Generating...</span>
     </button>
-    <button (click)="proceedToSchedule()" class="btn-citi-primary h-8 text-[12px] flex items-center space-x-1">
+    <button (click)="proceedToSchedule()" class="btn-style-b flex items-center space-x-1">
       <span>Proceed to Schedule Builder</span>
       <span class="material-symbols-outlined text-[16px]">chevron_right</span>
     </button>

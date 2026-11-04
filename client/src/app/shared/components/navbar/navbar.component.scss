@@ -1,8 +1,12 @@
 @import 'styles/design-tokens';
 
 .top-navbar {
+  height: 52px;
+  min-height: 52px;
+  max-height: 52px;
   background-color: $citi-blue;
   color: #FFFFFF;
+  box-sizing: border-box;
 }
 
 .citi-red-arc {
@@ -13,9 +17,14 @@
 .nav-item {
   position: relative;
   text-decoration: none;
+  cursor: pointer;
 
   &.active-tab {
     color: #FFFFFF;
     border-bottom: 2px solid $citi-cyan-accent;
   }
+}
+
+.text-decoration-none {
+  text-decoration: none;
 }

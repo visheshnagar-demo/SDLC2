@@ -1,5 +1,5 @@
 <!-- SYSTEM STATUS / ENV RIBBON SUB-BAR -->
-<aside class="bg-[#F1F5F9] border-b border-[#CBD5E1] h-[34px] px-4 flex items-center justify-between text-[11px] font-mono text-[#475569] select-none">
+<aside class="bg-[#F1F5F9] border-b border-[#CBD5E1] h-[34px] px-4 flex items-center justify-between text-[11px] font-mono text-[#475569] select-none shrink-0">
   <div class="flex items-center gap-3">
     <div class="flex items-center gap-1.5 font-medium">
       <span class="inline-block w-2 h-2 rounded-full bg-[#059669]"></span>
@@ -41,7 +41,7 @@
         </div>
       </div>
       <div class="px-1">
-        <button routerLink="/reports" class="w-full bg-[#002D62] hover:bg-[#00193C] text-white text-[12px] py-1.5 px-3 rounded flex items-center justify-center space-x-2 transition-all shadow-sm cursor-pointer border-0">
+        <button routerLink="/reports" class="btn-style-b w-full flex items-center justify-center space-x-2 text-[12px]">
           <span class="material-symbols-outlined text-[16px]">arrow_back</span>
           <span>View All Reports</span>
         </button>
@@ -152,10 +152,10 @@
         <div>
           <label class="block text-[11px] font-semibold text-slate-600 mb-1.5 uppercase">Execution Cadence</label>
           <div class="inline-flex rounded border border-[#CBD5E1] bg-[#F1F5F9] p-0.5">
-            <button (click)="setFrequency('DAILY')" [class.bg-[#002D62]]="frequency() === 'DAILY'" [class.text-white]="frequency() === 'DAILY'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">DAILY</button>
-            <button (click)="setFrequency('WEEKLY')" [class.bg-[#002D62]]="frequency() === 'WEEKLY'" [class.text-white]="frequency() === 'WEEKLY'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">WEEKLY</button>
-            <button (click)="setFrequency('MONTHLY')" [class.bg-[#002D62]]="frequency() === 'MONTHLY'" [class.text-white]="frequency() === 'MONTHLY'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">MONTHLY</button>
-            <button (click)="setFrequency('CUSTOM')" [class.bg-[#002D62]]="frequency() === 'CUSTOM'" [class.text-white]="frequency() === 'CUSTOM'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">CUSTOM CRON</button>
+            <button (click)="setFrequency('DAILY')" [class.btn-style-b]="frequency() === 'DAILY'" [class.text-white]="frequency() === 'DAILY'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">DAILY</button>
+            <button (click)="setFrequency('WEEKLY')" [class.btn-style-b]="frequency() === 'WEEKLY'" [class.text-white]="frequency() === 'WEEKLY'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">WEEKLY</button>
+            <button (click)="setFrequency('MONTHLY')" [class.btn-style-b]="frequency() === 'MONTHLY'" [class.text-white]="frequency() === 'MONTHLY'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">MONTHLY</button>
+            <button (click)="setFrequency('CUSTOM')" [class.btn-style-b]="frequency() === 'CUSTOM'" [class.text-white]="frequency() === 'CUSTOM'" class="px-5 py-1.5 rounded text-[12px] font-semibold cursor-pointer border-0">CUSTOM CRON</button>
           </div>
         </div>
 
@@ -299,7 +299,7 @@
     </section>
 
     <!-- SECTION 4: DUAL-CONTROL MAKER-CHECKER NOTICE BANNER -->
-    <section class="bg-[#FEF3C7] border border-[#F59E0B] rounded p-3">
+    <section class="bg-[#FEF3C7] border border-[#F59E0B] rounded p-3 select-none">
       <div class="flex items-start gap-3">
         <div class="p-1 rounded bg-[#F59E0B]/20 text-[#B45309] shrink-0 mt-0.5">
           <span class="material-symbols-outlined text-[20px]">verified_user</span>
@@ -318,10 +318,10 @@
 </div>
 
 <!-- STICKY ACTION BAR FOOTER -->
-<footer class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#CBD5E1] shadow-lg">
+<footer class="fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-[#CBD5E1] shadow-lg select-none">
   <div class="px-4 py-2 flex items-center justify-between">
     <div class="flex items-center gap-4">
-      <a routerLink="/criteria" class="btn-citi-secondary h-8 text-[12px] flex items-center gap-1.5 text-decoration-none">
+      <a routerLink="/criteria" class="btn-citi-secondary flex items-center gap-1.5 text-decoration-none">
         <span class="material-symbols-outlined text-[16px]">arrow_back</span>
         <span>Back to Criteria Form</span>
       </a>
@@ -331,8 +331,8 @@
       </div>
     </div>
     <div class="flex items-center gap-2">
-      <button routerLink="/reports" class="btn-citi-secondary h-8 text-[12px]">Cancel</button>
-      <button (click)="submitSchedule()" [disabled]="isSubmitting()" class="btn-citi-glossy h-8 text-[12px] flex items-center gap-1.5 shadow-sm">
+      <button routerLink="/reports" class="btn-citi-secondary">Cancel</button>
+      <button (click)="submitSchedule()" [disabled]="isSubmitting()" class="btn-style-a flex items-center gap-1.5 shadow-sm">
         <span class="material-symbols-outlined text-[16px]">verified</span>
         <span>{{ isSubmitting() ? 'Submitting...' : 'Submit Schedule for Checker Authorization' }}</span>
       </button>

@@ -1,5 +1,5 @@
 <!-- SECONDARY CONTEXT / ENVIRONMENT BANNER STRIP -->
-<div class="bg-[#F1F5F9] border-b border-[#CBD5E1] px-4 h-[34px] flex items-center justify-between text-[11px] font-mono text-[#475569] select-none">
+<div class="bg-[#F1F5F9] border-b border-[#CBD5E1] px-4 h-[34px] flex items-center justify-between text-[11px] font-mono text-[#475569] select-none shrink-0">
   <div class="flex items-center gap-4">
     <div class="flex items-center gap-1.5">
       <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -36,15 +36,15 @@
       </div>
       <!-- Action CTA Button -->
       <div class="px-1">
-        <button (click)="navigateToCriteria()" class="w-full bg-[#00193C] hover:bg-[#002D62] text-white py-1.5 px-3 rounded flex items-center justify-center gap-2 text-[12px] font-semibold shadow-sm transition-all cursor-pointer border-0">
+        <button (click)="navigateToCriteria()" class="btn-style-b w-full flex items-center justify-center gap-2 text-[12px]">
           <span class="material-symbols-outlined text-[16px]">add</span>
-          New Statement Request
+          <span>New Statement Request</span>
         </button>
       </div>
       <!-- Rail Navigation List -->
       <nav class="space-y-1">
         <a routerLink="/reports" class="bg-[#EAEDFF] text-[#00193C] font-semibold text-[13px] border-l-4 border-[#0070BA] pl-3 py-1.5 flex items-center gap-2 rounded-r-lg text-decoration-none">
-          <span class="material-symbols-outlined text-[18px]">account_balance</span>
+          <span class="material-symbols-outlined text-[#0070BA] text-[18px]">account_balance</span>
           <span>Cash Statements</span>
         </a>
         <a routerLink="/criteria" class="text-[#475569] hover:text-[#131B2E] hover:bg-[#F1F5F9] text-[12px] pl-3 py-1.5 flex items-center gap-2 rounded-lg transition-colors text-decoration-none">
@@ -95,11 +95,11 @@
 
       <!-- Right Action Button Group -->
       <div class="flex items-center gap-2">
-        <button (click)="openLookup()" class="btn-citi-secondary h-8 text-[12px] flex items-center gap-1.5 shadow-sm">
-          <span class="material-symbols-outlined text-[16px]">manage_search</span>
+        <button (click)="openLookup()" class="btn-citi-secondary flex items-center gap-1.5">
+          <span class="material-symbols-outlined text-[16px] text-[#0070BA]">manage_search</span>
           <span>Template Lookup</span>
         </button>
-        <button (click)="navigateToCriteria()" class="btn-citi-glossy h-8 text-[12px] flex items-center gap-1.5 shadow-sm">
+        <button (click)="navigateToCriteria()" class="btn-style-a flex items-center gap-1.5">
           <span class="material-symbols-outlined text-[16px]">add</span>
           <span>Create New Report</span>
         </button>
@@ -108,7 +108,7 @@
 
     <!-- MULTI-ATTRIBUTE FILTER TOOLBAR -->
     <section class="bg-white border border-[#CBD5E1] rounded-lg p-3 space-y-3">
-      <div class="grid grid-cols-6 gap-3 items-end">
+      <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3 items-end">
         <!-- Filter 1: Account Selector -->
         <div class="space-y-1">
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Account Scope</label>
@@ -139,9 +139,9 @@
         <div class="space-y-1">
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Branch Routing</label>
           <div class="flex items-center">
-            <input class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded-l px-2 focus:border-[#0070BA] focus:outline-none"
+            <input class="w-full h-8 text-[12px] bg-white border border-r-0 border-[#CBD5E1] rounded-l px-2 focus:border-[#0070BA] focus:outline-none"
                    placeholder="NYC-001 / LON-044" [(ngModel)]="branchFilter" type="text" />
-            <button (click)="openLookup()" class="h-8 px-2.5 bg-[#F1F5F9] text-[#002D62] border border-l-0 border-[#CBD5E1] rounded-r hover:bg-[#E2E8F0] cursor-pointer" title="Branch Binocular Lookup">
+            <button (click)="openLookup()" class="btn-binocular-lookup" title="Branch Binocular Lookup">
               <span class="material-symbols-outlined text-[16px]">manage_search</span>
             </button>
           </div>
@@ -180,7 +180,7 @@
 
         <!-- Filter Buttons -->
         <div class="flex items-center gap-2">
-          <button (click)="applyFilters()" class="btn-citi-primary flex-1 h-8 text-[12px] rounded flex items-center justify-center gap-1">
+          <button (click)="applyFilters()" class="btn-style-b flex-1 flex items-center justify-center gap-1">
             <span class="material-symbols-outlined text-[15px]">filter_alt</span>
             <span>Apply Filters</span>
           </button>
@@ -211,7 +211,7 @@
       </div>
     </section>
 
-    <!-- INSTITUTIONAL DATA GRID TABLE (8 Columns) -->
+    <!-- INSTITUTIONAL DATA GRID TABLE (Exact 30px HTML <th> headers, sort indicators 1▲, 2▲, zebra striping #FAFBFC) -->
     <section class="bg-white border border-[#CBD5E1] rounded-lg overflow-hidden flex flex-col shadow-sm">
       <!-- Table Control Head -->
       <div class="px-3 py-2 bg-[#F1F5F9] border-b border-[#CBD5E1] flex items-center justify-between">
@@ -231,26 +231,42 @@
 
       <!-- Table Container -->
       <div class="overflow-x-auto custom-scroll">
-        <table class="w-full text-left border-collapse">
+        <table class="citi-data-table w-full text-left border-collapse">
           <thead>
-            <tr class="bg-[#EDF2F7] border-b-2 border-[#CBD5E1] text-[11px] font-bold uppercase text-[#475569] h-8 select-none">
-              <th class="w-10 px-2 text-center">
+            <tr class="bg-[#EDF2F7] border-b-2 border-[#CBD5E1] text-[11px] font-bold uppercase text-[#475569] h-[30px] select-none" style="height: 30px;">
+              <th class="w-10 px-2 text-center" style="height: 30px;">
                 <input (change)="toggleSelectAll($event)" class="rounded border-[#CBD5E1] text-[#0070BA]" type="checkbox" />
               </th>
-              <th class="px-3 font-bold tracking-wider">Report Name</th>
-              <th class="px-3 font-bold tracking-wider">Account Number</th>
-              <th class="px-3 font-bold tracking-wider">Branch Code</th>
-              <th class="px-3 font-bold tracking-wider">Frequency / Type</th>
-              <th class="px-3 font-bold tracking-wider text-center">Status</th>
-              <th class="px-3 font-bold tracking-wider">Created Date (EST)</th>
-              <th class="px-3 font-bold tracking-wider">Created By</th>
-              <th class="px-3 font-bold tracking-wider text-right pr-4">Actions</th>
+              <th class="px-3 font-bold tracking-wider" style="height: 30px;">
+                Report Name <span class="sort-indicator text-[#0070BA] font-bold">1▲</span>
+              </th>
+              <th class="px-3 font-bold tracking-wider" style="height: 30px;">
+                Account Number <span class="sort-indicator text-[#0070BA] font-bold">2▲</span>
+              </th>
+              <th class="px-3 font-bold tracking-wider" style="height: 30px;">
+                Branch Code <span class="sort-indicator text-[#94A3B8]">▲</span>
+              </th>
+              <th class="px-3 font-bold tracking-wider" style="height: 30px;">
+                Frequency / Type <span class="sort-indicator text-[#94A3B8]">▲</span>
+              </th>
+              <th class="px-3 font-bold tracking-wider text-center" style="height: 30px;">
+                Status <span class="sort-indicator text-[#94A3B8]">▲</span>
+              </th>
+              <th class="px-3 font-bold tracking-wider" style="height: 30px;">
+                Created Date (EST) <span class="sort-indicator text-[#0070BA] font-bold">▼</span>
+              </th>
+              <th class="px-3 font-bold tracking-wider" style="height: 30px;">
+                Created By <span class="sort-indicator text-[#94A3B8]">▲</span>
+              </th>
+              <th class="px-3 font-bold tracking-wider text-right pr-4" style="height: 30px;">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-[#E2E8F0] text-[12px]">
-            <tr *ngFor="let report of filteredReports()"
-                [class.bg-[#FFFDF5]]="report.status === 'PENDING_APPROVAL'"
-                [class.bg-[#FFF5F5]]="report.status === 'REJECTED'"
+            <tr *ngFor="let report of filteredReports(); let even = even"
+                [class.row-pending]="report.status === 'PENDING_APPROVAL'"
+                [class.row-rejected]="report.status === 'REJECTED'"
+                [class.bg-[#FAFBFC]]="even && report.status !== 'PENDING_APPROVAL' && report.status !== 'REJECTED'"
+                [class.bg-white]="!even && report.status !== 'PENDING_APPROVAL' && report.status !== 'REJECTED'"
                 class="hover:bg-[#F1F5F9] transition-colors h-9">
               <td class="px-2 text-center">
                 <input type="checkbox" [checked]="isReportSelected(report.id)" (change)="toggleReportSelection(report.id)"
@@ -376,8 +392,8 @@
         </div>
         <div class="grid grid-cols-4 gap-2 py-2 bg-[#F1F5F9] px-2 rounded">
           <div>Opening: $14,250,000.00</div>
-          <div>Total Debits: 1,840,200.00-</div>
-          <div>Total Credits: $4,920,500.00</div>
+          <div>Total Debits: <span class="financial-debit font-bold">1,840,200.00-</span></div>
+          <div>Total Credits: <span class="financial-credit font-bold">$4,920,500.00</span></div>
           <div>Closing: $17,330,300.00</div>
         </div>
         <div class="text-center text-[#64748B] pt-2">
@@ -386,8 +402,8 @@
       </div>
     </div>
     <div class="px-4 py-2.5 bg-[#F1F5F9] border-t border-[#CBD5E1] flex justify-end gap-2">
-      <button (click)="closePreview()" class="btn-citi-secondary h-8 text-[12px]">Close Preview</button>
-      <button (click)="downloadReport(previewReport()!, 'PDF')" class="btn-citi-primary h-8 text-[12px]">Download Official PDF</button>
+      <button (click)="closePreview()" class="btn-citi-secondary">Close Preview</button>
+      <button (click)="downloadReport(previewReport()!, 'PDF')" class="btn-style-a">Download Official PDF</button>
     </div>
   </div>
 </div>

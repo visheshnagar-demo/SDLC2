@@ -1,5 +1,5 @@
 <!-- SUB-BAR: LIVE INSTITUTIONAL STATUS -->
-<div class="h-9 bg-[#F1F5F9] border-b border-[#CBD5E1] px-4 flex items-center justify-between text-[11px] font-mono text-slate-700 select-none">
+<div class="h-9 bg-[#F1F5F9] border-b border-[#CBD5E1] px-4 flex items-center justify-between text-[11px] font-mono text-slate-700 select-none shrink-0">
   <div class="flex items-center gap-4 overflow-x-auto whitespace-nowrap">
     <div class="flex items-center gap-1.5">
       <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
@@ -42,7 +42,7 @@
         </div>
       </div>
       <div class="px-1">
-        <button routerLink="/reports" class="w-full h-8 bg-[#00193C] hover:bg-[#002D62] text-white rounded text-[12px] flex items-center justify-center gap-1.5 border-0 cursor-pointer">
+        <button routerLink="/reports" class="btn-style-b w-full flex items-center justify-center gap-1.5 text-[12px]">
           <span class="material-symbols-outlined text-[16px]">arrow_back</span>
           <span>View All Reports</span>
         </button>
@@ -284,7 +284,7 @@
                 <span *ngIf="testStatus()" class="text-[11px] font-mono text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-1 rounded">
                   {{ testStatus() }}
                 </span>
-                <button (click)="testSftpConnection()" class="btn-citi-secondary h-8 text-[12px] flex items-center gap-1 shadow-xs">
+                <button (click)="testSftpConnection()" class="btn-citi-secondary flex items-center gap-1 shadow-xs">
                   <span class="material-symbols-outlined text-[15px] text-[#0070BA]">cable</span>
                   <span>Test SFTP Connection</span>
                 </button>
@@ -361,7 +361,7 @@
               <span>Signature: ECDSA-SECP256R1 • Token Key: YubiKey-HSM-P882</span>
             </div>
             <div class="flex items-center gap-2">
-              <button (click)="requestRevision()" class="btn-citi-secondary h-8 text-[12px]">Request Revision</button>
+              <button (click)="requestRevision()" class="btn-citi-secondary">Request Revision</button>
               <button (click)="rejectDelivery()" [disabled]="isAuthorizing()" class="h-8 px-3 bg-white hover:bg-rose-50 text-[#E11D48] border border-[#FECDD3] rounded text-[12px] font-semibold cursor-pointer">
                 Reject with Comments
               </button>
