@@ -1,107 +1,91 @@
 package com.citidirect.cashstatement.controller;
 
-import com.citidirect.cashstatement.config.JwtUtils;
 import com.citidirect.cashstatement.dto.ReportRequestDTO;
 import com.citidirect.cashstatement.dto.ReportScheduleDTO;
+import com.citidirect.cashstatement.entity.GeneratedReport;
 import com.citidirect.cashstatement.entity.ReportSchedule;
-import com.citidirect.cashstatement.entity.User;
-import com.citidirect.cashstatement.repository.UserRepository;
 import com.citidirect.cashstatement.service.ReportService;
-import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.Map;
+import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/reports")
+@CrossOrigin(origins = "*")
 public class ReportController {
 
     private final ReportService reportService;
-    private final UserRepository userRepository;
-    private final JwtUtils jwtUtils;
 
-    public ReportController(ReportService reportService,
-                            UserRepository userRepository,
-                            JwtUtils jwtUtils) {
+    public ReportController(ReportService reportService) {
         this.reportService = reportService;
-        this.userRepository = userRepository;
-        this.jwtUtils = jwtUtils;
-    }
-
-    private String resolveUserId(String authHeader) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            if (jwtUtils.validateToken(token)) {
-                return jwtUtils.getUserIdFromToken(token);
-            }
-        }
-        User defaultUser = userRepository.findByEmail("test@example.com").orElse(null);
-        return defaultUser != null ? defaultUser.getId() : "default-maker-id";
     }
 
     @GetMapping
-    public ResponseEntity<Map<String, Object>> getReports(
-            @RequestParam(value = "page", defaultValue = "0") int page,
-            @RequestParam(value = "size", defaultValue = "20") int size,
-            @RequestParam(value = "status", required = false) String status) {
-        Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(reportService.getReports(status, pageable));
+    public ResponseEntity<List<GeneratedReport>> getReports(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String branch) {
+        List<GeneratedReport> reports = reportService.getReports(status, branch);
+        return ResponseEntity.ok(reports);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<GeneratedReport> getReportById(@PathVariable String id) {
+        GeneratedReport report = reportService.getReportById(id);
+        return ResponseEntity.ok(report);
     }
 
     @PostMapping("/generate")
-    public ResponseEntity<Map<String, Object>> generateReport(
-            @RequestBody ReportRequestDTO requestDTO,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-        String userId = resolveUserId(authHeader);
-        String clientIp = request.getRemoteAddr();
-        Map<String, Object> result = reportService.generateReport(requestDTO, userId, clientIp);
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(result);
+    public ResponseEntity<GeneratedReport> generateReport(
+            @RequestBody ReportRequestDTO request,
+            Authentication authentication) {
+        String username = authentication != null ? authentication.getName() : "usr_maker_01";
+        GeneratedReport report = reportService.generateReport(request, username);
+        return new ResponseEntity<>(report, HttpStatus.CREATED);
     }
 
     @PostMapping("/schedule")
-    public ResponseEntity<ReportSchedule> scheduleReport(
-            @RequestBody ReportScheduleDTO scheduleDTO,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-        String userId = resolveUserId(authHeader);
-        String clientIp = request.getRemoteAddr();
-        ReportSchedule schedule = reportService.scheduleReport(scheduleDTO, userId, clientIp);
-        return ResponseEntity.status(HttpStatus.CREATED).body(schedule);
+    public ResponseEntity<ReportSchedule> createSchedule(
+            @RequestBody ReportScheduleDTO request,
+            Authentication authentication) {
+        String username = authentication != null ? authentication.getName() : "usr_maker_01";
+        ReportSchedule schedule = reportService.createSchedule(request, username);
+        return new ResponseEntity<>(schedule, HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}/export")
     public ResponseEntity<byte[]> exportReport(
-            @PathVariable("id") String id,
-            @RequestParam(value = "format", defaultValue = "PDF") String format,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-        String userId = resolveUserId(authHeader);
-        String clientIp = request.getRemoteAddr();
-        byte[] fileBytes = reportService.exportReport(id, format, userId, clientIp);
+            @PathVariable String id,
+            @RequestParam(defaultValue = "PDF") String format,
+            Authentication authentication) {
+        String username = authentication != null ? authentication.getName() : "anonymous";
+        byte[] data = reportService.exportReport(id, format, username);
 
         String filename;
-        String contentType;
-        if ("EXCEL".equalsIgnoreCase(format) || "XLSX".equalsIgnoreCase(format)) {
+        MediaType mediaType;
+        String formatUpper = format.toUpperCase();
+
+        if ("EXCEL".equals(formatUpper) || "XLSX".equals(formatUpper)) {
             filename = "Cash_Statement_" + id + ".xlsx";
-            contentType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
-        } else if ("CSV".equalsIgnoreCase(format)) {
+            mediaType = MediaType.parseMediaType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        } else if ("CSV".equals(formatUpper)) {
             filename = "Cash_Statement_" + id + ".csv";
-            contentType = "text/csv";
+            mediaType = MediaType.parseMediaType("text/csv");
         } else {
             filename = "Cash_Statement_" + id + ".pdf";
-            contentType = "application/pdf";
+            mediaType = MediaType.APPLICATION_PDF;
         }
 
-        return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + filename + "\"")
-                .contentType(MediaType.parseMediaType(contentType))
-                .body(fileBytes);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(mediaType);
+        headers.setContentDispositionFormData("attachment", filename);
+        headers.setContentLength(data.length);
+
+        return new ResponseEntity<>(data, headers, HttpStatus.OK);
     }
 }

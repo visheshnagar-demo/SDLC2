@@ -1,23 +1,47 @@
 package com.citidirect.cashstatement.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
 public class ReportRequestDTO {
 
+    @JsonAlias({"base_report_id", "baseReportId"})
     private String baseReportId;
+
     private String name;
+
+    @JsonAlias({"branch_code", "branchCode"})
     private String branchCode;
+
+    @JsonAlias({"customer_id", "customerId"})
     private String customerId;
+
+    @JsonAlias({"account_numbers", "accountNumbers"})
     private List<String> accountNumbers;
+
     private String currency = "USD";
+
+    @JsonAlias({"date_preset", "datePreset"})
     private String datePreset;
+
+    @JsonAlias({"date_from", "dateFrom"})
     private LocalDate dateFrom;
+
+    @JsonAlias({"date_to", "dateTo"})
     private LocalDate dateTo;
+
+    @JsonAlias({"transaction_type", "transactionType"})
     private String transactionType = "ALL";
+
+    @JsonAlias({"min_amount", "minAmount"})
     private BigDecimal minAmount;
+
+    @JsonAlias({"max_amount", "maxAmount"})
     private BigDecimal maxAmount;
+
+    @JsonAlias({"export_format", "exportFormat"})
     private String exportFormat = "PDF";
 
     public ReportRequestDTO() {}

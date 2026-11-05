@@ -1,52 +1,52 @@
 package com.citidirect.cashstatement.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "base_reports")
 public class BaseReport {
 
     @Id
-    @Column(length = 36)
+    @Column(name = "id", length = 64)
     private String id;
 
-    @Column(nullable = false, unique = true, length = 50)
+    @Column(name = "report_code", nullable = false, unique = true, length = 50)
     private String reportCode;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "format_standard", length = 100)
+    private String formatStandard;
+
+    @Column(name = "category", nullable = false, length = 100)
     private String category;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "default_frequency", length = 100)
+    private String defaultFrequency;
+
+    @Column(name = "description", columnDefinition = "TEXT")
     private String description;
 
-    @Column(columnDefinition = "TEXT")
-    private String defaultParameters;
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
 
-    @Column(nullable = false)
-    private boolean isActive = true;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(nullable = false)
-    private Instant createdAt;
+    public BaseReport() {}
 
-    public BaseReport() {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = Instant.now();
-    }
-
-    public BaseReport(String reportCode, String name, String category, String description) {
-        this();
+    public BaseReport(String id, String reportCode, String name, String formatStandard, String category, String defaultFrequency, String description) {
+        this.id = id;
         this.reportCode = reportCode;
         this.name = name;
+        this.formatStandard = formatStandard;
         this.category = category;
+        this.defaultFrequency = defaultFrequency;
         this.description = description;
+        this.isActive = true;
+        this.createdAt = LocalDateTime.now();
     }
 
     public String getId() { return id; }
@@ -58,18 +58,21 @@ public class BaseReport {
     public String getName() { return name; }
     public void setName(String name) { this.name = name; }
 
+    public String getFormatStandard() { return formatStandard; }
+    public void setFormatStandard(String formatStandard) { this.formatStandard = formatStandard; }
+
     public String getCategory() { return category; }
     public void setCategory(String category) { this.category = category; }
+
+    public String getDefaultFrequency() { return defaultFrequency; }
+    public void setDefaultFrequency(String defaultFrequency) { this.defaultFrequency = defaultFrequency; }
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public String getDefaultParameters() { return defaultParameters; }
-    public void setDefaultParameters(String defaultParameters) { this.defaultParameters = defaultParameters; }
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean active) { isActive = active; }
 
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
-
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

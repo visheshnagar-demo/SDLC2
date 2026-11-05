@@ -1,12 +1,16 @@
-FROM maven:3.9-openjdk-21 AS build
-WORKDIR /app
-COPY src/pom.xml ./pom.xml
-COPY src/src ./src
-RUN mvn clean package -DskipTests
+FROM python:3.12-slim
 
-FROM openjdk:21-slim
 WORKDIR /app
-COPY --from=build /app/target/*.jar app.jar
+
+# Install dependencies (paths are relative to repo root build context)
+COPY requirements.txt ./requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY src/ ./src/
+
+# Cloud Run requires the container to listen on port 8080
 ENV PORT=8080
 EXPOSE 8080
-CMD ["java", "-jar", "app.jar", "--server.port=8080"]
+
+CMD ["sh", "-c", "python -m uvicorn server.app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]

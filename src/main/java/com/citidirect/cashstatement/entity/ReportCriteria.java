@@ -1,69 +1,74 @@
 package com.citidirect.cashstatement.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import java.math.BigDecimal;
-import java.time.Instant;
 import java.time.LocalDate;
-import java.util.UUID;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "report_criteria")
 public class ReportCriteria {
 
     @Id
-    @Column(length = 36)
+    @Column(name = "id", length = 64)
     private String id;
 
-    @Column(nullable = false, length = 36)
+    @Column(name = "base_report_id", length = 64)
     private String baseReportId;
 
-    @Column(nullable = false)
+    @Column(name = "name", nullable = false, length = 255)
     private String name;
 
-    @Column(length = 50)
+    @Column(name = "branch_code", length = 50)
     private String branchCode;
 
-    @Column(length = 100)
+    @Column(name = "customer_id", length = 100)
     private String customerId;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
-    private String accountNumbers; // Comma-separated list for SQLite/H2/Postgres compatibility
+    @Column(name = "account_numbers", columnDefinition = "TEXT")
+    private String accountNumbersRaw;
 
-    @Column(nullable = false, length = 3)
+    @Column(name = "currency", length = 10)
     private String currency = "USD";
 
-    @Column(length = 50)
+    @Column(name = "date_preset", length = 50)
     private String datePreset;
 
+    @Column(name = "date_from")
     private LocalDate dateFrom;
+
+    @Column(name = "date_to")
     private LocalDate dateTo;
 
-    @Column(length = 50)
+    @Column(name = "transaction_type", length = 50)
     private String transactionType = "ALL";
 
-    @Column(precision = 18, scale = 2)
+    @Column(name = "min_amount", precision = 18, scale = 2)
     private BigDecimal minAmount;
 
-    @Column(precision = 18, scale = 2)
+    @Column(name = "max_amount", precision = 18, scale = 2)
     private BigDecimal maxAmount;
 
-    @Column(nullable = false, length = 36)
+    @Column(name = "export_format", length = 50)
+    private String exportFormat = "PDF";
+
+    @Column(name = "created_by", length = 100)
     private String createdBy;
 
-    @Column(nullable = false)
-    private Instant createdAt;
+    @Column(name = "status", length = 50)
+    private String status = "ACTIVE";
 
-    @Column(nullable = false)
-    private Instant updatedAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    public ReportCriteria() {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-    }
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt = LocalDateTime.now();
+
+    public ReportCriteria() {}
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -80,8 +85,26 @@ public class ReportCriteria {
     public String getCustomerId() { return customerId; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }
 
-    public String getAccountNumbers() { return accountNumbers; }
-    public void setAccountNumbers(String accountNumbers) { this.accountNumbers = accountNumbers; }
+    public List<String> getAccountNumbers() {
+        if (accountNumbersRaw == null || accountNumbersRaw.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.stream(accountNumbersRaw.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    public void setAccountNumbers(List<String> accountNumbers) {
+        if (accountNumbers == null || accountNumbers.isEmpty()) {
+            this.accountNumbersRaw = "";
+        } else {
+            this.accountNumbersRaw = String.join(",", accountNumbers);
+        }
+    }
+
+    public String getAccountNumbersRaw() { return accountNumbersRaw; }
+    public void setAccountNumbersRaw(String accountNumbersRaw) { this.accountNumbersRaw = accountNumbersRaw; }
 
     public String getCurrency() { return currency; }
     public void setCurrency(String currency) { this.currency = currency; }
@@ -104,12 +127,18 @@ public class ReportCriteria {
     public BigDecimal getMaxAmount() { return maxAmount; }
     public void setMaxAmount(BigDecimal maxAmount) { this.maxAmount = maxAmount; }
 
+    public String getExportFormat() { return exportFormat; }
+    public void setExportFormat(String exportFormat) { this.exportFormat = exportFormat; }
+
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

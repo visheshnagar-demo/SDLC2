@@ -8,7 +8,6 @@ import java.util.List;
 
 @Repository
 public interface ReportScheduleRepository extends JpaRepository<ReportSchedule, String> {
-    List<ReportSchedule> findByCriteriaId(String criteriaId);
     List<ReportSchedule> findByStatus(String status);
-    List<ReportSchedule> findByCreatedBy(String createdBy);
+    List<ReportSchedule> findByCriteriaId(String criteriaId);
 }

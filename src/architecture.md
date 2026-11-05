@@ -34,7 +34,26 @@ graph TD
 - (no server/ files found yet)
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/postcss.config.js
+- client/src/app/app.component.ts
+- client/src/app/app.config.ts
+- client/src/app/app.routes.ts
+- client/src/app/core/interceptors/jwt.interceptor.ts
+- client/src/app/core/models/report.models.ts
+- client/src/app/core/services/delivery.service.ts
+- client/src/app/core/services/lookup.service.ts
+- client/src/app/core/services/report.service.ts
+- client/src/app/features/reports/components/delivery-manager/delivery-manager.component.ts
+- client/src/app/features/reports/components/report-lookup-modal/report-lookup-modal.component.ts
+- client/src/app/features/reports/pages/criteria-form/criteria-form.component.ts
+- client/src/app/features/reports/pages/reports-landing/reports-landing.component.ts
+- client/src/app/shared/components/navbar/navbar.component.ts
+- client/src/app/shared/components/pending-ribbon/pending-ribbon.component.ts
+- client/src/environments/environment.prod.ts
+- client/src/environments/environment.ts
+- client/src/main.ts
+- client/src/setup.js
+- client/tailwind.config.js
 
 ## API Endpoints
 - GET /api/reports

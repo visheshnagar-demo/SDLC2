@@ -6,6 +6,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.UUID;
 
 @Service
 public class AuditLogService {
@@ -17,18 +18,23 @@ public class AuditLogService {
     }
 
     @Transactional
-    public AuditLog logAction(String userId, String action, String resourceType, String resourceId, String clientIp, String details) {
-        AuditLog auditLog = new AuditLog(userId, action, resourceType, resourceId, clientIp, details);
+    public AuditLog log(String userId, String action, String resourceType, String resourceId, String clientIp, String userAgent, String details) {
+        String logId = UUID.randomUUID().toString();
+        AuditLog auditLog = new AuditLog(
+                logId,
+                userId != null ? userId : "anonymous",
+                action,
+                resourceType,
+                resourceId,
+                clientIp != null ? clientIp : "127.0.0.1",
+                userAgent != null ? userAgent : "CitiDirect Web Client",
+                details
+        );
         return auditLogRepository.save(auditLog);
     }
 
     @Transactional(readOnly = true)
-    public List<AuditLog> getLogsForUser(String userId) {
-        return auditLogRepository.findByUserIdOrderByCreatedAtDesc(userId);
-    }
-
-    @Transactional(readOnly = true)
-    public List<AuditLog> getAllLogs() {
-        return auditLogRepository.findByOrderByCreatedAtDesc();
+    public List<AuditLog> getAllAuditLogs() {
+        return auditLogRepository.findAllByOrderByCreatedAtDesc();
     }
 }

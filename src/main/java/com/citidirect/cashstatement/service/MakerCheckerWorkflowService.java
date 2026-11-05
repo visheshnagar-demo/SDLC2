@@ -1,90 +1,163 @@
 package com.citidirect.cashstatement.service;
 
-import com.citidirect.cashstatement.dto.AuthorizeRequestDTO;
 import com.citidirect.cashstatement.dto.DeliveryOptionDTO;
 import com.citidirect.cashstatement.entity.DeliveryOption;
 import com.citidirect.cashstatement.repository.DeliveryOptionRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 public class MakerCheckerWorkflowService {
 
     private final DeliveryOptionRepository deliveryOptionRepository;
     private final AuditLogService auditLogService;
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
 
     public MakerCheckerWorkflowService(DeliveryOptionRepository deliveryOptionRepository,
-                                       AuditLogService auditLogService) {
+                                       AuditLogService auditLogService,
+                                       ObjectMapper objectMapper) {
         this.deliveryOptionRepository = deliveryOptionRepository;
         this.auditLogService = auditLogService;
+        this.objectMapper = objectMapper;
+    }
+
+    @Transactional(readOnly = true)
+    public List<DeliveryOptionDTO> getAllDeliveryOptions() {
+        return deliveryOptionRepository.findAll().stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<DeliveryOptionDTO> getPendingDeliveryOptions() {
+        return deliveryOptionRepository.findByStatus("PENDING_APPROVAL").stream()
+                .map(this::mapToDTO)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public DeliveryOptionDTO getDeliveryOptionById(String id) {
+        DeliveryOption option = deliveryOptionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery option not found with ID: " + id));
+        return mapToDTO(option);
     }
 
     @Transactional
-    public DeliveryOption createDeliveryOption(DeliveryOptionDTO dto, String makerId, String clientIp) {
-        DeliveryOption opt = new DeliveryOption();
-        opt.setScheduleId(dto.getScheduleId());
-        opt.setDeliveryChannel(dto.getDeliveryChannel() != null ? dto.getDeliveryChannel() : "DOWNLOAD");
+    public DeliveryOptionDTO createDeliveryOption(DeliveryOptionDTO dto, String currentUserId, String currentUserName) {
+        DeliveryOption option = new DeliveryOption();
+        option.setId(dto.getId() != null ? dto.getId() : "del-" + UUID.randomUUID().toString().substring(0, 8));
+        option.setScheduleId(dto.getScheduleId());
+        option.setDeliveryChannel(dto.getDeliveryChannel() != null ? dto.getDeliveryChannel() : "SFTP");
+
         try {
-            opt.setDestinationConfig(dto.getDestinationConfig() != null ? objectMapper.writeValueAsString(dto.getDestinationConfig()) : "{}");
+            if (dto.getDestinationConfig() != null) {
+                option.setDestinationConfigJson(objectMapper.writeValueAsString(dto.getDestinationConfig()));
+            } else {
+                option.setDestinationConfigJson("{}");
+            }
         } catch (Exception e) {
-            opt.setDestinationConfig("{}");
+            option.setDestinationConfigJson("{}");
         }
-        opt.setStatus("PENDING_APPROVAL");
-        opt.setMakerId(makerId);
 
-        DeliveryOption saved = deliveryOptionRepository.save(opt);
-        auditLogService.logAction(makerId, "CREATE_DELIVERY_OPTION", "DeliveryOption", saved.getId(), clientIp, "Created delivery channel: " + opt.getDeliveryChannel());
-        return saved;
+        option.setStatus("PENDING_APPROVAL");
+        option.setMakerId(currentUserId != null ? currentUserId : (dto.getMakerId() != null ? dto.getMakerId() : "usr_maker_01"));
+        option.setMakerName(currentUserName != null ? currentUserName : (dto.getMakerName() != null ? dto.getMakerName() : "M. Sterling (Senior Treasury Analyst)"));
+        option.setCreatedAt(LocalDateTime.now());
+        option.setUpdatedAt(LocalDateTime.now());
+
+        DeliveryOption saved = deliveryOptionRepository.save(option);
+        auditLogService.log(saved.getMakerId(), "CREATE_DELIVERY_OPTION", "DELIVERY_OPTION", saved.getId(), null, null, "Created delivery option for schedule: " + saved.getScheduleId());
+
+        return mapToDTO(saved);
     }
 
     @Transactional
-    public DeliveryOption authorizeDeliveryOption(String id, AuthorizeRequestDTO request, String checkerId, String clientIp) {
-        DeliveryOption opt = deliveryOptionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Delivery option not found with ID: " + id));
+    public DeliveryOptionDTO authorizeDeliveryOption(String id, String comments, String currentCheckerId, String currentCheckerName) {
+        DeliveryOption option = deliveryOptionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery option not found with ID: " + id));
 
-        // Strict Maker-Checker Segregation of Duties (SoD) enforcement
-        if (opt.getMakerId() != null && opt.getMakerId().equalsIgnoreCase(checkerId)) {
-            throw new IllegalStateException("Dual-control violation: Maker cannot authorize their own submission (maker_id: " + opt.getMakerId() + ", checker_id: " + checkerId + ").");
+        String checkerId = currentCheckerId != null ? currentCheckerId : "usr_checker_01";
+        String checkerName = currentCheckerName != null ? currentCheckerName : "J. Vance (Tier 4 Authorizer)";
+
+        // Enforce Segregation of Duties (Maker cannot be Checker)
+        if (option.getMakerId() != null && option.getMakerId().equalsIgnoreCase(checkerId)) {
+            throw new ResponseStatusException(
+                    HttpStatus.FORBIDDEN,
+                    "Dual-control violation: Maker cannot authorize their own submission (maker_id: " + option.getMakerId() + ", checker_id: " + checkerId + ")"
+            );
         }
 
-        opt.setStatus("AUTHORIZED");
-        opt.setCheckerId(checkerId);
-        opt.setCheckerComments(request != null ? request.getComments() : "Approved");
-        opt.setAuthorizedAt(Instant.now());
-        opt.setUpdatedAt(Instant.now());
+        option.setStatus("AUTHORIZED");
+        option.setCheckerId(checkerId);
+        option.setCheckerName(checkerName);
+        option.setCheckerComments(comments);
+        option.setAuthorizedAt(LocalDateTime.now());
+        option.setUpdatedAt(LocalDateTime.now());
 
-        DeliveryOption updated = deliveryOptionRepository.save(opt);
-        auditLogService.logAction(checkerId, "AUTHORIZE", "DeliveryOption", updated.getId(), clientIp, "Authorized delivery option. Comments: " + opt.getCheckerComments());
-        return updated;
+        DeliveryOption saved = deliveryOptionRepository.save(option);
+        auditLogService.log(checkerId, "AUTHORIZE_DELIVERY_OPTION", "DELIVERY_OPTION", saved.getId(), null, null, "Authorized with comments: " + comments);
+
+        return mapToDTO(saved);
     }
 
     @Transactional
-    public DeliveryOption rejectDeliveryOption(String id, AuthorizeRequestDTO request, String checkerId, String clientIp) {
-        DeliveryOption opt = deliveryOptionRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Delivery option not found with ID: " + id));
+    public DeliveryOptionDTO rejectDeliveryOption(String id, String comments, String currentCheckerId, String currentCheckerName) {
+        DeliveryOption option = deliveryOptionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Delivery option not found with ID: " + id));
 
-        opt.setStatus("REJECTED");
-        opt.setCheckerId(checkerId);
-        opt.setCheckerComments(request != null ? request.getComments() : "Rejected by checker");
-        opt.setUpdatedAt(Instant.now());
+        String checkerId = currentCheckerId != null ? currentCheckerId : "usr_checker_01";
+        String checkerName = currentCheckerName != null ? currentCheckerName : "J. Vance (Tier 4 Authorizer)";
 
-        DeliveryOption updated = deliveryOptionRepository.save(opt);
-        auditLogService.logAction(checkerId, "REJECT", "DeliveryOption", updated.getId(), clientIp, "Rejected delivery option. Comments: " + opt.getCheckerComments());
-        return updated;
+        option.setStatus("REJECTED");
+        option.setCheckerId(checkerId);
+        option.setCheckerName(checkerName);
+        option.setCheckerComments(comments);
+        option.setUpdatedAt(LocalDateTime.now());
+
+        DeliveryOption saved = deliveryOptionRepository.save(option);
+        auditLogService.log(checkerId, "REJECT_DELIVERY_OPTION", "DELIVERY_OPTION", saved.getId(), null, null, "Rejected with comments: " + comments);
+
+        return mapToDTO(saved);
     }
 
-    @Transactional(readOnly = true)
-    public List<DeliveryOption> getPendingDeliveryOptions() {
-        return deliveryOptionRepository.findByStatus("PENDING_APPROVAL");
-    }
+    private DeliveryOptionDTO mapToDTO(DeliveryOption option) {
+        DeliveryOptionDTO dto = new DeliveryOptionDTO();
+        dto.setId(option.getId());
+        dto.setScheduleId(option.getScheduleId());
+        dto.setDeliveryChannel(option.getDeliveryChannel());
+        dto.setStatus(option.getStatus());
+        dto.setMakerId(option.getMakerId());
+        dto.setMakerName(option.getMakerName());
+        dto.setCheckerId(option.getCheckerId());
+        dto.setCheckerName(option.getCheckerName());
+        dto.setCheckerComments(option.getCheckerComments());
 
-    @Transactional(readOnly = true)
-    public List<DeliveryOption> getAllDeliveryOptions() {
-        return deliveryOptionRepository.findAll();
+        if (option.getAuthorizedAt() != null) {
+            dto.setAuthorizedAt(option.getAuthorizedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        }
+        if (option.getCreatedAt() != null) {
+            dto.setCreatedAt(option.getCreatedAt().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+        }
+
+        try {
+            if (option.getDestinationConfigJson() != null && !option.getDestinationConfigJson().isEmpty()) {
+                Map<String, Object> map = objectMapper.readValue(option.getDestinationConfigJson(), Map.class);
+                dto.setDestinationConfig(map);
+            }
+        } catch (Exception e) {
+            // fallback
+        }
+
+        return dto;
     }
 }

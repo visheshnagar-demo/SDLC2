@@ -10,5 +10,4 @@ import java.util.List;
 public interface DeliveryOptionRepository extends JpaRepository<DeliveryOption, String> {
     List<DeliveryOption> findByStatus(String status);
     List<DeliveryOption> findByScheduleId(String scheduleId);
-    List<DeliveryOption> findByMakerId(String makerId);
 }

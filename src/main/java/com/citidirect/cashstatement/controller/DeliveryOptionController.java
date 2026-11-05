@@ -1,90 +1,77 @@
 package com.citidirect.cashstatement.controller;
 
-import com.citidirect.cashstatement.config.JwtUtils;
 import com.citidirect.cashstatement.dto.AuthorizeRequestDTO;
 import com.citidirect.cashstatement.dto.DeliveryOptionDTO;
-import com.citidirect.cashstatement.entity.DeliveryOption;
-import com.citidirect.cashstatement.entity.User;
-import com.citidirect.cashstatement.repository.UserRepository;
 import com.citidirect.cashstatement.service.MakerCheckerWorkflowService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
 @RequestMapping("/api/delivery-options")
+@CrossOrigin(origins = "*")
 public class DeliveryOptionController {
 
     private final MakerCheckerWorkflowService makerCheckerWorkflowService;
-    private final UserRepository userRepository;
-    private final JwtUtils jwtUtils;
 
-    public DeliveryOptionController(MakerCheckerWorkflowService makerCheckerWorkflowService,
-                                    UserRepository userRepository,
-                                    JwtUtils jwtUtils) {
+    public DeliveryOptionController(MakerCheckerWorkflowService makerCheckerWorkflowService) {
         this.makerCheckerWorkflowService = makerCheckerWorkflowService;
-        this.userRepository = userRepository;
-        this.jwtUtils = jwtUtils;
-    }
-
-    private String resolveUserId(String authHeader, String fallbackRole) {
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            String token = authHeader.substring(7);
-            if (jwtUtils.validateToken(token)) {
-                return jwtUtils.getUserIdFromToken(token);
-            }
-        }
-        User defaultUser = "ROLE_CHECKER".equalsIgnoreCase(fallbackRole)
-                ? userRepository.findByEmail("checker@example.com").orElse(null)
-                : userRepository.findByEmail("test@example.com").orElse(null);
-        return defaultUser != null ? defaultUser.getId() : "system-user";
     }
 
     @GetMapping
-    public ResponseEntity<List<DeliveryOption>> getAllDeliveryOptions() {
-        return ResponseEntity.ok(makerCheckerWorkflowService.getAllDeliveryOptions());
+    public ResponseEntity<List<DeliveryOptionDTO>> getAllDeliveryOptions() {
+        List<DeliveryOptionDTO> options = makerCheckerWorkflowService.getAllDeliveryOptions();
+        return ResponseEntity.ok(options);
     }
 
     @GetMapping("/pending")
-    public ResponseEntity<List<DeliveryOption>> getPendingDeliveryOptions() {
-        return ResponseEntity.ok(makerCheckerWorkflowService.getPendingDeliveryOptions());
+    public ResponseEntity<List<DeliveryOptionDTO>> getPendingDeliveryOptions() {
+        List<DeliveryOptionDTO> pending = makerCheckerWorkflowService.getPendingDeliveryOptions();
+        return ResponseEntity.ok(pending);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DeliveryOptionDTO> getDeliveryOptionById(@PathVariable String id) {
+        DeliveryOptionDTO option = makerCheckerWorkflowService.getDeliveryOptionById(id);
+        return ResponseEntity.ok(option);
     }
 
     @PostMapping
-    public ResponseEntity<DeliveryOption> createDeliveryOption(
+    public ResponseEntity<DeliveryOptionDTO> createDeliveryOption(
             @RequestBody DeliveryOptionDTO dto,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-        String makerId = resolveUserId(authHeader, "ROLE_MAKER");
-        String clientIp = request.getRemoteAddr();
-        DeliveryOption created = makerCheckerWorkflowService.createDeliveryOption(dto, makerId, clientIp);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
+            Authentication authentication) {
+        String userId = authentication != null ? authentication.getName() : dto.getMakerId();
+        String userName = dto.getMakerName() != null ? dto.getMakerName() : "M. Sterling (Senior Treasury Analyst)";
+        DeliveryOptionDTO created = makerCheckerWorkflowService.createDeliveryOption(dto, userId, userName);
+        return new ResponseEntity<>(created, HttpStatus.CREATED);
     }
 
     @PostMapping("/{id}/authorize")
-    public ResponseEntity<DeliveryOption> authorizeDeliveryOption(
-            @PathVariable("id") String id,
-            @RequestBody(required = false) AuthorizeRequestDTO authorizeRequest,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-        String checkerId = resolveUserId(authHeader, "ROLE_CHECKER");
-        String clientIp = request.getRemoteAddr();
-        DeliveryOption authorized = makerCheckerWorkflowService.authorizeDeliveryOption(id, authorizeRequest, checkerId, clientIp);
+    public ResponseEntity<DeliveryOptionDTO> authorizeDeliveryOption(
+            @PathVariable String id,
+            @RequestBody(required = false) AuthorizeRequestDTO request,
+            Authentication authentication) {
+        String comments = request != null && request.getComments() != null ? request.getComments() : "Verified and approved.";
+        String checkerId = authentication != null ? authentication.getName() : "usr_checker_01";
+        String checkerName = "J. Vance (Tier 4 Authorizer)";
+
+        DeliveryOptionDTO authorized = makerCheckerWorkflowService.authorizeDeliveryOption(id, comments, checkerId, checkerName);
         return ResponseEntity.ok(authorized);
     }
 
     @PostMapping("/{id}/reject")
-    public ResponseEntity<DeliveryOption> rejectDeliveryOption(
-            @PathVariable("id") String id,
-            @RequestBody(required = false) AuthorizeRequestDTO authorizeRequest,
-            @RequestHeader(value = "Authorization", required = false) String authHeader,
-            HttpServletRequest request) {
-        String checkerId = resolveUserId(authHeader, "ROLE_CHECKER");
-        String clientIp = request.getRemoteAddr();
-        DeliveryOption rejected = makerCheckerWorkflowService.rejectDeliveryOption(id, authorizeRequest, checkerId, clientIp);
+    public ResponseEntity<DeliveryOptionDTO> rejectDeliveryOption(
+            @PathVariable String id,
+            @RequestBody(required = false) AuthorizeRequestDTO request,
+            Authentication authentication) {
+        String comments = request != null && request.getComments() != null ? request.getComments() : "Rejected by checker.";
+        String checkerId = authentication != null ? authentication.getName() : "usr_checker_01";
+        String checkerName = "J. Vance (Tier 4 Authorizer)";
+
+        DeliveryOptionDTO rejected = makerCheckerWorkflowService.rejectDeliveryOption(id, comments, checkerId, checkerName);
         return ResponseEntity.ok(rejected);
     }
 }

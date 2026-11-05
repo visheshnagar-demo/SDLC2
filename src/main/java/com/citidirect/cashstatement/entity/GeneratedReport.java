@@ -1,58 +1,57 @@
 package com.citidirect.cashstatement.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Entity
 @Table(name = "generated_reports")
 public class GeneratedReport {
 
     @Id
-    @Column(length = 36)
+    @Column(name = "id", length = 64)
     private String id;
 
-    @Column(length = 36)
+    @Column(name = "criteria_id", length = 64)
     private String criteriaId;
 
-    @Column(nullable = false)
+    @Column(name = "report_name", nullable = false, length = 255)
     private String reportName;
 
-    @Column(nullable = false, length = 20)
-    private String exportFormat; // PDF, EXCEL, CSV
+    @Column(name = "account_numbers", columnDefinition = "TEXT")
+    private String accountNumbersRaw;
 
+    @Column(name = "branch_code", length = 50)
+    private String branchCode;
+
+    @Column(name = "frequency", length = 100)
+    private String frequency;
+
+    @Column(name = "export_format", nullable = false, length = 50)
+    private String exportFormat = "PDF";
+
+    @Column(name = "file_size_bytes")
     private Long fileSizeBytes;
 
-    @Column(length = 500)
+    @Column(name = "storage_path", length = 500)
     private String storagePath;
 
-    @Column(nullable = false, length = 50)
-    private String status = "COMPLETED"; // GENERATING, COMPLETED, FAILED
+    @Column(name = "status", nullable = false, length = 50)
+    private String status = "COMPLETED"; // GENERATING, COMPLETED, PENDING_APPROVAL, REJECTED, FAILED
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "error_message", columnDefinition = "TEXT")
     private String errorMessage;
 
-    @Column(nullable = false, length = 36)
-    private String generatedBy;
+    @Column(name = "created_by", length = 255)
+    private String createdBy;
 
-    @Column(nullable = false)
-    private Instant createdAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    public GeneratedReport() {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = Instant.now();
-    }
-
-    public GeneratedReport(String reportName, String exportFormat, String status, String generatedBy) {
-        this();
-        this.reportName = reportName;
-        this.exportFormat = exportFormat;
-        this.status = status;
-        this.generatedBy = generatedBy;
-    }
+    public GeneratedReport() {}
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -62,6 +61,33 @@ public class GeneratedReport {
 
     public String getReportName() { return reportName; }
     public void setReportName(String reportName) { this.reportName = reportName; }
+
+    public List<String> getAccountNumbers() {
+        if (accountNumbersRaw == null || accountNumbersRaw.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+        return Arrays.stream(accountNumbersRaw.split(","))
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .collect(Collectors.toList());
+    }
+
+    public void setAccountNumbers(List<String> accountNumbers) {
+        if (accountNumbers == null || accountNumbers.isEmpty()) {
+            this.accountNumbersRaw = "";
+        } else {
+            this.accountNumbersRaw = String.join(",", accountNumbers);
+        }
+    }
+
+    public String getAccountNumbersRaw() { return accountNumbersRaw; }
+    public void setAccountNumbersRaw(String accountNumbersRaw) { this.accountNumbersRaw = accountNumbersRaw; }
+
+    public String getBranchCode() { return branchCode; }
+    public void setBranchCode(String branchCode) { this.branchCode = branchCode; }
+
+    public String getFrequency() { return frequency; }
+    public void setFrequency(String frequency) { this.frequency = frequency; }
 
     public String getExportFormat() { return exportFormat; }
     public void setExportFormat(String exportFormat) { this.exportFormat = exportFormat; }
@@ -78,9 +104,9 @@ public class GeneratedReport {
     public String getErrorMessage() { return errorMessage; }
     public void setErrorMessage(String errorMessage) { this.errorMessage = errorMessage; }
 
-    public String getGeneratedBy() { return generatedBy; }
-    public void setGeneratedBy(String generatedBy) { this.generatedBy = generatedBy; }
+    public String getCreatedBy() { return createdBy; }
+    public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

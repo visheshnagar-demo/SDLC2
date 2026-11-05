@@ -1,14 +1,31 @@
 package com.citidirect.cashstatement.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
+
 public class ReportScheduleDTO {
 
+    private String id;
+
+    @JsonAlias({"criteria_id", "criteriaId"})
     private String criteriaId;
-    private String frequency = "WEEKLY";
-    private String cronExpression = "0 0 8 ? * MON";
-    private String executionTimeUtc = "08:00:00";
-    private String exportFormat = "PDF";
+
+    private String frequency;
+
+    @JsonAlias({"cron_expression", "cronExpression"})
+    private String cronExpression;
+
+    @JsonAlias({"execution_time_utc", "executionTimeUtc"})
+    private String executionTimeUtc;
+
+    @JsonAlias({"export_format", "exportFormat"})
+    private String exportFormat;
+
+    private String status;
 
     public ReportScheduleDTO() {}
+
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
 
     public String getCriteriaId() { return criteriaId; }
     public void setCriteriaId(String criteriaId) { this.criteriaId = criteriaId; }
@@ -24,4 +41,7 @@ public class ReportScheduleDTO {
 
     public String getExportFormat() { return exportFormat; }
     public void setExportFormat(String exportFormat) { this.exportFormat = exportFormat; }
+
+    public String getStatus() { return status; }
+    public void setStatus(String status) { this.status = status; }
 }

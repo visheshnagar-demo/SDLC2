@@ -1,57 +1,48 @@
 package com.citidirect.cashstatement.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "users")
+@Table(name = "citi_users")
 public class User {
 
     @Id
-    @Column(length = 36)
+    @Column(name = "id", length = 64)
     private String id;
 
-    @Column(nullable = false, unique = true, length = 100)
+    @Column(name = "username", nullable = false, unique = true, length = 100)
     private String username;
 
-    @Column(nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
-    @Column(nullable = false)
+    @Column(name = "full_name", nullable = false, length = 255)
     private String fullName;
 
-    @Column(nullable = false)
-    private String passwordHash;
+    @Column(name = "role", nullable = false, length = 50)
+    private String role; // ROLE_USER, ROLE_MAKER, ROLE_CHECKER, ROLE_ADMIN, ROLE_AUDITOR
 
-    @Column(nullable = false, length = 50)
-    private String role;
+    @Column(name = "is_active", nullable = false)
+    private Boolean isActive = true;
 
-    @Column(nullable = false)
-    private boolean isActive = true;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(nullable = false)
-    private Instant createdAt;
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
-    @Column(nullable = false)
-    private Instant updatedAt;
+    public User() {}
 
-    public User() {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-    }
-
-    public User(String username, String email, String fullName, String passwordHash, String role) {
-        this();
+    public User(String id, String username, String email, String fullName, String role) {
+        this.id = id;
         this.username = username;
         this.email = email;
         this.fullName = fullName;
-        this.passwordHash = passwordHash;
         this.role = role;
+        this.isActive = true;
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
     }
 
     public String getId() { return id; }
@@ -66,18 +57,15 @@ public class User {
     public String getFullName() { return fullName; }
     public void setFullName(String fullName) { this.fullName = fullName; }
 
-    public String getPasswordHash() { return passwordHash; }
-    public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
-
     public String getRole() { return role; }
     public void setRole(String role) { this.role = role; }
 
-    public boolean isActive() { return isActive; }
-    public void setActive(boolean active) { isActive = active; }
+    public Boolean getIsActive() { return isActive; }
+    public void setIsActive(Boolean active) { isActive = active; }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

@@ -1,57 +1,52 @@
 package com.citidirect.cashstatement.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "audit_logs")
 public class AuditLog {
 
     @Id
-    @Column(length = 36)
+    @Column(name = "id", length = 64)
     private String id;
 
-    @Column(nullable = false, length = 36)
+    @Column(name = "user_id", length = 64)
     private String userId;
 
-    @Column(nullable = false, length = 100)
-    private String action;
+    @Column(name = "action", nullable = false, length = 100)
+    private String action; // CREATE, GENERATE, EXPORT, AUTHORIZE, REJECT, SCHEDULE_CREATE
 
-    @Column(nullable = false, length = 100)
-    private String resourceType;
+    @Column(name = "resource_type", nullable = false, length = 100)
+    private String resourceType; // REPORT, DELIVERY_OPTION, SCHEDULE, LOOKUP
 
-    @Column(nullable = false, length = 36)
+    @Column(name = "resource_id", length = 64)
     private String resourceId;
 
-    @Column(nullable = false, length = 45)
-    private String clientIp = "127.0.0.1";
+    @Column(name = "client_ip", length = 45)
+    private String clientIp;
 
-    @Column(columnDefinition = "TEXT")
-    private String userAgent = "CitiDirect-WebClient";
+    @Column(name = "user_agent", columnDefinition = "TEXT")
+    private String userAgent;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(name = "details", columnDefinition = "TEXT")
     private String details;
 
-    @Column(nullable = false)
-    private Instant createdAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    public AuditLog() {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = Instant.now();
-    }
+    public AuditLog() {}
 
-    public AuditLog(String userId, String action, String resourceType, String resourceId, String clientIp, String details) {
-        this();
+    public AuditLog(String id, String userId, String action, String resourceType, String resourceId, String clientIp, String userAgent, String details) {
+        this.id = id;
         this.userId = userId;
         this.action = action;
         this.resourceType = resourceType;
         this.resourceId = resourceId;
-        this.clientIp = clientIp != null ? clientIp : "127.0.0.1";
+        this.clientIp = clientIp;
+        this.userAgent = userAgent;
         this.details = details;
+        this.createdAt = LocalDateTime.now();
     }
 
     public String getId() { return id; }
@@ -78,6 +73,6 @@ public class AuditLog {
     public String getDetails() { return details; }
     public void setDetails(String details) { this.details = details; }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

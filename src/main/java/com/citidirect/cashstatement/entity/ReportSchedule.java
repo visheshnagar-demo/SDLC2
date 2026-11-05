@@ -1,52 +1,44 @@
 package com.citidirect.cashstatement.entity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
-import java.time.Instant;
-import java.util.UUID;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "report_schedules")
 public class ReportSchedule {
 
     @Id
-    @Column(length = 36)
+    @Column(name = "id", length = 64)
     private String id;
 
-    @Column(nullable = false, length = 36)
+    @Column(name = "criteria_id", length = 64)
     private String criteriaId;
 
-    @Column(nullable = false, length = 50)
+    @Column(name = "frequency", nullable = false, length = 50)
     private String frequency; // DAILY, WEEKLY, MONTHLY, CUSTOM
 
-    @Column(nullable = false, length = 100)
+    @Column(name = "cron_expression", length = 100)
     private String cronExpression;
 
-    @Column(nullable = false, length = 20)
+    @Column(name = "execution_time_utc", length = 50)
     private String executionTimeUtc;
 
-    @Column(nullable = false, length = 20)
-    private String exportFormat; // PDF, EXCEL, CSV
+    @Column(name = "export_format", nullable = false, length = 50)
+    private String exportFormat; // PDF, EXCEL, CSV, SWIFT_MT940
 
-    @Column(nullable = false, length = 50)
-    private String status = "PENDING_APPROVAL"; // ACTIVE, PAUSED, PENDING_APPROVAL, REJECTED
+    @Column(name = "status", nullable = false, length = 50)
+    private String status = "PENDING_APPROVAL"; // ACTIVE, PAUSED, PENDING_APPROVAL, REJECTED, REVOKED
 
-    @Column(nullable = false, length = 36)
+    @Column(name = "created_by", length = 100)
     private String createdBy;
 
-    @Column(nullable = false)
-    private Instant createdAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt = LocalDateTime.now();
 
-    @Column(nullable = false)
-    private Instant updatedAt;
+    @Column(name = "updated_at", nullable = false)
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
-    public ReportSchedule() {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-    }
+    public ReportSchedule() {}
 
     public String getId() { return id; }
     public void setId(String id) { this.id = id; }
@@ -72,9 +64,9 @@ public class ReportSchedule {
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
 
-    public Instant getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
-    public Instant getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(Instant updatedAt) { this.updatedAt = updatedAt; }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
 }

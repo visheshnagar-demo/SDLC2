@@ -9,5 +9,4 @@ import java.util.List;
 @Repository
 public interface ReportCriteriaRepository extends JpaRepository<ReportCriteria, String> {
     List<ReportCriteria> findByCreatedBy(String createdBy);
-    List<ReportCriteria> findByBranchCode(String branchCode);
 }

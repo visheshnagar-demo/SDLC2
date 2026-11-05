@@ -1,7 +1,6 @@
 package com.citidirect.cashstatement.service;
 
 import com.citidirect.cashstatement.dto.ReportRequestDTO;
-import com.citidirect.cashstatement.dto.ReportResponseDTO;
 import com.citidirect.cashstatement.dto.ReportScheduleDTO;
 import com.citidirect.cashstatement.entity.GeneratedReport;
 import com.citidirect.cashstatement.entity.ReportCriteria;
@@ -9,76 +8,64 @@ import com.citidirect.cashstatement.entity.ReportSchedule;
 import com.citidirect.cashstatement.repository.GeneratedReportRepository;
 import com.citidirect.cashstatement.repository.ReportCriteriaRepository;
 import com.citidirect.cashstatement.repository.ReportScheduleRepository;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
-import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
-import java.util.*;
-import java.util.stream.Collectors;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
 
 @Service
 public class ReportService {
 
+    private final GeneratedReportRepository generatedReportRepository;
     private final ReportCriteriaRepository reportCriteriaRepository;
     private final ReportScheduleRepository reportScheduleRepository;
-    private final GeneratedReportRepository generatedReportRepository;
     private final ExportEngineService exportEngineService;
     private final AuditLogService auditLogService;
 
-    public ReportService(ReportCriteriaRepository reportCriteriaRepository,
+    public ReportService(GeneratedReportRepository generatedReportRepository,
+                         ReportCriteriaRepository reportCriteriaRepository,
                          ReportScheduleRepository reportScheduleRepository,
-                         GeneratedReportRepository generatedReportRepository,
                          ExportEngineService exportEngineService,
                          AuditLogService auditLogService) {
+        this.generatedReportRepository = generatedReportRepository;
         this.reportCriteriaRepository = reportCriteriaRepository;
         this.reportScheduleRepository = reportScheduleRepository;
-        this.generatedReportRepository = generatedReportRepository;
         this.exportEngineService = exportEngineService;
         this.auditLogService = auditLogService;
     }
 
     @Transactional(readOnly = true)
-    public Map<String, Object> getReports(String status, Pageable pageable) {
-        Page<GeneratedReport> page;
-        if (status != null && !status.trim().isEmpty() && !status.equalsIgnoreCase("ALL")) {
-            page = generatedReportRepository.findByStatusIgnoreCase(status, pageable);
-        } else {
-            page = generatedReportRepository.findAll(pageable);
+    public List<GeneratedReport> getReports(String status, String branchCode) {
+        if (status != null && (status.equalsIgnoreCase("ALL") || status.equalsIgnoreCase("Status: All"))) {
+            status = null;
         }
+        if (branchCode != null && branchCode.trim().isEmpty()) {
+            branchCode = null;
+        }
+        return generatedReportRepository.findByFilters(status, branchCode);
+    }
 
-        List<ReportResponseDTO> content = page.getContent().stream().map(r -> {
-            ReportResponseDTO dto = new ReportResponseDTO();
-            dto.setId(r.getId());
-            dto.setReportName(r.getReportName());
-            dto.setExportFormat(r.getExportFormat());
-            dto.setStatus(r.getStatus());
-            dto.setCreatedAt(r.getCreatedAt());
-            dto.setCreatedBy(r.getGeneratedBy());
-            dto.setAccountNumbers(List.of("ACC-100234"));
-            dto.setBranchCode("BR-NYC-001");
-            dto.setCurrency("USD");
-            return dto;
-        }).collect(Collectors.toList());
-
-        Map<String, Object> response = new HashMap<>();
-        response.put("content", content);
-        response.put("total_elements", page.getTotalElements());
-        response.put("total_pages", page.getTotalPages());
-        response.put("current_page", page.getNumber());
-        return response;
+    @Transactional(readOnly = true)
+    public GeneratedReport getReportById(String id) {
+        return generatedReportRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Report not found with ID: " + id));
     }
 
     @Transactional
-    public Map<String, Object> generateReport(ReportRequestDTO dto, String userId, String clientIp) {
+    public GeneratedReport generateReport(ReportRequestDTO dto, String currentUserId) {
+        String criteriaId = UUID.randomUUID().toString();
         ReportCriteria criteria = new ReportCriteria();
-        criteria.setBaseReportId(dto.getBaseReportId() != null ? dto.getBaseReportId() : UUID.randomUUID().toString());
-        criteria.setName(dto.getName() != null ? dto.getName() : "Cash Statement Report");
-        criteria.setBranchCode(dto.getBranchCode() != null ? dto.getBranchCode() : "BR-NYC-001");
-        criteria.setCustomerId(dto.getCustomerId() != null ? dto.getCustomerId() : "CUST-9021");
-        criteria.setAccountNumbers(dto.getAccountNumbers() != null && !dto.getAccountNumbers().isEmpty()
-                ? String.join(",", dto.getAccountNumbers()) : "ACC-100234");
+        criteria.setId(criteriaId);
+        criteria.setBaseReportId(dto.getBaseReportId());
+        criteria.setName(dto.getName() != null ? dto.getName() : "On-Demand Cash Statement");
+        criteria.setBranchCode(dto.getBranchCode());
+        criteria.setCustomerId(dto.getCustomerId());
+        criteria.setAccountNumbers(dto.getAccountNumbers() != null ? dto.getAccountNumbers() : new ArrayList<>());
         criteria.setCurrency(dto.getCurrency() != null ? dto.getCurrency() : "USD");
         criteria.setDatePreset(dto.getDatePreset());
         criteria.setDateFrom(dto.getDateFrom());
@@ -86,64 +73,92 @@ public class ReportService {
         criteria.setTransactionType(dto.getTransactionType() != null ? dto.getTransactionType() : "ALL");
         criteria.setMinAmount(dto.getMinAmount());
         criteria.setMaxAmount(dto.getMaxAmount());
-        criteria.setCreatedBy(userId);
+        criteria.setExportFormat(dto.getExportFormat() != null ? dto.getExportFormat() : "PDF");
+        criteria.setCreatedBy(currentUserId != null ? currentUserId : "usr_maker_01");
+        reportCriteriaRepository.save(criteria);
 
-        ReportCriteria savedCriteria = reportCriteriaRepository.save(criteria);
-
+        String reportId = "rpt-" + UUID.randomUUID().toString().substring(0, 8);
         GeneratedReport report = new GeneratedReport();
-        report.setCriteriaId(savedCriteria.getId());
+        report.setId(reportId);
+        report.setCriteriaId(criteriaId);
         report.setReportName(criteria.getName());
-        report.setExportFormat(dto.getExportFormat() != null ? dto.getExportFormat().toUpperCase() : "PDF");
+        report.setAccountNumbers(criteria.getAccountNumbers());
+        report.setBranchCode(criteria.getBranchCode());
+        report.setFrequency("On-Demand Ad-Hoc");
+        report.setExportFormat(criteria.getExportFormat());
+        report.setFileSizeBytes(215000L);
         report.setStatus("COMPLETED");
-        report.setGeneratedBy(userId);
-        report.setFileSizeBytes(102400L);
+        report.setCreatedBy("J. Vance (Tier 4 Authorizer)");
+        report.setCreatedAt(LocalDateTime.now());
 
-        GeneratedReport savedReport = generatedReportRepository.save(report);
+        GeneratedReport saved = generatedReportRepository.save(report);
 
-        auditLogService.logAction(userId, "GENERATE_REPORT", "GeneratedReport", savedReport.getId(), clientIp,
-                "Generated report: " + report.getReportName() + " format: " + report.getExportFormat());
+        auditLogService.log(
+                currentUserId != null ? currentUserId : "usr_maker_01",
+                "GENERATE_REPORT",
+                "REPORT",
+                saved.getId(),
+                null,
+                null,
+                "Generated on-demand statement for accounts: " + String.join(", ", saved.getAccountNumbers())
+        );
 
-        Map<String, Object> result = new HashMap<>();
-        result.put("report_id", savedReport.getId());
-        result.put("status", savedReport.getStatus());
-        result.put("message", "Report generation completed successfully");
-        return result;
-    }
-
-    @Transactional
-    public ReportSchedule scheduleReport(ReportScheduleDTO dto, String userId, String clientIp) {
-        ReportSchedule schedule = new ReportSchedule();
-        schedule.setCriteriaId(dto.getCriteriaId() != null ? dto.getCriteriaId() : UUID.randomUUID().toString());
-        schedule.setFrequency(dto.getFrequency() != null ? dto.getFrequency() : "WEEKLY");
-        schedule.setCronExpression(dto.getCronExpression() != null ? dto.getCronExpression() : "0 0 8 ? * MON");
-        schedule.setExecutionTimeUtc(dto.getExecutionTimeUtc() != null ? dto.getExecutionTimeUtc() : "08:00:00");
-        schedule.setExportFormat(dto.getExportFormat() != null ? dto.getExportFormat().toUpperCase() : "PDF");
-        schedule.setStatus("PENDING_APPROVAL");
-        schedule.setCreatedBy(userId);
-
-        ReportSchedule saved = reportScheduleRepository.save(schedule);
-        auditLogService.logAction(userId, "SCHEDULE_REPORT", "ReportSchedule", saved.getId(), clientIp,
-                "Created recurring report schedule for criteria: " + saved.getCriteriaId());
         return saved;
     }
 
-    @Transactional(readOnly = true)
-    public byte[] exportReport(String reportId, String format, String userId, String clientIp) {
-        GeneratedReport report = generatedReportRepository.findById(reportId).orElse(null);
-        String reportName = report != null ? report.getReportName() : "Cash Statement Report";
-        String exportFormat = format != null ? format.toUpperCase() : (report != null ? report.getExportFormat() : "PDF");
+    @Transactional
+    public ReportSchedule createSchedule(ReportScheduleDTO dto, String currentUserId) {
+        String scheduleId = dto.getId() != null ? dto.getId() : "sch-" + UUID.randomUUID().toString().substring(0, 8);
+        ReportSchedule schedule = new ReportSchedule();
+        schedule.setId(scheduleId);
+        schedule.setCriteriaId(dto.getCriteriaId());
+        schedule.setFrequency(dto.getFrequency() != null ? dto.getFrequency() : "DAILY");
+        schedule.setCronExpression(dto.getCronExpression() != null ? dto.getCronExpression() : "0 0 17 ? * MON-FRI");
+        schedule.setExecutionTimeUtc(dto.getExecutionTimeUtc() != null ? dto.getExecutionTimeUtc() : "17:00:00");
+        schedule.setExportFormat(dto.getExportFormat() != null ? dto.getExportFormat() : "PDF");
+        schedule.setStatus("PENDING_APPROVAL");
+        schedule.setCreatedBy(currentUserId != null ? currentUserId : "usr_maker_01");
+        schedule.setCreatedAt(LocalDateTime.now());
+        schedule.setUpdatedAt(LocalDateTime.now());
+
+        ReportSchedule saved = reportScheduleRepository.save(schedule);
+
+        auditLogService.log(
+                schedule.getCreatedBy(),
+                "CREATE_SCHEDULE",
+                "SCHEDULE",
+                saved.getId(),
+                null,
+                null,
+                "Created report schedule: " + saved.getFrequency() + " (" + saved.getExportFormat() + ")"
+        );
+
+        return saved;
+    }
+
+    public byte[] exportReport(String reportId, String format, String currentUserId) {
+        GeneratedReport report = getReportById(reportId);
+        String targetFormat = format != null ? format.toUpperCase() : (report.getExportFormat() != null ? report.getExportFormat().toUpperCase() : "PDF");
 
         byte[] exportBytes;
-        if ("EXCEL".equalsIgnoreCase(exportFormat) || "XLSX".equalsIgnoreCase(exportFormat)) {
-            exportBytes = exportEngineService.generateExcelReport(reportName, "ACC-100234", "USD");
-        } else if ("CSV".equalsIgnoreCase(exportFormat)) {
-            exportBytes = exportEngineService.generateCsvReport(reportName, "ACC-100234", "USD");
+        if ("EXCEL".equals(targetFormat) || "XLSX".equals(targetFormat)) {
+            exportBytes = exportEngineService.generateExcelExport(report);
+        } else if ("CSV".equals(targetFormat)) {
+            exportBytes = exportEngineService.generateCsvExport(report);
         } else {
-            exportBytes = exportEngineService.generatePdfReport(reportName, "ACC-100234", "USD");
+            exportBytes = exportEngineService.generatePdfExport(report);
         }
 
-        auditLogService.logAction(userId, "EXPORT_REPORT", "GeneratedReport", reportId, clientIp,
-                "Exported statement in format: " + exportFormat);
+        auditLogService.log(
+                currentUserId != null ? currentUserId : "anonymous",
+                "EXPORT_REPORT",
+                "REPORT",
+                report.getId(),
+                null,
+                null,
+                "Exported report in format: " + targetFormat
+        );
+
         return exportBytes;
     }
 }

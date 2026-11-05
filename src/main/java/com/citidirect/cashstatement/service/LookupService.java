@@ -1,14 +1,15 @@
 package com.citidirect.cashstatement.service;
 
-import com.citidirect.cashstatement.dto.LookupDTO;
+import com.citidirect.cashstatement.dto.LookupAccountDTO;
+import com.citidirect.cashstatement.dto.LookupBranchDTO;
+import com.citidirect.cashstatement.dto.LookupCustomerDTO;
 import com.citidirect.cashstatement.entity.BaseReport;
 import com.citidirect.cashstatement.repository.BaseReportRepository;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class LookupService {
@@ -19,43 +20,40 @@ public class LookupService {
         this.baseReportRepository = baseReportRepository;
     }
 
-    public List<LookupDTO.BranchLookup> getBranches() {
-        return List.of(
-            new LookupDTO.BranchLookup("BR-NYC-001", "New York Main Financial Center"),
-            new LookupDTO.BranchLookup("BR-LON-002", "London Canary Wharf Treasury Hub"),
-            new LookupDTO.BranchLookup("BR-SIN-003", "Singapore Marina Bay Regional Branch"),
-            new LookupDTO.BranchLookup("BR-HKG-004", "Hong Kong Central Operations Hub"),
-            new LookupDTO.BranchLookup("BR-TYO-005", "Tokyo Otemachi Banking Center"),
-            new LookupDTO.BranchLookup("BR-FRA-006", "Frankfurt European Clearing Branch")
+    public List<BaseReport> getReportNames() {
+        return baseReportRepository.findAll();
+    }
+
+    public List<LookupBranchDTO> getBranches() {
+        return Arrays.asList(
+            new LookupBranchDTO("NYC-001", "New York Main Branch", "New York", "USA"),
+            new LookupBranchDTO("LON-044", "London Canary Wharf", "London", "GBR"),
+            new LookupBranchDTO("SIN-012", "Singapore Marina Bay", "Singapore", "SGP"),
+            new LookupBranchDTO("FRA-009", "Frankfurt Main Desk", "Frankfurt", "DEU"),
+            new LookupBranchDTO("HKG-002", "Hong Kong Central", "Hong Kong", "HKG"),
+            new LookupBranchDTO("ZRH-005", "Zurich Paradeplatz", "Zurich", "CHE")
         );
     }
 
-    public List<LookupDTO.CustomerLookup> getCustomers() {
-        return List.of(
-            new LookupDTO.CustomerLookup("CUST-9021", "Global Logistics Corp & Subsidiaries"),
-            new LookupDTO.CustomerLookup("CUST-9022", "Apex Semiconductor International Ltd"),
-            new LookupDTO.CustomerLookup("CUST-9023", "Meridian Energy & Infrastructure Group"),
-            new LookupDTO.CustomerLookup("CUST-9024", "Centennial Pharmaceuticals USA Inc"),
-            new LookupDTO.CustomerLookup("CUST-9025", "Vanguard Automotive Solutions LLC")
+    public List<LookupCustomerDTO> getCustomers() {
+        return Arrays.asList(
+            new LookupCustomerDTO("CUST-9021", "Global Logistics Corp", "US-88291039"),
+            new LookupCustomerDTO("CUST-9022", "Apex Energy International", "GB-77192044"),
+            new LookupCustomerDTO("CUST-9023", "Pacific Maritime Holdings", "SG-99381022"),
+            new LookupCustomerDTO("CUST-9024", "Continental Manufacturing GMBH", "DE-11029481")
         );
     }
 
-    public List<LookupDTO.AccountLookup> getAccounts() {
-        return List.of(
-            new LookupDTO.AccountLookup("ACC-100234", "USD", "BR-NYC-001", new BigDecimal("4500210.50")),
-            new LookupDTO.AccountLookup("ACC-100567", "USD", "BR-NYC-001", new BigDecimal("1250340.25")),
-            new LookupDTO.AccountLookup("ACC-200891", "EUR", "BR-FRA-006", new BigDecimal("8920150.00")),
-            new LookupDTO.AccountLookup("ACC-300412", "GBP", "BR-LON-002", new BigDecimal("3410500.80")),
-            new LookupDTO.AccountLookup("ACC-400789", "SGD", "BR-SIN-003", new BigDecimal("6750000.00")),
-            new LookupDTO.AccountLookup("ACC-500123", "JPY", "BR-TYO-005", new BigDecimal("154200000.00"))
+    public List<LookupAccountDTO> getAccounts() {
+        return Arrays.asList(
+            new LookupAccountDTO("CITI-US-99201488", "USD Main Operational", "USD", "NYC-001", new BigDecimal("48520300.50")),
+            new LookupAccountDTO("CITI-GB-88402199", "GBP Treasury Clearing", "GBP", "LON-044", new BigDecimal("14209110.20")),
+            new LookupAccountDTO("CITI-SG-44109833", "SGD Regional Sweeping", "SGD", "SIN-012", new BigDecimal("32910400.00")),
+            new LookupAccountDTO("CITI-DE-11029481", "EUR Pooling Account", "EUR", "FRA-009", new BigDecimal("88190200.75")),
+            new LookupAccountDTO("CITI-HK-55209118", "HKD Multi-Currency Desk", "HKD", "HKG-002", new BigDecimal("195004000.00")),
+            new LookupAccountDTO("CITI-US-33991204", "USD ZBA Sweep Pool", "USD", "NYC-001", new BigDecimal("9140000.00")),
+            new LookupAccountDTO("CITI-US-77884100", "USD Escrow & Segregated Funds", "USD", "NYC-001", new BigDecimal("125000000.00")),
+            new LookupAccountDTO("CITI-CH-66104882", "CHF Liquidity Buffer", "CHF", "ZRH-005", new BigDecimal("22400100.00"))
         );
-    }
-
-    @Transactional(readOnly = true)
-    public List<LookupDTO.ReportNameLookup> getReportNames() {
-        List<BaseReport> baseReports = baseReportRepository.findByIsActiveTrue();
-        return baseReports.stream()
-            .map(r -> new LookupDTO.ReportNameLookup(r.getId(), r.getReportCode(), r.getName(), r.getCategory()))
-            .collect(Collectors.toList());
     }
 }
