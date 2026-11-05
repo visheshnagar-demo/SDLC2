@@ -23,7 +23,7 @@ app:
     secret: CitiDirectEnterpriseSecureBankingSecretKey2026WithSufficientBitLengthForHS256SignatureVerification!
     expiration-ms: 86400000
   cors:
-    allowed-origins: http://localhost:4200,http://localhost:5173,http://localhost:3000,http://localhost:8080
+    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:4200,http://localhost:5173,http://localhost:3000,http://localhost:8080}
 
 management:
   endpoints:
