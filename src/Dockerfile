@@ -1,16 +1,24 @@
-FROM python:3.12-slim
+# Multi-stage Docker build for CitiDirect Cash Statement Reports Backend
+FROM maven:3.9.6-eclipse-temurin-17 AS builder
+WORKDIR /build
 
+COPY pom.xml .
+RUN mvn dependency:go-offline -B || true
+
+COPY src ./src
+RUN mvn clean package -DskipTests -B
+
+FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
-# Install dependencies (paths are relative to repo root build context)
-COPY requirements.txt ./requirements.txt
-RUN pip install --no-cache-dir -r requirements.txt
+RUN addgroup -S citidirect && adduser -S citidirect -G citidirect
+USER citidirect:citidirect
 
-# Copy application code
-COPY src/ ./src/
+COPY --from=builder /build/target/*.jar app.jar
 
-# Cloud Run requires the container to listen on port 8080
-ENV PORT=8080
+ENV PORT=8080 \
+    SPRING_PROFILES_ACTIVE=prod
+
 EXPOSE 8080
 
-CMD ["sh", "-c", "python -m uvicorn server.app.main:app --host 0.0.0.0 --port ${PORT:-8080}"]
+ENTRYPOINT ["java", "-Djava.security.egd=file:/dev/./urandom", "-jar", "app.jar"]
