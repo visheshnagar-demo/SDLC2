@@ -26,18 +26,18 @@
         <div class="space-y-1">
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Report Code</label>
           <input class="w-full h-8 text-[12px] font-mono bg-white border border-[#CBD5E1] rounded px-2 focus:border-[#0070BA] focus:outline-none"
-                 placeholder="e.g. CASH_STMT_EOD" [(ngModel)]="searchCode" (input)="applyFilters()" type="text" />
+                 placeholder="e.g. CASH_STMT_EOD" [ngModel]="searchCode()" (ngModelChange)="searchCode.set($event)" (input)="applyFilters()" type="text" />
         </div>
         <div class="space-y-1">
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Report Name</label>
           <input class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 focus:border-[#0070BA] focus:outline-none"
-                 placeholder="Search by name..." [(ngModel)]="searchName" (input)="applyFilters()" type="text" />
+                 placeholder="Search by name..." [ngModel]="searchName()" (ngModelChange)="searchName.set($event)" (input)="applyFilters()" type="text" />
         </div>
         <div class="space-y-1">
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Category</label>
           <div class="relative">
             <select class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 focus:border-[#0070BA] focus:outline-none"
-                    [(ngModel)]="selectedCategory" (change)="applyFilters()">
+                    [ngModel]="selectedCategory()" (ngModelChange)="selectedCategory.set($event)" (change)="applyFilters()">
               <option value="All Categories">All Categories</option>
               <option value="Cash Statement">Cash Statement</option>
               <option value="Liquidity Feeds">Liquidity Feeds</option>
@@ -50,7 +50,7 @@
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Branch Routing</label>
           <div class="flex items-center">
             <input class="w-full h-8 text-[12px] bg-white border border-r-0 border-[#CBD5E1] rounded-l px-2 focus:border-[#0070BA] focus:outline-none"
-                   placeholder="Branch Code" [(ngModel)]="searchBranch" type="text" />
+                   placeholder="Branch Code" [ngModel]="searchBranch()" (ngModelChange)="searchBranch.set($event)" type="text" />
             <button class="btn-binocular-lookup" title="Lookup Routing Code">
               <span class="material-symbols-outlined text-[15px]">search</span>
             </button>

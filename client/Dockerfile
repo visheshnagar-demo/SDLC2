@@ -25,7 +25,7 @@ RUN printf 'server {\nlisten 8080;\nroot /usr/share/nginx/html;\nindex index.htm
 # API_BASE_URL is set as a Cloud Run env var on the frontend service.
 # Default keeps the app functional if the var is unset (e.g. local docker run).
 ENV API_BASE_URL=http://localhost:8080/api
-RUN printf '#!/bin/sh\nenvsubst "${API_BASE_URL}" < /usr/share/nginx/html/assets/env.template.js > /usr/share/nginx/html/assets/env.js\nexec nginx -g "daemon off;"\n' > /docker-entrypoint.sh \
+RUN printf '#!/bin/sh\nenvsubst < /usr/share/nginx/html/assets/env.template.js > /usr/share/nginx/html/assets/env.js\nexec nginx -g "daemon off;"\n' > /docker-entrypoint.sh \
     && chmod +x /docker-entrypoint.sh
 
 EXPOSE 8080

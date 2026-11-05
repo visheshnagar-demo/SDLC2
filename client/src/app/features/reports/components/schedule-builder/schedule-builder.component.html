@@ -183,14 +183,14 @@
             <div class="relative flex items-center">
               <span class="material-symbols-outlined absolute left-2 text-[#475569] text-[16px]">schedule</span>
               <input class="h-8 pl-8 pr-3 w-full bg-white border border-[#CBD5E1] rounded font-mono text-[12px] text-slate-900 focus:outline-none"
-                     [(ngModel)]="executionTime" type="text" />
+                     [ngModel]="executionTime()" (ngModelChange)="executionTime.set($event)" type="text" />
               <span class="absolute right-2 text-[10px] font-bold text-[#64748B] uppercase font-mono">24H MIL</span>
             </div>
           </div>
           <div>
             <label class="block text-[11px] font-semibold text-slate-600 mb-1 uppercase">Reference Timezone</label>
             <select class="h-8 px-2 w-full bg-white border border-[#CBD5E1] rounded text-[12px] text-slate-900 focus:outline-none"
-                    [(ngModel)]="timezone">
+                    [ngModel]="timezone()" (ngModelChange)="timezone.set($event)">
               <option>UTC - Coordinated Universal Time (UTC+00:00)</option>
               <option>EST - New York Fed Terminal (UTC-05:00)</option>
               <option>GMT - London Settlement Desk (UTC+00:00)</option>
@@ -218,21 +218,21 @@
           <label class="block text-[11px] font-semibold text-slate-600 mb-2 uppercase">Dispatch Transport &amp; Delivery Target</label>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
             <label class="flex items-start gap-2.5 p-3 border border-[#CBD5E1] rounded bg-white cursor-pointer">
-              <input [(ngModel)]="sftpEnabled" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <input [ngModel]="sftpEnabled()" (ngModelChange)="sftpEnabled.set($event)" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
               <div>
                 <span class="text-[12px] font-bold text-slate-900 block">Secure SFTP Delivery</span>
                 <span class="text-[11px] text-[#64748B] block mt-0.5">Push encrypted file to sftp.corporate.citigroup.net:2222</span>
               </div>
             </label>
             <label class="flex items-start gap-2.5 p-3 border border-[#CBD5E1] rounded bg-white cursor-pointer">
-              <input [(ngModel)]="swiftMqEnabled" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <input [ngModel]="swiftMqEnabled()" (ngModelChange)="swiftMqEnabled.set($event)" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
               <div>
                 <span class="text-[12px] font-bold text-slate-900 block">SWIFT Alliance MQ</span>
                 <span class="text-[11px] text-[#64748B] block mt-0.5">Real-time ISO15022 / MT940 statement message queues</span>
               </div>
             </label>
             <label class="flex items-start gap-2.5 p-3 border border-[#CBD5E1] rounded bg-white cursor-pointer">
-              <input [(ngModel)]="portalInboxEnabled" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
+              <input [ngModel]="portalInboxEnabled()" (ngModelChange)="portalInboxEnabled.set($event)" class="mt-0.5 rounded text-[#0070BA]" type="checkbox" />
               <div>
                 <span class="text-[12px] font-bold text-slate-900 block">Corporate Portal Inbox</span>
                 <span class="text-[11px] text-[#64748B] block mt-0.5">Archive PDF and MT940 to Tier 4 document repository</span>
@@ -258,7 +258,7 @@
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 mb-1 uppercase">Effective Start Date</label>
               <input class="h-8 px-2 w-full max-w-xs bg-white border border-[#CBD5E1] rounded font-mono text-[12px]"
-                     [(ngModel)]="effectiveStartDate" type="text" />
+                     [ngModel]="effectiveStartDate()" (ngModelChange)="effectiveStartDate.set($event)" type="text" />
             </div>
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 mb-1.5 uppercase">Schedule Expiry Horizon</label>
@@ -278,7 +278,7 @@
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 mb-1 uppercase">Holiday Handling Rule</label>
               <select class="h-8 px-2 w-full bg-white border border-[#CBD5E1] rounded text-[12px]"
-                      [(ngModel)]="holidayHandling">
+                      [ngModel]="holidayHandling()" (ngModelChange)="holidayHandling.set($event)">
                 <option>Execute On Next Business Day - Citi Global Banking Calendar</option>
                 <option>Execute On Preceding Business Day</option>
                 <option>Omit Execution Entirely (Suppress Holiday Run)</option>
@@ -287,7 +287,7 @@
             <div>
               <label class="block text-[11px] font-semibold text-slate-600 mb-1 uppercase">Missed Execution Failover Policy</label>
               <select class="h-8 px-2 w-full bg-white border border-[#CBD5E1] rounded text-[12px]"
-                      [(ngModel)]="failoverPolicy">
+                      [ngModel]="failoverPolicy()" (ngModelChange)="failoverPolicy.set($event)">
                 <option>Immediate Retrigger upon Gateway Recovery</option>
                 <option>Notify Operator &amp; Hold for Manual Release</option>
                 <option>Skip Missed Cycle &amp; Await Next Scheduled Window</option>

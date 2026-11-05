@@ -114,7 +114,7 @@
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Account Scope</label>
           <div class="relative">
             <select class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 pr-6 appearance-none focus:border-[#0070BA] focus:outline-none"
-                    [(ngModel)]="selectedAccount">
+                    [ngModel]="selectedAccount()" (ngModelChange)="selectedAccount.set($event)">
               <option>All Accounts (14 Linked)</option>
               <option>CITI-US-99201488 (USD Main)</option>
               <option>CITI-GB-88402199 (GBP Treasury)</option>
@@ -130,7 +130,7 @@
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Posting Window</label>
           <div class="relative">
             <input class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded pl-7 pr-2 cursor-pointer focus:border-[#0070BA] focus:outline-none"
-                   [(ngModel)]="postingWindow" type="text" />
+                   [ngModel]="postingWindow()" (ngModelChange)="postingWindow.set($event)" type="text" />
             <span class="material-symbols-outlined absolute left-2 top-2 pointer-events-none text-[#64748B] text-[16px]">calendar_today</span>
           </div>
         </div>
@@ -140,7 +140,7 @@
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Branch Routing</label>
           <div class="flex items-center">
             <input class="w-full h-8 text-[12px] bg-white border border-r-0 border-[#CBD5E1] rounded-l px-2 focus:border-[#0070BA] focus:outline-none"
-                   placeholder="NYC-001 / LON-044" [(ngModel)]="branchFilter" type="text" />
+                   placeholder="NYC-001 / LON-044" [ngModel]="branchFilter()" (ngModelChange)="branchFilter.set($event)" type="text" />
             <button (click)="openLookup()" class="btn-binocular-lookup" title="Branch Binocular Lookup">
               <span class="material-symbols-outlined text-[16px]">manage_search</span>
             </button>
@@ -152,7 +152,7 @@
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Lifecycle Status</label>
           <div class="relative">
             <select class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 pr-6 appearance-none focus:border-[#0070BA] focus:outline-none"
-                    [(ngModel)]="statusFilter" (change)="applyFilters()">
+                    [ngModel]="statusFilter()" (ngModelChange)="statusFilter.set($event)" (change)="applyFilters()">
               <option>Status: All</option>
               <option>Completed</option>
               <option>Pending Approval</option>
@@ -168,7 +168,7 @@
           <label class="block text-[11px] font-semibold text-[#64748B] uppercase">Standard / Cadence</label>
           <div class="relative">
             <select class="w-full h-8 text-[12px] bg-white border border-[#CBD5E1] rounded px-2 pr-6 appearance-none focus:border-[#0070BA] focus:outline-none"
-                    [(ngModel)]="formatFilter">
+                    [ngModel]="formatFilter()" (ngModelChange)="formatFilter.set($event)">
               <option>MT940 / End of Day</option>
               <option>BAI2 / Intraday</option>
               <option>MT942 / Interim Balance</option>

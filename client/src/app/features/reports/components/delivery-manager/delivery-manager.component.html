@@ -241,21 +241,21 @@
                   SFTP Host Name / FQDN <span class="text-rose-600">*</span>
                 </label>
                 <input class="w-full h-8 px-2.5 bg-white border border-[#CBD5E1] rounded text-[12px] font-mono text-slate-800 focus:outline-none"
-                       [(ngModel)]="sftpHost" type="text" />
+                       [ngModel]="sftpHost()" (ngModelChange)="sftpHost.set($event)" type="text" />
               </div>
               <div>
                 <label class="block text-[11px] font-semibold text-slate-600 mb-1">
                   Destination Port <span class="text-rose-600">*</span>
                 </label>
                 <input class="w-full h-8 px-2.5 bg-white border border-[#CBD5E1] rounded text-[12px] font-mono text-slate-800 focus:outline-none"
-                       [(ngModel)]="sftpPort" type="number" />
+                       [ngModel]="sftpPort()" (ngModelChange)="sftpPort.set($event)" type="number" />
               </div>
               <div>
                 <label class="block text-[11px] font-semibold text-slate-600 mb-1">
                   Remote Ingestion Path <span class="text-rose-600">*</span>
                 </label>
                 <input class="w-full h-8 px-2.5 bg-white border border-[#CBD5E1] rounded text-[12px] font-mono text-slate-800 focus:outline-none"
-                       [(ngModel)]="sftpRemotePath" type="text" />
+                       [ngModel]="sftpRemotePath()" (ngModelChange)="sftpRemotePath.set($event)" type="text" />
               </div>
               <div>
                 <label class="block text-[11px] font-semibold text-slate-600 mb-1">
@@ -272,7 +272,7 @@
             <div class="pt-2 border-t border-slate-200 flex flex-col lg:flex-row lg:items-center justify-between gap-3">
               <div class="flex items-center gap-3">
                 <label class="flex items-center gap-2 cursor-pointer">
-                  <input [(ngModel)]="pgpEncryption" class="text-[#0070BA] rounded" type="checkbox" />
+                  <input [ngModel]="pgpEncryption()" (ngModelChange)="pgpEncryption.set($event)" class="text-[#0070BA] rounded" type="checkbox" />
                   <span class="text-[12px] font-bold text-slate-800">PGP File-Level Payload Encryption:</span>
                 </label>
                 <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-blue-100 border border-blue-300 text-blue-900 font-mono text-[11px]">
@@ -353,7 +353,7 @@
               Checker Approval Comments <span class="text-rose-600">*</span>
             </label>
             <textarea class="w-full p-2 bg-white border border-[#CBD5E1] rounded text-[12px] text-slate-900 focus:outline-none"
-                      [(ngModel)]="checkerComments" rows="2"></textarea>
+                      [ngModel]="checkerComments()" (ngModelChange)="checkerComments.set($event)" rows="2"></textarea>
           </div>
           <div class="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-200">
             <div class="flex items-center gap-2 text-[11px] text-slate-500 font-mono">
