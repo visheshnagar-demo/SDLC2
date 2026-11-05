@@ -1,88 +1,117 @@
-# Project
+# CitiDirect Cash Statement Reports
 
-## Server
+Full-stack application for liquidity and cash management reporting.
 
-### Prerequisites
-- Python 3.9+
-- pip and venv
+| Layer | Technology |
+|-------|-----------|
+| Backend | Java 17 · Spring Boot 3.2.5 · Maven |
+| Frontend | Angular 17 · TypeScript · Tailwind CSS |
+| Database (dev) | H2 in-memory (PostgreSQL-compatible mode) |
+| Container runtime | Docker · nginx (frontend) · Tomcat embedded (backend) |
 
-### Setup
+---
 
-1. Create and activate virtual environment:
+## Prerequisites
+
+| Tool | Minimum version |
+|------|----------------|
+| JDK | 17 |
+| Maven | 3.9 |
+| Node.js | 20 |
+| npm | 10 |
+| Docker Desktop | any recent |
+
+---
+
+## Local Development
+
+### Backend (Spring Boot)
+
 ```bash
-python -m venv server/.venv
-# On Windows:
-server\.venv\Scripts\activate
-# On macOS/Linux:
-source server/.venv/bin/activate
+# From repo root
+./mvnw spring-boot:run
+# Or with Maven installed globally:
+mvn spring-boot:run
 ```
 
-2. Install dependencies:
-```bash
-cd server
-pip install -r requirements.txt
-cd ..
-```
+API available at `http://localhost:8080`  
+H2 console: `http://localhost:8080/h2-console` (JDBC URL: `jdbc:h2:mem:citidirect`)  
+Actuator health: `http://localhost:8080/actuator/health`
 
-### Running Tests
-```bash
-cd server
-python -m pytest -v
-cd ..
-```
+### Frontend (Angular)
 
-### Starting the Development Server
-```bash
-# Run from the repo root so that `from server.X` imports resolve correctly
-python -m uvicorn server.main:app --reload --host 0.0.0.0 --port 8000
-```
-
-The API will be available at `http://localhost:8000`
-API documentation: `http://localhost:8000/docs`
-
-## Full-Stack Local Development
-
-To run both backend and frontend together locally:
-
-### 1. Environment Setup
-```bash
-# Copy the example environment file
-cp .env.example .env
-```
-
-### 2. Start the Backend (Terminal 1)
-```bash
-python -m venv server/.venv
-source server/.venv/bin/activate  # On Windows: server\.venv\Scripts\activate
-pip install -r server/requirements.txt
-python -m uvicorn server.main:app --reload --host 0.0.0.0 --port 8000
-```
-Backend API: `http://localhost:8000` | API Docs: `http://localhost:8000/docs`
-
-### 3. Start the Frontend (Terminal 2)
 ```bash
 cd client
 npm install
-npm run dev
+npm start          # ng serve — dev server with live reload
 ```
-Frontend: `http://localhost:5173`
 
-The frontend connects to the backend API at `http://localhost:8000` by default via the `VITE_API_BASE_URL` environment variable.
+Frontend available at `http://localhost:4200`
 
-### 4. Test Credentials
-If the app has authentication, the backend seeds ready-to-use accounts on startup
-(idempotent). These are guaranteed logged-in-able — every activation/verification
-gate (`is_active`, `is_verified`, `email_verified`, `disabled`) is set to the
-permissive value, so no manual DB step is needed:
-- **Regular user** — Email: `test@example.com`, Password: `testpassword`
-- **Admin user** (only when the app has roles/RBAC) — Email: `admin@example.com`, Password: `adminpassword`, role: `admin`
+The dev server proxies API calls to `http://localhost:8080` by default.
 
-Passwords are stored hashed with the app's own hashing utility (never in plaintext).
+---
 
-### Port Reference
-| Service  | Port | URL                        |
-|----------|------|----------------------------|
-| Backend  | 8000 | http://localhost:8000      |
-| Frontend | 5173 | http://localhost:5173      |
-| API Docs | 8000 | http://localhost:8000/docs |
+## Running Both Together
 
+```bash
+# Terminal 1 — backend
+mvn spring-boot:run
+
+# Terminal 2 — frontend
+cd client && npm install && npm start
+```
+
+### Port reference
+
+| Service | Port | URL |
+|---------|------|-----|
+| Backend API | 8080 | http://localhost:8080 |
+| Frontend | 4200 | http://localhost:4200 |
+| H2 console | 8080 | http://localhost:8080/h2-console |
+| Actuator | 8080 | http://localhost:8080/actuator/health |
+
+---
+
+## Docker Builds
+
+Build context for both images is the **repo root**.
+
+```bash
+# Backend (Maven multi-stage → eclipse-temurin:17-jre-alpine)
+docker build -f src/Dockerfile -t citidirect-backend .
+docker run -p 8080:8080 citidirect-backend
+
+# Frontend (Node 20 build → nginx:alpine, port 8080)
+docker build -f client/Dockerfile -t citidirect-frontend .
+docker run -p 8081:8080 citidirect-frontend
+```
+
+> **Angular 17 output path:** `ng build` emits browser assets to
+> `dist/citidirect/browser/`. The frontend Dockerfile copies from that path
+> into nginx's document root — do not change it to `dist/` or
+> `dist/citidirect/` or nginx will serve its default welcome page.
+
+---
+
+## Tests
+
+```bash
+# Backend unit + integration tests
+mvn test
+
+# Frontend (runs vitest in CI-safe mode)
+cd client && npm test
+```
+
+---
+
+## Environment Variables
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SPRING_PROFILES_ACTIVE` | `default` | Set to `prod` in containers |
+| `PORT` | `8080` | Listening port (Cloud Run compatible) |
+| `DATABASE_URL` | H2 in-memory | Override with a JDBC URL for PostgreSQL |
+
+Copy `.env.example` to `.env` for local overrides.
