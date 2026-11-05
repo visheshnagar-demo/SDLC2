@@ -17,6 +17,7 @@ FROM nginx:alpine AS production
 RUN apk add --no-cache gettext
 
 COPY --from=build /app/dist/citidirect/browser /usr/share/nginx/html
+COPY --from=build /app/src/assets/env.template.js /usr/share/nginx/html/assets/env.template.js
 
 # Configure nginx: port 8080 (Cloud Run) + SPA routing fallback
 RUN printf 'server {\nlisten 8080;\nroot /usr/share/nginx/html;\nindex index.html;\nlocation / {\ntry_files $uri $uri/ /index.html;\n}\n}\n' > /etc/nginx/conf.d/default.conf
