@@ -1,0 +1,12 @@
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args:
+      - 'build'
+      - '-t'
+      - 'us-central1-docker.pkg.dev/upbeat-repeater-477110-q6/new-sdlc-assistant/scrum-484-frontend:v2'
+      - '-f'
+      - 'client/Dockerfile'
+      - '.'
+images:
+  - 'us-central1-docker.pkg.dev/upbeat-repeater-477110-q6/new-sdlc-assistant/scrum-484-frontend:v2'
+timeout: '1200s'

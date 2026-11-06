@@ -2,23 +2,28 @@
 FROM node:20-alpine AS build
 WORKDIR /app
 
-# Copy lockfile + manifest together for a reproducible install
 COPY client/package.json* client/package-lock.json* ./
 RUN npm install --force
 
-# Copy source and build
 COPY client/ ./
 RUN npm run build -- --configuration=production
 
 # ── Production stage ─────────────────────────────────────────────────────────
 FROM nginx:alpine
 
-# Copy built Angular app (Angular 17+ outputs to dist/<project>/browser)
+# Angular 17+ outputs to dist/<project>/browser — dist already includes assets/env.template.js
 COPY --from=build /app/dist/citidirect/browser /usr/share/nginx/html
 
-# Simple SPA routing: fallback to index.html for all routes (same as Vite template)
-RUN printf 'server {\n  listen 8080;\n  root /usr/share/nginx/html;\n  index index.html index.htm;\n  location / {\n    try_files $uri $uri/ /index.html;\n  }\n}\n' > /etc/nginx/conf.d/default.conf
+RUN printf 'server {\n  listen 8080;\n  root /usr/share/nginx/html;\n  index index.html;\n  location / {\n    try_files $uri $uri/ /index.html;\n  }\n}\n' > /etc/nginx/conf.d/default.conf
+
+# gettext provides envsubst to inject API_BASE_URL at container startup
+RUN apk add --no-cache gettext
+
+ENV API_BASE_URL=http://localhost:8080/api
+
+# At startup: replace ${API_BASE_URL} in env.template.js → env.js, then start nginx
+RUN printf '#!/bin/sh\nenvsubst < /usr/share/nginx/html/assets/env.template.js > /usr/share/nginx/html/assets/env.js\nexec nginx -g "daemon off;"\n' \
+    > /docker-entrypoint.sh && chmod +x /docker-entrypoint.sh
 
 EXPOSE 8080
-
-CMD ["nginx", "-g", "daemon off;"]
+ENTRYPOINT ["/docker-entrypoint.sh"]
