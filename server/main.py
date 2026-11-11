@@ -22,7 +22,9 @@ app = FastAPI(
 )
 
 # CORS Configuration
-ALLOWED_ORIGINS = os.getenv("ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000").split(",")
+ALLOWED_ORIGINS = os.getenv(
+    "ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:3000"
+).split(",")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -42,7 +44,7 @@ def health_check():
     return {
         "status": "healthy",
         "service": "facultative-reinsurance-backend",
-        "version": "1.0.0"
+        "version": "1.0.0",
     }
 
 
@@ -50,5 +52,5 @@ def health_check():
 def root():
     return {
         "message": "Welcome to the Facultative Reinsurance Request Portal API",
-        "docs_url": "/docs"
+        "docs_url": "/docs",
     }

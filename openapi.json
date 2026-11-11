@@ -154,6 +154,58 @@
         }
       }
     },
+    "/api/v1/submissions/decline_reasons": {
+      "get": {
+        "tags": [
+          "Submissions",
+          "Submissions"
+        ],
+        "summary": "Get Submission Decline Reasons",
+        "operationId": "get_submission_decline_reasons_api_v1_submissions_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Submission Decline Reasons Api V1 Submissions Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/decline-reasons": {
+      "get": {
+        "tags": [
+          "Submissions",
+          "Submissions"
+        ],
+        "summary": "Get Submission Decline Reasons",
+        "operationId": "get_submission_decline_reasons_api_v1_submissions_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Submission Decline Reasons Api V1 Submissions Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/submissions/{id}": {
       "get": {
         "tags": [
@@ -310,6 +362,56 @@
                   },
                   "type": "array",
                   "title": "Response List Decline Reasons Api V1 Underwriting Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/decline_reasons": {
+      "get": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "List Decline Reasons",
+        "operationId": "list_decline_reasons_api_v1_underwriting_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response List Decline Reasons Api V1 Underwriting Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/decline-reasons": {
+      "get": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "List Decline Reasons",
+        "operationId": "list_decline_reasons_api_v1_underwriting_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response List Decline Reasons Api V1 Underwriting Decline Reasons Get"
                 }
               }
             }
@@ -951,12 +1053,17 @@
             "type": "string",
             "title": "Submission Number"
           },
+          "risk_type": {
+            "type": "string",
+            "title": "Risk Type"
+          },
           "status": {
             "type": "string",
             "title": "Status"
           },
           "risk_score": {
-            "$ref": "#/components/schemas/RiskScoreResponse"
+            "type": "number",
+            "title": "Risk Score"
           },
           "missing_flags_count": {
             "type": "integer",
@@ -972,6 +1079,7 @@
         "required": [
           "id",
           "submission_number",
+          "risk_type",
           "status",
           "risk_score",
           "missing_flags_count",

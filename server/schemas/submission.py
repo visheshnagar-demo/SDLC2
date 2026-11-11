@@ -34,10 +34,16 @@ class SubmissionCreate(BaseModel):
     carrier_name: str
     insured_name: str
     risk_type: Literal["CYBER", "DO"]
-    primary_limit: float = Field(gt=0, description="Primary limit must be greater than 0")
-    attachment_point: float = Field(ge=0, description="Attachment point must be non-negative")
+    primary_limit: float = Field(
+        gt=0, description="Primary limit must be greater than 0"
+    )
+    attachment_point: float = Field(
+        ge=0, description="Attachment point must be non-negative"
+    )
     ceded_limit: float = Field(gt=0, description="Ceded limit must be greater than 0")
-    carrier_premium: float = Field(gt=0, description="Carrier premium must be greater than 0")
+    carrier_premium: float = Field(
+        gt=0, description="Carrier premium must be greater than 0"
+    )
     policy_start_date: date
     policy_end_date: date
     cyber_profile: Optional[CyberProfileSchema] = None
@@ -48,7 +54,6 @@ class SubmissionCreate(BaseModel):
         if self.policy_end_date <= self.policy_start_date:
             raise ValueError("policy_end_date must be strictly after policy_start_date")
         if self.risk_type == "CYBER" and not self.cyber_profile:
-            # We allow it, but note it might lead to uncalibrated risk scoring
             pass
         if self.risk_type == "DO" and not self.do_profile:
             pass
@@ -84,8 +89,9 @@ class MissingInfoFlagResponse(BaseModel):
 class SubmissionCreatedResponse(BaseModel):
     id: str
     submission_number: str
+    risk_type: str
     status: str
-    risk_score: RiskScoreResponse
+    risk_score: float
     missing_flags_count: int
     created_at: datetime
 

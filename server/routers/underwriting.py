@@ -6,6 +6,8 @@ from server.services.decision_service import get_decline_reasons
 router = APIRouter(prefix="/api/v1/underwriting", tags=["Underwriting"])
 
 
+@router.get("/decline-reasons", response_model=List[DeclineReason])
+@router.get("/decline_reasons", response_model=List[DeclineReason])
 @router.get("/reasons", response_model=List[DeclineReason])
 def list_decline_reasons():
     reasons = get_decline_reasons()

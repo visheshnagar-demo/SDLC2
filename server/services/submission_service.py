@@ -1,7 +1,7 @@
 from datetime import datetime
 from typing import Optional, List, Tuple
 from sqlalchemy.orm import Session
-from sqlalchemy import func, desc
+from sqlalchemy import desc
 
 from server.models.submission import Submission
 from server.models.risk_profile import CyberRiskProfile, DoRiskProfile
@@ -139,12 +139,19 @@ def list_submissions(
         query = query.filter(Submission.status == status.upper())
 
     total = query.count()
-    submissions = query.order_by(desc(Submission.created_at)).offset(skip).limit(limit).all()
+    submissions = (
+        query.order_by(desc(Submission.created_at)).offset(skip).limit(limit).all()
+    )
 
     items = []
     for sub in submissions:
         # Get latest score
-        latest_score_obj = db.query(RiskScore).filter(RiskScore.submission_id == sub.id).order_by(desc(RiskScore.created_at)).first()
+        latest_score_obj = (
+            db.query(RiskScore)
+            .filter(RiskScore.submission_id == sub.id)
+            .order_by(desc(RiskScore.created_at))
+            .first()
+        )
         score_val = latest_score_obj.calculated_score if latest_score_obj else None
         tier_val = latest_score_obj.risk_tier if latest_score_obj else None
 
@@ -152,27 +159,36 @@ def list_submissions(
             if score_val is None or score_val < min_score:
                 continue
 
-        flag_count = db.query(MissingInfoFlag).filter(MissingInfoFlag.submission_id == sub.id, MissingInfoFlag.is_resolved.is_(False)).count()
+        flag_count = (
+            db.query(MissingInfoFlag)
+            .filter(
+                MissingInfoFlag.submission_id == sub.id,
+                MissingInfoFlag.is_resolved.is_(False),
+            )
+            .count()
+        )
 
-        items.append({
-            "id": sub.id,
-            "submission_number": sub.submission_number,
-            "carrier_name": sub.carrier_name,
-            "insured_name": sub.insured_name,
-            "risk_type": sub.risk_type,
-            "primary_limit": sub.primary_limit,
-            "attachment_point": sub.attachment_point,
-            "ceded_limit": sub.ceded_limit,
-            "carrier_premium": sub.carrier_premium,
-            "policy_start_date": sub.policy_start_date,
-            "policy_end_date": sub.policy_end_date,
-            "status": sub.status,
-            "calculated_score": score_val,
-            "risk_tier": tier_val,
-            "missing_flags_count": flag_count,
-            "created_at": sub.created_at,
-            "updated_at": sub.updated_at,
-        })
+        items.append(
+            {
+                "id": sub.id,
+                "submission_number": sub.submission_number,
+                "carrier_name": sub.carrier_name,
+                "insured_name": sub.insured_name,
+                "risk_type": sub.risk_type,
+                "primary_limit": sub.primary_limit,
+                "attachment_point": sub.attachment_point,
+                "ceded_limit": sub.ceded_limit,
+                "carrier_premium": sub.carrier_premium,
+                "policy_start_date": sub.policy_start_date,
+                "policy_end_date": sub.policy_end_date,
+                "status": sub.status,
+                "calculated_score": score_val,
+                "risk_tier": tier_val,
+                "missing_flags_count": flag_count,
+                "created_at": sub.created_at,
+                "updated_at": sub.updated_at,
+            }
+        )
 
     return items, total
 
@@ -182,9 +198,23 @@ def get_submission_detail(db: Session, submission_id: str) -> Optional[dict]:
     if not submission:
         return None
 
-    latest_score_obj = db.query(RiskScore).filter(RiskScore.submission_id == submission.id).order_by(desc(RiskScore.created_at)).first()
-    flags = db.query(MissingInfoFlag).filter(MissingInfoFlag.submission_id == submission.id).all()
-    latest_decision = db.query(UnderwritingDecision).filter(UnderwritingDecision.submission_id == submission.id).order_by(desc(UnderwritingDecision.created_at)).first()
+    latest_score_obj = (
+        db.query(RiskScore)
+        .filter(RiskScore.submission_id == submission.id)
+        .order_by(desc(RiskScore.created_at))
+        .first()
+    )
+    flags = (
+        db.query(MissingInfoFlag)
+        .filter(MissingInfoFlag.submission_id == submission.id)
+        .all()
+    )
+    latest_decision = (
+        db.query(UnderwritingDecision)
+        .filter(UnderwritingDecision.submission_id == submission.id)
+        .order_by(desc(UnderwritingDecision.created_at))
+        .first()
+    )
 
     decision_dict = None
     if latest_decision:
@@ -237,8 +267,14 @@ def get_submission_detail(db: Session, submission_id: str) -> Optional[dict]:
     }
 
 
-def get_submission_flags(db: Session, submission_id: str) -> Optional[List[MissingInfoFlag]]:
+def get_submission_flags(
+    db: Session, submission_id: str
+) -> Optional[List[MissingInfoFlag]]:
     submission = db.query(Submission).filter(Submission.id == submission_id).first()
     if not submission:
         return None
-    return db.query(MissingInfoFlag).filter(MissingInfoFlag.submission_id == submission_id).all()
+    return (
+        db.query(MissingInfoFlag)
+        .filter(MissingInfoFlag.submission_id == submission_id)
+        .all()
+    )

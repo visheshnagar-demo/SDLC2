@@ -1,4 +1,4 @@
-from typing import List, Dict, Any, Optional
+from typing import List, Dict, Any
 from sqlalchemy.orm import Session
 from fastapi import HTTPException
 
@@ -8,12 +8,31 @@ from server.schemas.decision import DecisionCreate
 from server.services.audit_service import log_event
 
 DECLINE_REASONS_CATALOGUE = [
-    {"code": "RISK_APPETITE_EXCEEDED", "label": "Exceeds Maximum Risk Appetite / Exposure Limits"},
-    {"code": "INADEQUATE_SECURITY_CONTROLS", "label": "Inadequate Security / Internal Controls"},
-    {"code": "HIGH_HISTORICAL_LOSS_RATIO", "label": "Adverse Prior Loss Frequency or Severity"},
-    {"code": "PRICING_TERMS_MISMATCH", "label": "Inadequate Primary Rate / Premium Inconsistency"},
+    {
+        "code": "RISK_APPETITE_EXCEEDED",
+        "label": "Exceeds Maximum Risk Appetite / Exposure Limits",
+    },
+    {
+        "code": "HIGH_EXPOSURE_AGGREGATION",
+        "label": "High Exposure Aggregation / Limit Concentration",
+    },
+    {
+        "code": "INADEQUATE_SECURITY_CONTROLS",
+        "label": "Inadequate Security / Internal Controls",
+    },
+    {
+        "code": "HIGH_HISTORICAL_LOSS_RATIO",
+        "label": "Adverse Prior Loss Frequency or Severity",
+    },
+    {
+        "code": "PRICING_TERMS_MISMATCH",
+        "label": "Inadequate Primary Rate / Premium Inconsistency",
+    },
     {"code": "CAPACITY_UNAVAILABLE", "label": "Reinsurance Capacity Fully Subscribed"},
-    {"code": "UNRESOLVED_MISSING_INFO", "label": "Unresolved Mandatory Risk Information / Disclosures"},
+    {
+        "code": "UNRESOLVED_MISSING_INFO",
+        "label": "Unresolved Mandatory Risk Information / Disclosures",
+    },
 ]
 
 VALID_DECLINE_CODES = {r["code"] for r in DECLINE_REASONS_CATALOGUE}
@@ -31,13 +50,18 @@ def record_underwriting_decision(
 ) -> Dict[str, Any]:
     submission = db.query(Submission).filter(Submission.id == submission_id).first()
     if not submission:
-        raise HTTPException(status_code=404, detail=f"Submission {submission_id} not found")
+        raise HTTPException(
+            status_code=404, detail=f"Submission {submission_id} not found"
+        )
 
     if payload.decision_type == "DECLINE":
-        if not payload.decline_reason_code or payload.decline_reason_code not in VALID_DECLINE_CODES:
+        if (
+            not payload.decline_reason_code
+            or payload.decline_reason_code not in VALID_DECLINE_CODES
+        ):
             raise HTTPException(
                 status_code=400,
-                detail=f"Invalid decline_reason_code. Must be one of: {list(VALID_DECLINE_CODES)}"
+                detail=f"Invalid decline_reason_code. Must be one of: {sorted(list(VALID_DECLINE_CODES))}",
             )
         submission.status = "DECLINED"
     elif payload.decision_type == "QUOTE":

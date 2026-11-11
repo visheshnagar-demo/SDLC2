@@ -11,58 +11,92 @@ from server.schemas.submission import (
     SubmissionDetailResponse,
     PaginatedSubmissionsResponse,
     MissingInfoFlagResponse,
-    RiskScoreResponse,
 )
-from server.schemas.decision import DecisionCreate, DecisionResponse
+from server.schemas.decision import DecisionCreate, DecisionResponse, DeclineReason
 from server.services.submission_service import (
     create_submission,
     list_submissions,
     get_submission_detail,
     get_submission_flags,
 )
-from server.services.decision_service import record_underwriting_decision
+from server.services.decision_service import (
+    record_underwriting_decision,
+    get_decline_reasons,
+)
 
 router = APIRouter(prefix="/api/v1/submissions", tags=["Submissions"])
 
 
-@router.post("", response_model=SubmissionCreatedResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "", response_model=SubmissionCreatedResponse, status_code=status.HTTP_201_CREATED
+)
 def submit_reinsurance_request(
     payload: SubmissionCreate,
     db: Session = Depends(get_db),
 ):
     submission = create_submission(db, payload)
-    latest_score_obj = db.query(RiskScore).filter(RiskScore.submission_id == submission.id).order_by(desc(RiskScore.created_at)).first()
-    flag_count = db.query(MissingInfoFlag).filter(MissingInfoFlag.submission_id == submission.id, MissingInfoFlag.is_resolved.is_(False)).count()
+    latest_score_obj = (
+        db.query(RiskScore)
+        .filter(RiskScore.submission_id == submission.id)
+        .order_by(desc(RiskScore.created_at))
+        .first()
+    )
+    flag_count = (
+        db.query(MissingInfoFlag)
+        .filter(
+            MissingInfoFlag.submission_id == submission.id,
+            MissingInfoFlag.is_resolved.is_(False),
+        )
+        .count()
+    )
 
-    score_resp = RiskScoreResponse(
-        id=latest_score_obj.id if latest_score_obj else None,
-        calculated_score=latest_score_obj.calculated_score if latest_score_obj else 50.0,
-        risk_tier=latest_score_obj.risk_tier if latest_score_obj else "MEDIUM",
-        scoring_breakdown=latest_score_obj.scoring_breakdown if latest_score_obj else {},
-        is_calibrated=latest_score_obj.is_calibrated if latest_score_obj else True,
-        created_at=latest_score_obj.created_at if latest_score_obj else submission.created_at,
+    calculated_score = (
+        float(latest_score_obj.calculated_score) if latest_score_obj else 50.0
     )
 
     return SubmissionCreatedResponse(
         id=submission.id,
         submission_number=submission.submission_number,
+        risk_type=submission.risk_type,
         status=submission.status,
-        risk_score=score_resp,
+        risk_score=calculated_score,
         missing_flags_count=flag_count,
         created_at=submission.created_at,
     )
 
 
+@router.get(
+    "/decline-reasons", response_model=List[DeclineReason], tags=["Submissions"]
+)
+@router.get(
+    "/decline_reasons", response_model=List[DeclineReason], tags=["Submissions"]
+)
+def get_submission_decline_reasons():
+    return get_decline_reasons()
+
+
 @router.get("", response_model=PaginatedSubmissionsResponse)
 def get_submissions_queue(
     risk_type: Optional[str] = Query(None, description="Filter by CYBER or DO"),
-    status: Optional[str] = Query(None, description="Filter by status (e.g. SUBMITTED, UNDER_REVIEW, QUOTED, DECLINED)"),
-    min_score: Optional[float] = Query(None, description="Filter by minimum risk score"),
+    status: Optional[str] = Query(
+        None,
+        description="Filter by status (e.g. SUBMITTED, UNDER_REVIEW, QUOTED, DECLINED)",
+    ),
+    min_score: Optional[float] = Query(
+        None, description="Filter by minimum risk score"
+    ),
     skip: int = Query(0, ge=0),
     limit: int = Query(20, ge=1, le=100),
     db: Session = Depends(get_db),
 ):
-    items, total = list_submissions(db, risk_type=risk_type, status=status, min_score=min_score, skip=skip, limit=limit)
+    items, total = list_submissions(
+        db,
+        risk_type=risk_type,
+        status=status,
+        min_score=min_score,
+        skip=skip,
+        limit=limit,
+    )
     return PaginatedSubmissionsResponse(
         total=total,
         skip=skip,
@@ -92,9 +126,7 @@ def get_flags_for_submission(
         raise HTTPException(status_code=404, detail=f"Submission {id} not found")
     return {
         "submission_id": id,
-        "flags": [
-            MissingInfoFlagResponse.model_validate(f) for f in flags
-        ],
+        "flags": [MissingInfoFlagResponse.model_validate(f) for f in flags],
     }
 
 

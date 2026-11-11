@@ -14,7 +14,9 @@ def get_risk_tier(score: float) -> str:
         return "CRITICAL"
 
 
-def calculate_risk_score(submission: Submission) -> Tuple[float, str, Dict[str, Any], bool]:
+def calculate_risk_score(
+    submission: Submission,
+) -> Tuple[float, str, Dict[str, Any], bool]:
     """
     Computes a normalized risk score (0-100) and risk tier based on risk attributes.
     Returns: (calculated_score, risk_tier, scoring_breakdown, is_calibrated)
@@ -22,7 +24,12 @@ def calculate_risk_score(submission: Submission) -> Tuple[float, str, Dict[str, 
     if submission.risk_type == "CYBER":
         profile: CyberRiskProfile = submission.cyber_profile
         if not profile:
-            return 50.0, "MEDIUM", {"baseline_reason": "No cyber profile provided - baseline applied"}, False
+            return (
+                50.0,
+                "MEDIUM",
+                {"baseline_reason": "No cyber profile provided - baseline applied"},
+                False,
+            )
 
         breakdown = {"base_score": 15.0}
         total = 15.0
@@ -55,7 +62,9 @@ def calculate_risk_score(submission: Submission) -> Tuple[float, str, Dict[str, 
             total += 10.0
             breakdown["moderate_record_volume_penalty"] = 10.0
 
-        if submission.primary_limit > 0 and submission.attachment_point < (submission.primary_limit * 0.5):
+        if submission.primary_limit > 0 and submission.attachment_point < (
+            submission.primary_limit * 0.5
+        ):
             total += 10.0
             breakdown["low_attachment_point_penalty"] = 10.0
 
@@ -66,7 +75,12 @@ def calculate_risk_score(submission: Submission) -> Tuple[float, str, Dict[str, 
     elif submission.risk_type == "DO":
         profile: DoRiskProfile = submission.do_profile
         if not profile:
-            return 50.0, "MEDIUM", {"baseline_reason": "No D&O profile provided - baseline applied"}, False
+            return (
+                50.0,
+                "MEDIUM",
+                {"baseline_reason": "No D&O profile provided - baseline applied"},
+                False,
+            )
 
         breakdown = {"base_score": 15.0}
         total = 15.0
@@ -102,7 +116,9 @@ def calculate_risk_score(submission: Submission) -> Tuple[float, str, Dict[str, 
             total += 10.0
             breakdown["public_company_exposure_penalty"] = 10.0
 
-        if submission.primary_limit > 0 and submission.attachment_point < (submission.primary_limit * 0.5):
+        if submission.primary_limit > 0 and submission.attachment_point < (
+            submission.primary_limit * 0.5
+        ):
             total += 10.0
             breakdown["low_attachment_point_penalty"] = 10.0
 
@@ -110,4 +126,9 @@ def calculate_risk_score(submission: Submission) -> Tuple[float, str, Dict[str, 
         tier = get_risk_tier(final_score)
         return final_score, tier, breakdown, True
 
-    return 50.0, "MEDIUM", {"baseline_reason": "Unknown risk type - baseline applied"}, False
+    return (
+        50.0,
+        "MEDIUM",
+        {"baseline_reason": "Unknown risk type - baseline applied"},
+        False,
+    )

@@ -33,9 +33,10 @@ def test_create_cyber_submission_success(client):
     data = response.json()
     assert "id" in data
     assert data["submission_number"].startswith("FAC-")
+    assert data["risk_type"] == "CYBER"
     assert data["status"] in ["UNDER_REVIEW", "INFO_REQUESTED"]
     assert "risk_score" in data
-    assert data["risk_score"]["calculated_score"] > 0
+    assert data["risk_score"] > 0
     assert data["missing_flags_count"] >= 1
 
 
@@ -66,7 +67,9 @@ def test_create_do_submission_success(client):
     data = response.json()
     assert "id" in data
     assert data["submission_number"].startswith("FAC-")
+    assert data["risk_type"] == "DO"
     assert "risk_score" in data
+    assert data["risk_score"] > 0
 
 
 def test_create_submission_invalid_dates_rejected(client):
@@ -103,27 +106,30 @@ def test_create_submission_negative_limit_rejected(client):
 
 def test_get_submissions_queue_and_filter(client):
     # Create a cyber submission
-    client.post("/api/v1/submissions", json={
-        "carrier_name": "Carrier Alpha",
-        "insured_name": "Insured Alpha",
-        "risk_type": "CYBER",
-        "primary_limit": 1000000.00,
-        "attachment_point": 2000000.00,
-        "ceded_limit": 1000000.00,
-        "carrier_premium": 50000.00,
-        "policy_start_date": "2026-01-01",
-        "policy_end_date": "2027-01-01",
-        "cyber_profile": {
-            "industry_sector": "Finance",
-            "record_count": 50000,
-            "has_mfa_email": True,
-            "has_mfa_remote_access": True,
-            "has_mfa_admin_accounts": True,
-            "has_edr_deployed": True,
-            "has_immutable_backups": True,
-            "prior_ransomware_claims": 0,
-        }
-    })
+    client.post(
+        "/api/v1/submissions",
+        json={
+            "carrier_name": "Carrier Alpha",
+            "insured_name": "Insured Alpha",
+            "risk_type": "CYBER",
+            "primary_limit": 1000000.00,
+            "attachment_point": 2000000.00,
+            "ceded_limit": 1000000.00,
+            "carrier_premium": 50000.00,
+            "policy_start_date": "2026-01-01",
+            "policy_end_date": "2027-01-01",
+            "cyber_profile": {
+                "industry_sector": "Finance",
+                "record_count": 50000,
+                "has_mfa_email": True,
+                "has_mfa_remote_access": True,
+                "has_mfa_admin_accounts": True,
+                "has_edr_deployed": True,
+                "has_immutable_backups": True,
+                "prior_ransomware_claims": 0,
+            },
+        },
+    )
 
     # List queue
     response = client.get("/api/v1/submissions?risk_type=CYBER")
@@ -135,27 +141,30 @@ def test_get_submissions_queue_and_filter(client):
 
 
 def test_get_submission_detail_and_flags(client):
-    create_resp = client.post("/api/v1/submissions", json={
-        "carrier_name": "Carrier Beta",
-        "insured_name": "Insured Beta",
-        "risk_type": "CYBER",
-        "primary_limit": 2000000.00,
-        "attachment_point": 3000000.00,
-        "ceded_limit": 1000000.00,
-        "carrier_premium": 75000.00,
-        "policy_start_date": "2026-02-01",
-        "policy_end_date": "2027-02-01",
-        "cyber_profile": {
-            "industry_sector": "Healthcare",
-            "record_count": 8000000,
-            "has_mfa_email": False,
-            "has_mfa_remote_access": False,
-            "has_mfa_admin_accounts": False,
-            "has_edr_deployed": False,
-            "has_immutable_backups": False,
-            "prior_ransomware_claims": 1,
-        }
-    })
+    create_resp = client.post(
+        "/api/v1/submissions",
+        json={
+            "carrier_name": "Carrier Beta",
+            "insured_name": "Insured Beta",
+            "risk_type": "CYBER",
+            "primary_limit": 2000000.00,
+            "attachment_point": 3000000.00,
+            "ceded_limit": 1000000.00,
+            "carrier_premium": 75000.00,
+            "policy_start_date": "2026-02-01",
+            "policy_end_date": "2027-02-01",
+            "cyber_profile": {
+                "industry_sector": "Healthcare",
+                "record_count": 8000000,
+                "has_mfa_email": False,
+                "has_mfa_remote_access": False,
+                "has_mfa_admin_accounts": False,
+                "has_edr_deployed": False,
+                "has_immutable_backups": False,
+                "prior_ransomware_claims": 1,
+            },
+        },
+    )
     sub_id = create_resp.json()["id"]
 
     # Get Detail

@@ -21,10 +21,30 @@ class Submission(Base):
     policy_end_date = Column(Date, nullable=False)
     status = Column(String(32), nullable=False, default="SUBMITTED")
     created_at = Column(DateTime, nullable=False, default=datetime.utcnow)
-    updated_at = Column(DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at = Column(
+        DateTime, nullable=False, default=datetime.utcnow, onupdate=datetime.utcnow
+    )
 
-    cyber_profile = relationship("CyberRiskProfile", uselist=False, back_populates="submission", cascade="all, delete-orphan")
-    do_profile = relationship("DoRiskProfile", uselist=False, back_populates="submission", cascade="all, delete-orphan")
-    risk_scores = relationship("RiskScore", back_populates="submission", cascade="all, delete-orphan")
-    flags = relationship("MissingInfoFlag", back_populates="submission", cascade="all, delete-orphan")
-    decisions = relationship("UnderwritingDecision", back_populates="submission", cascade="all, delete-orphan")
+    cyber_profile = relationship(
+        "CyberRiskProfile",
+        uselist=False,
+        back_populates="submission",
+        cascade="all, delete-orphan",
+    )
+    do_profile = relationship(
+        "DoRiskProfile",
+        uselist=False,
+        back_populates="submission",
+        cascade="all, delete-orphan",
+    )
+    risk_scores = relationship(
+        "RiskScore", back_populates="submission", cascade="all, delete-orphan"
+    )
+    flags = relationship(
+        "MissingInfoFlag", back_populates="submission", cascade="all, delete-orphan"
+    )
+    decisions = relationship(
+        "UnderwritingDecision",
+        back_populates="submission",
+        cascade="all, delete-orphan",
+    )
