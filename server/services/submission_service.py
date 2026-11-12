@@ -7,7 +7,7 @@ from fastapi import HTTPException, status
 from server.models.submission import Submission
 from server.models.risk_profile import CyberRiskProfile, DoRiskProfile
 from server.models.evaluation import RiskScore, MissingInfoFlag
-from server.schemas.submission import SubmissionCreate
+from server.schemas.submission import SubmissionCreate, normalize_risk_type
 from server.services.scoring_engine import RiskScoringEngine
 from server.services.flagging_engine import FlaggingEngine
 from server.services.audit_service import AuditService
@@ -48,12 +48,21 @@ class SubmissionService:
                 detail="carrier_premium must be greater than zero",
             )
 
+        normalized_risk = (
+            normalize_risk_type(data.risk_type) or data.risk_type.upper().strip()
+        )
+        if normalized_risk not in ("CYBER", "DO"):
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail=f"Invalid risk_type: {data.risk_type}. Must be either CYBER or DO",
+            )
+
         submission_id = str(uuid.uuid4())
         submission = Submission(
             id=submission_id,
             carrier_name=data.carrier_name,
             insured_name=data.insured_name,
-            risk_type=data.risk_type.upper(),
+            risk_type=normalized_risk,
             primary_limit=data.primary_limit,
             attachment_point=data.attachment_point,
             ceded_limit=data.ceded_limit,
@@ -152,7 +161,11 @@ class SubmissionService:
         query = db.query(Submission)
 
         if risk_type:
-            query = query.filter(Submission.risk_type == risk_type.upper().strip())
+            norm_risk = normalize_risk_type(risk_type)
+            if norm_risk in ("CYBER", "DO"):
+                query = query.filter(Submission.risk_type == norm_risk)
+            else:
+                query = query.filter(Submission.risk_type == risk_type.upper().strip())
         if status_filter:
             query = query.filter(Submission.status == status_filter.upper().strip())
         if min_score is not None:

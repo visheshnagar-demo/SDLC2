@@ -71,3 +71,7 @@ class Submission(Base):
     @property
     def premium(self) -> float:
         return self.carrier_premium
+
+    @property
+    def risk_category(self) -> str:
+        return self.risk_type

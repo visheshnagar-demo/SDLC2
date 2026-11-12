@@ -34,6 +34,24 @@ def test_create_cyber_submission(client):
     assert data["risk_tier"] in ("LOW", "MEDIUM", "HIGH")
 
 
+def test_create_cyber_submission_variants(client):
+    for r_type in ["cyber", "CYBER", "Cyber", "Cyber Risk"]:
+        payload = {
+            "carrier_name": "Acme Underwriting Mutual",
+            "insured_name": f"Test {r_type} Corp",
+            "risk_type": r_type,
+            "primary_limit": 5000000.0,
+            "attachment_point": 10000000.0,
+            "ceded_limit": 2500000.0,
+            "carrier_premium": 150000.0,
+            "policy_start_date": "2026-08-01",
+            "policy_end_date": "2027-08-01",
+        }
+        res = client.post("/api/v1/submissions", json=payload)
+        assert res.status_code in [200, 201]
+        assert res.json()["risk_type"] == "CYBER"
+
+
 def test_create_cyber_submission_success(client):
     payload = {
         "carrier_name": "Acme Underwriting Mutual",
@@ -93,6 +111,33 @@ def test_create_do_submission(client):
     assert data["risk_type"] == "DO"
     assert data["risk_score"] > 60.0
     assert data["risk_tier"] in ("MEDIUM", "HIGH")
+
+
+def test_create_do_submission_variants(client):
+    for r_type in [
+        "DO",
+        "do",
+        "Do",
+        "D&O",
+        "d&o",
+        "D & O",
+        "D_AND_O",
+        "Directors & Officers",
+    ]:
+        payload = {
+            "carrier_name": "Sentinel Risk Partners",
+            "insured_name": f"Test {r_type} Corp",
+            "risk_type": r_type,
+            "primary_limit": 10000000.0,
+            "attachment_point": 5000000.0,
+            "ceded_limit": 5000000.0,
+            "carrier_premium": 200000.0,
+            "policy_start_date": "2026-07-01",
+            "policy_end_date": "2027-07-01",
+        }
+        res = client.post("/api/v1/submissions", json=payload)
+        assert res.status_code in [200, 201]
+        assert res.json()["risk_type"] == "DO"
 
 
 def test_do_high_executive_turnover_risk_score(client):
@@ -172,19 +217,20 @@ def test_create_submission_invalid_dates_rejected(client):
 
 
 def test_create_submission_invalid_risk_type_rejected(client):
-    payload = {
-        "carrier_name": "Test Carrier",
-        "insured_name": "Invalid Type Corp",
-        "risk_type": "PROPERTY",
-        "primary_limit": 5000000.0,
-        "attachment_point": 10000000.0,
-        "ceded_limit": 2500000.0,
-        "carrier_premium": 150000.0,
-        "policy_start_date": "2026-06-01",
-        "policy_end_date": "2027-06-01",
-    }
-    response = client.post("/api/v1/submissions", json=payload)
-    assert response.status_code == 422
+    for bad_type in ["PROPERTY", "AUTO", "TORNADO", "CASUALTY", "INDOOR"]:
+        payload = {
+            "carrier_name": "Test Carrier",
+            "insured_name": "Invalid Type Corp",
+            "risk_type": bad_type,
+            "primary_limit": 5000000.0,
+            "attachment_point": 10000000.0,
+            "ceded_limit": 2500000.0,
+            "carrier_premium": 150000.0,
+            "policy_start_date": "2026-06-01",
+            "policy_end_date": "2027-06-01",
+        }
+        response = client.post("/api/v1/submissions", json=payload)
+        assert response.status_code == 422
 
 
 def test_list_and_filter_submissions(client):
@@ -195,11 +241,19 @@ def test_list_and_filter_submissions(client):
     assert "total" in data
     assert data["total"] >= 1
 
-    # Filter by risk type CYBER
-    res_cyber = client.get("/api/v1/submissions?risk_type=CYBER")
-    assert res_cyber.status_code == 200
-    for item in res_cyber.json()["items"]:
-        assert item["risk_type"] == "CYBER"
+    # Filter by risk type CYBER / cyber / Cyber
+    for r_filter in ["CYBER", "cyber", "Cyber"]:
+        res_cyber = client.get(f"/api/v1/submissions?risk_type={r_filter}")
+        assert res_cyber.status_code == 200
+        for item in res_cyber.json()["items"]:
+            assert item["risk_type"] == "CYBER"
+
+    # Filter by risk type DO / D&O / d&o
+    for r_filter in ["DO", "do", "D&O", "d&o"]:
+        res_do = client.get(f"/api/v1/submissions?risk_type={r_filter}")
+        assert res_do.status_code == 200
+        for item in res_do.json()["items"]:
+            assert item["risk_type"] == "DO"
 
     # Filter by min_score
     res_score = client.get("/api/v1/submissions?min_score=50.0")

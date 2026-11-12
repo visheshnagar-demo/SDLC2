@@ -3,6 +3,59 @@ from datetime import datetime, date
 from pydantic import BaseModel, field_validator, model_validator, ConfigDict
 
 
+def normalize_risk_type(raw_val: Any) -> Optional[str]:
+    if raw_val is None:
+        return None
+    s = str(raw_val).strip()
+    if not s:
+        return None
+    upper_s = s.upper()
+    if "CYBER" in upper_s:
+        return "CYBER"
+    cleaned = (
+        upper_s.replace("&", "")
+        .replace("/", "")
+        .replace("-", "")
+        .replace("_", "")
+        .replace(" ", "")
+    )
+    if cleaned in (
+        "DO",
+        "DAND_O",
+        "DANDO",
+        "DORISK",
+        "DANDORISK",
+        "DANDORISKS",
+        "DORISKS",
+        "DIRECTOR",
+        "DIRECTORS",
+        "DIRECTORSOFFICERS",
+        "DIRECTORSANDOFFICERS",
+        "DIRECTORANDOFFICER",
+        "MANAGEMENTLIABILITY",
+        "EXECUTIVELIABILITY",
+        "EXECUTIVE",
+        "OFFICER",
+    ):
+        return "DO"
+    if "DIRECTOR" in upper_s or "EXECUTIVE" in upper_s or "OFFICER" in upper_s:
+        return "DO"
+    if upper_s in (
+        "DO",
+        "D&O",
+        "D & O",
+        "D/O",
+        "D-O",
+        "D_O",
+        "D_AND_O",
+        "D AND O",
+        "DIRECTORS & OFFICERS",
+        "DIRECTORS AND OFFICERS",
+    ):
+        return "DO"
+    return upper_s
+
+
 class CyberProfileBase(BaseModel):
     mfa_enabled: Optional[bool] = None
     edr_implemented: Optional[bool] = None
@@ -234,18 +287,8 @@ class SubmissionCreate(BaseModel):
             else (d.get("risk_category") or d.get("type") or d.get("category"))
         )
         if raw_risk is not None:
-            raw_risk_str = str(raw_risk).upper().strip()
-            if "CYBER" in raw_risk_str:
-                d["risk_type"] = "CYBER"
-            elif (
-                "DO" in raw_risk_str
-                or "D&O" in raw_risk_str
-                or "D_AND_O" in raw_risk_str
-                or "DIRECTOR" in raw_risk_str
-            ):
-                d["risk_type"] = "DO"
-            else:
-                d["risk_type"] = raw_risk_str
+            norm = normalize_risk_type(raw_risk)
+            d["risk_type"] = norm if norm is not None else str(raw_risk).upper().strip()
         else:
             if (
                 "do_profile" in d
@@ -427,13 +470,15 @@ class SubmissionCreate(BaseModel):
 
         return d
 
-    @field_validator("risk_type")
+    @field_validator("risk_type", mode="before")
     @classmethod
-    def validate_risk_type(cls, v: str) -> str:
-        upper_v = str(v).upper().strip()
-        if upper_v not in ("CYBER", "DO"):
-            raise ValueError("risk_type must be either 'CYBER' or 'DO'")
-        return upper_v
+    def validate_risk_type(cls, v: Any) -> str:
+        if v is None:
+            return "CYBER"
+        norm = normalize_risk_type(v)
+        if norm not in ("CYBER", "DO"):
+            raise ValueError(f"risk_type must be either 'CYBER' or 'DO', got '{v}'")
+        return norm
 
 
 class SubmissionResponse(BaseModel):
@@ -461,8 +506,21 @@ class SubmissionResponse(BaseModel):
     decisions: List[DecisionSummaryResponse] = []
 
     # Client-facing aliases
+    risk_category: Optional[str] = None
     limit: Optional[float] = None
     premium: Optional[float] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_aliases(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            if "risk_category" not in data and "risk_type" in data:
+                data["risk_category"] = data["risk_type"]
+            if "limit" not in data and "primary_limit" in data:
+                data["limit"] = data["primary_limit"]
+            if "premium" not in data and "carrier_premium" in data:
+                data["premium"] = data["carrier_premium"]
+        return data
 
 
 class SubmissionListResponse(BaseModel):

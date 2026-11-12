@@ -2032,6 +2032,17 @@
             "title": "Decisions",
             "default": []
           },
+          "risk_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Category"
+          },
           "limit": {
             "anyOf": [
               {
