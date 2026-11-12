@@ -1,139 +1,105 @@
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
-from sqlalchemy import desc
 
 from server.database import get_db
-from server.models.evaluation import RiskScore, MissingInfoFlag
 from server.schemas.submission import (
     SubmissionCreate,
-    SubmissionCreatedResponse,
-    SubmissionDetailResponse,
-    PaginatedSubmissionsResponse,
+    SubmissionResponse,
+    SubmissionListResponse,
     MissingInfoFlagResponse,
 )
 from server.schemas.decision import DecisionCreate, DecisionResponse, DeclineReason
-from server.services.submission_service import (
-    create_submission,
-    list_submissions,
-    get_submission_detail,
-    get_submission_flags,
-)
-from server.services.decision_service import (
-    record_underwriting_decision,
-    get_decline_reasons,
-)
+from server.services.submission_service import SubmissionService
+from server.services.decision_service import DecisionService
 
 router = APIRouter(prefix="/api/v1/submissions", tags=["Submissions"])
 
 
+@router.get(
+    "/decline-reasons",
+    response_model=List[DeclineReason],
+    summary="Get master decline reasons catalogue (alias)",
+)
+def get_decline_reasons_alias():
+    return DecisionService.get_decline_reasons()
+
+
 @router.post(
-    "", response_model=SubmissionCreatedResponse, status_code=status.HTTP_201_CREATED
+    "",
+    response_model=SubmissionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Create and ingest facultative reinsurance request",
 )
-def submit_reinsurance_request(
-    payload: SubmissionCreate,
-    db: Session = Depends(get_db),
-):
-    submission = create_submission(db, payload)
-    latest_score_obj = (
-        db.query(RiskScore)
-        .filter(RiskScore.submission_id == submission.id)
-        .order_by(desc(RiskScore.created_at))
-        .first()
-    )
-    flag_count = (
-        db.query(MissingInfoFlag)
-        .filter(
-            MissingInfoFlag.submission_id == submission.id,
-            MissingInfoFlag.is_resolved.is_(False),
-        )
-        .count()
-    )
-
-    calculated_score = (
-        float(latest_score_obj.calculated_score) if latest_score_obj else 50.0
-    )
-
-    return SubmissionCreatedResponse(
-        id=submission.id,
-        submission_number=submission.submission_number,
-        risk_type=submission.risk_type,
-        status=submission.status,
-        risk_score=calculated_score,
-        missing_flags_count=flag_count,
-        created_at=submission.created_at,
-    )
+def create_submission(payload: SubmissionCreate, db: Session = Depends(get_db)):
+    submission = SubmissionService.create_submission(db=db, data=payload)
+    return submission
 
 
 @router.get(
-    "/decline-reasons", response_model=List[DeclineReason], tags=["Submissions"]
+    "",
+    response_model=SubmissionListResponse,
+    summary="List submissions with filtering and pagination",
 )
-@router.get(
-    "/decline_reasons", response_model=List[DeclineReason], tags=["Submissions"]
-)
-def get_submission_decline_reasons():
-    return get_decline_reasons()
-
-
-@router.get("", response_model=PaginatedSubmissionsResponse)
-def get_submissions_queue(
-    risk_type: Optional[str] = Query(None, description="Filter by CYBER or DO"),
+def list_submissions(
+    risk_type: Optional[str] = Query(
+        None, description="Filter by risk category (CYBER, DO)"
+    ),
     status: Optional[str] = Query(
-        None,
-        description="Filter by status (e.g. SUBMITTED, UNDER_REVIEW, QUOTED, DECLINED)",
+        None, description="Filter by status (PENDING, QUOTED, DECLINED)"
     ),
     min_score: Optional[float] = Query(
-        None, description="Filter by minimum risk score"
+        None, description="Minimum risk score threshold"
     ),
-    skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    skip: int = Query(0, ge=0, description="Records to skip"),
+    limit: int = Query(20, ge=1, le=100, description="Max records to return"),
     db: Session = Depends(get_db),
 ):
-    items, total = list_submissions(
-        db,
+    items, total = SubmissionService.list_submissions(
+        db=db,
         risk_type=risk_type,
-        status=status,
+        status_filter=status,
         min_score=min_score,
         skip=skip,
         limit=limit,
     )
-    return PaginatedSubmissionsResponse(
-        total=total,
-        skip=skip,
-        limit=limit,
-        items=items,
+    return SubmissionListResponse(items=items, total=total, skip=skip, limit=limit)
+
+
+@router.get(
+    "/{submission_id}",
+    response_model=SubmissionResponse,
+    summary="Retrieve full detail of a submission",
+)
+def get_submission(submission_id: str, db: Session = Depends(get_db)):
+    submission = SubmissionService.get_submission(db=db, submission_id=submission_id)
+    if not submission:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Submission with id {submission_id} not found",
+        )
+    return submission
+
+
+@router.get(
+    "/{submission_id}/flags",
+    response_model=List[MissingInfoFlagResponse],
+    summary="Retrieve missing information flags for a submission",
+)
+def get_submission_flags(submission_id: str, db: Session = Depends(get_db)):
+    return SubmissionService.get_flags(db=db, submission_id=submission_id)
+
+
+@router.post(
+    "/{submission_id}/decisions",
+    response_model=DecisionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Record Quote or Decline decision",
+)
+def record_decision(
+    submission_id: str, payload: DecisionCreate, db: Session = Depends(get_db)
+):
+    decision = DecisionService.record_decision(
+        db=db, submission_id=submission_id, data=payload
     )
-
-
-@router.get("/{id}", response_model=SubmissionDetailResponse)
-def get_submission_by_id(
-    id: str,
-    db: Session = Depends(get_db),
-):
-    detail = get_submission_detail(db, id)
-    if not detail:
-        raise HTTPException(status_code=404, detail=f"Submission {id} not found")
-    return detail
-
-
-@router.get("/{id}/flags", response_model=Dict[str, Any])
-def get_flags_for_submission(
-    id: str,
-    db: Session = Depends(get_db),
-):
-    flags = get_submission_flags(db, id)
-    if flags is None:
-        raise HTTPException(status_code=404, detail=f"Submission {id} not found")
-    return {
-        "submission_id": id,
-        "flags": [MissingInfoFlagResponse.model_validate(f) for f in flags],
-    }
-
-
-@router.post("/{id}/decisions", response_model=DecisionResponse)
-def submit_underwriting_decision(
-    id: str,
-    payload: DecisionCreate,
-    db: Session = Depends(get_db),
-):
-    return record_underwriting_decision(db, id, payload)
+    return decision

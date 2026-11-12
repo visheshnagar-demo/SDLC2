@@ -1,134 +1,167 @@
-from typing import Dict, Any, Tuple
+import json
+from typing import Dict, Tuple, Optional
 from server.models.submission import Submission
 from server.models.risk_profile import CyberRiskProfile, DoRiskProfile
 
 
-def get_risk_tier(score: float) -> str:
-    if score < 40.0:
-        return "LOW"
-    elif score < 70.0:
-        return "MEDIUM"
-    elif score < 90.0:
-        return "HIGH"
-    else:
-        return "CRITICAL"
+class RiskScoringEngine:
+    @staticmethod
+    def calculate_score(
+        submission: Submission,
+        cyber_profile: Optional[CyberRiskProfile] = None,
+        do_profile: Optional[DoRiskProfile] = None,
+    ) -> Tuple[float, str, str]:
+        factors: Dict[str, float] = {}
+        risk_type = (submission.risk_type or "").upper()
 
+        # Financial exposure metrics
+        exposure_factor = 0.0
+        if submission.primary_limit > 0:
+            ceded_ratio = submission.ceded_limit / submission.primary_limit
+            if ceded_ratio >= 0.8:
+                exposure_factor += 10.0
+            elif ceded_ratio >= 0.5:
+                exposure_factor += 5.0
 
-def calculate_risk_score(
-    submission: Submission,
-) -> Tuple[float, str, Dict[str, Any], bool]:
-    """
-    Computes a normalized risk score (0-100) and risk tier based on risk attributes.
-    Returns: (calculated_score, risk_tier, scoring_breakdown, is_calibrated)
-    """
-    if submission.risk_type == "CYBER":
-        profile: CyberRiskProfile = submission.cyber_profile
-        if not profile:
-            return (
-                50.0,
-                "MEDIUM",
-                {"baseline_reason": "No cyber profile provided - baseline applied"},
-                False,
-            )
+            if submission.attachment_point < submission.primary_limit:
+                exposure_factor += 5.0
+        factors["financial_exposure"] = round(exposure_factor, 1)
 
-        breakdown = {"base_score": 15.0}
-        total = 15.0
+        if risk_type == "CYBER":
+            base = 45.0
+            score = base
+            factors["base_cyber_risk"] = base
 
-        if not profile.has_mfa_admin_accounts:
-            total += 25.0
-            breakdown["missing_admin_mfa_penalty"] = 25.0
-        if not profile.has_mfa_email:
-            total += 15.0
-            breakdown["missing_email_mfa_penalty"] = 15.0
-        if not profile.has_mfa_remote_access:
-            total += 15.0
-            breakdown["missing_remote_mfa_penalty"] = 15.0
-        if not profile.has_immutable_backups:
-            total += 20.0
-            breakdown["missing_immutable_backups_penalty"] = 20.0
-        if not profile.has_edr_deployed:
-            total += 15.0
-            breakdown["missing_edr_penalty"] = 15.0
+            if cyber_profile:
+                # Security controls evaluation
+                if cyber_profile.mfa_enabled is True:
+                    score -= 15.0
+                    factors["mfa_credit"] = -15.0
+                elif (
+                    cyber_profile.mfa_enabled is False
+                    or cyber_profile.mfa_enabled is None
+                ):
+                    score += 20.0
+                    factors["mfa_deficiency_penalty"] = 20.0
 
-        if profile.prior_ransomware_claims > 0:
-            claims_penalty = min(30.0, profile.prior_ransomware_claims * 15.0)
-            total += claims_penalty
-            breakdown["prior_ransomware_claims_penalty"] = claims_penalty
+                if cyber_profile.edr_implemented is True:
+                    score -= 10.0
+                    factors["edr_credit"] = -10.0
+                else:
+                    score += 15.0
+                    factors["edr_deficiency_penalty"] = 15.0
 
-        if profile.record_count > 5000000:
-            total += 20.0
-            breakdown["high_record_volume_penalty"] = 20.0
-        elif profile.record_count > 1000000:
-            total += 10.0
-            breakdown["moderate_record_volume_penalty"] = 10.0
+                if cyber_profile.offline_backups is True:
+                    score -= 10.0
+                    factors["offline_backups_credit"] = -10.0
+                else:
+                    score += 15.0
+                    factors["backups_deficiency_penalty"] = 15.0
 
-        if submission.primary_limit > 0 and submission.attachment_point < (
-            submission.primary_limit * 0.5
-        ):
-            total += 10.0
-            breakdown["low_attachment_point_penalty"] = 10.0
+                if cyber_profile.encryption_at_rest is True:
+                    score -= 5.0
+                    factors["encryption_credit"] = -5.0
+                else:
+                    score += 10.0
+                    factors["encryption_deficiency_penalty"] = 10.0
 
-        final_score = round(min(100.0, max(0.0, total)), 2)
-        tier = get_risk_tier(final_score)
-        return final_score, tier, breakdown, True
+                if cyber_profile.security_training is True:
+                    score -= 5.0
+                    factors["training_credit"] = -5.0
+                else:
+                    score += 5.0
+                    factors["training_omission_penalty"] = 5.0
 
-    elif submission.risk_type == "DO":
-        profile: DoRiskProfile = submission.do_profile
-        if not profile:
-            return (
-                50.0,
-                "MEDIUM",
-                {"baseline_reason": "No D&O profile provided - baseline applied"},
-                False,
-            )
+                # Data record volume
+                rec_count = cyber_profile.record_count or 0
+                if rec_count > 5_000_000:
+                    score += 20.0
+                    factors["high_data_volume_penalty"] = 20.0
+                elif rec_count > 1_000_000:
+                    score += 10.0
+                    factors["medium_data_volume_penalty"] = 10.0
+                elif rec_count > 200_000:
+                    score += 5.0
+                    factors["moderate_data_volume_penalty"] = 5.0
 
-        breakdown = {"base_score": 15.0}
-        total = 15.0
+                # Loss history
+                if cyber_profile.prior_ransomware_claims:
+                    score += 20.0
+                    factors["prior_ransomware_claims_penalty"] = 20.0
+                    if (cyber_profile.prior_claims_amount or 0) > 500_000:
+                        score += 10.0
+                        factors["large_loss_amount_penalty"] = 10.0
+            else:
+                score += 30.0
+                factors["missing_cyber_profile_penalty"] = 30.0
 
-        if profile.debt_to_equity_ratio > 4.0:
-            total += 30.0
-            breakdown["severe_leverage_penalty"] = 30.0
-        elif profile.debt_to_equity_ratio > 2.0:
-            total += 15.0
-            breakdown["elevated_leverage_penalty"] = 15.0
+            score += exposure_factor
 
-        if profile.executive_turnover_count > 3:
-            total += 30.0
-            breakdown["severe_executive_turnover_penalty"] = 30.0
-        elif profile.executive_turnover_count > 1:
-            total += 15.0
-            breakdown["elevated_executive_turnover_penalty"] = 15.0
+        elif risk_type == "DO":
+            base = 40.0
+            score = base
+            factors["base_do_risk"] = base
 
-        if profile.pending_litigation_flag:
-            total += 25.0
-            breakdown["pending_litigation_penalty"] = 25.0
+            if do_profile:
+                # Financial leverage
+                lev = do_profile.leverage_ratio or 0.0
+                if lev > 4.0:
+                    score += 25.0
+                    factors["high_leverage_penalty"] = 25.0
+                elif lev > 2.5:
+                    score += 15.0
+                    factors["elevated_leverage_penalty"] = 15.0
+                elif lev > 1.5:
+                    score += 5.0
+                    factors["moderate_leverage_penalty"] = 5.0
 
-        if profile.prior_securities_claims > 0:
-            securities_penalty = min(30.0, profile.prior_securities_claims * 15.0)
-            total += securities_penalty
-            breakdown["prior_securities_claims_penalty"] = securities_penalty
+                # Executive turnover
+                turnover = do_profile.executive_turnover_rate or 0.0
+                if turnover > 25.0:
+                    score += 25.0
+                    factors["severe_executive_turnover_penalty"] = 25.0
+                elif turnover > 15.0:
+                    score += 15.0
+                    factors["high_executive_turnover_penalty"] = 15.0
+                elif turnover > 8.0:
+                    score += 5.0
+                    factors["moderate_executive_turnover_penalty"] = 5.0
 
-        if not profile.has_board_oversight_charter:
-            total += 20.0
-            breakdown["missing_board_oversight_penalty"] = 20.0
+                # Litigation and Regulatory
+                if do_profile.active_litigation:
+                    score += 25.0
+                    factors["active_litigation_penalty"] = 25.0
+                if do_profile.regulatory_investigations:
+                    score += 20.0
+                    factors["regulatory_investigation_penalty"] = 20.0
 
-        if profile.company_structure.upper() == "PUBLIC":
-            total += 10.0
-            breakdown["public_company_exposure_penalty"] = 10.0
+                # Board governance
+                if do_profile.independent_board_charter is True:
+                    score -= 10.0
+                    factors["governance_board_credit"] = -10.0
+                elif do_profile.independent_board_charter is False:
+                    score += 15.0
+                    factors["lack_board_charter_penalty"] = 15.0
+            else:
+                score += 30.0
+                factors["missing_do_profile_penalty"] = 30.0
 
-        if submission.primary_limit > 0 and submission.attachment_point < (
-            submission.primary_limit * 0.5
-        ):
-            total += 10.0
-            breakdown["low_attachment_point_penalty"] = 10.0
+            score += exposure_factor
 
-        final_score = round(min(100.0, max(0.0, total)), 2)
-        tier = get_risk_tier(final_score)
-        return final_score, tier, breakdown, True
+        else:
+            score = 50.0
+            factors["default_baseline"] = 50.0
 
-    return (
-        50.0,
-        "MEDIUM",
-        {"baseline_reason": "Unknown risk type - baseline applied"},
-        False,
-    )
+        # Normalize score between 0.0 and 100.0
+        normalized_score = max(0.0, min(100.0, score))
+        final_score = round(normalized_score, 1)
+
+        # Determine risk tier
+        if final_score < 40.0:
+            tier = "LOW"
+        elif final_score <= 70.0:
+            tier = "MEDIUM"
+        else:
+            tier = "HIGH"
+
+        return final_score, tier, json.dumps(factors)

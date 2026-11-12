@@ -1,72 +1,52 @@
-from datetime import date, datetime
-from typing import Optional, List, Dict, Any, Literal
-from pydantic import BaseModel, Field, model_validator
+from typing import Optional, List
+from datetime import datetime
+from pydantic import BaseModel, Field, field_validator
 
 
-class CyberProfileSchema(BaseModel):
-    industry_sector: str
-    record_count: int = Field(ge=0, default=0)
-    has_mfa_email: bool = False
-    has_mfa_remote_access: bool = False
-    has_mfa_admin_accounts: bool = False
-    has_edr_deployed: bool = False
-    has_immutable_backups: bool = False
-    prior_ransomware_claims: int = Field(ge=0, default=0)
-
-    class Config:
-        from_attributes = True
+class CyberProfileBase(BaseModel):
+    mfa_enabled: Optional[bool] = None
+    edr_implemented: Optional[bool] = None
+    offline_backups: Optional[bool] = None
+    encryption_at_rest: Optional[bool] = None
+    record_count: Optional[int] = None
+    prior_ransomware_claims: Optional[bool] = None
+    prior_claims_amount: Optional[float] = 0.0
+    security_training: Optional[bool] = None
 
 
-class DoProfileSchema(BaseModel):
-    company_structure: str  # PUBLIC, PRIVATE, NON_PROFIT
-    market_cap: Optional[float] = None
-    debt_to_equity_ratio: float
-    executive_turnover_count: int = Field(ge=0, default=0)
-    has_board_oversight_charter: bool = False
-    pending_litigation_flag: bool = False
-    prior_securities_claims: int = Field(ge=0, default=0)
+class CyberProfileCreate(CyberProfileBase):
+    pass
+
+
+class CyberProfileResponse(CyberProfileBase):
+    id: str
+    submission_id: str
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
 
 
-class SubmissionCreate(BaseModel):
-    carrier_name: str
-    insured_name: str
-    risk_type: Literal["CYBER", "DO"]
-    primary_limit: float = Field(
-        gt=0, description="Primary limit must be greater than 0"
-    )
-    attachment_point: float = Field(
-        ge=0, description="Attachment point must be non-negative"
-    )
-    ceded_limit: float = Field(gt=0, description="Ceded limit must be greater than 0")
-    carrier_premium: float = Field(
-        gt=0, description="Carrier premium must be greater than 0"
-    )
-    policy_start_date: date
-    policy_end_date: date
-    cyber_profile: Optional[CyberProfileSchema] = None
-    do_profile: Optional[DoProfileSchema] = None
-
-    @model_validator(mode="after")
-    def validate_policy_dates_and_profiles(self):
-        if self.policy_end_date <= self.policy_start_date:
-            raise ValueError("policy_end_date must be strictly after policy_start_date")
-        if self.risk_type == "CYBER" and not self.cyber_profile:
-            pass
-        if self.risk_type == "DO" and not self.do_profile:
-            pass
-        return self
+class DoProfileBase(BaseModel):
+    leverage_ratio: Optional[float] = None
+    executive_turnover_rate: Optional[float] = None
+    active_litigation: Optional[bool] = None
+    litigation_details: Optional[str] = None
+    independent_board_charter: Optional[bool] = None
+    regulatory_investigations: Optional[bool] = None
+    annual_revenue: Optional[float] = None
 
 
-class RiskScoreResponse(BaseModel):
-    id: Optional[str] = None
-    calculated_score: float
-    risk_tier: str
-    scoring_breakdown: Dict[str, Any] = Field(default_factory=dict)
-    is_calibrated: bool = True
-    created_at: Optional[datetime] = None
+class DoProfileCreate(DoProfileBase):
+    pass
+
+
+class DoProfileResponse(DoProfileBase):
+    id: str
+    submission_id: str
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         from_attributes = True
@@ -86,69 +66,106 @@ class MissingInfoFlagResponse(BaseModel):
         from_attributes = True
 
 
-class SubmissionCreatedResponse(BaseModel):
+class RiskScoreResponse(BaseModel):
     id: str
-    submission_number: str
+    submission_id: str
+    overall_score: float
+    risk_tier: str
+    breakdown_json: Optional[str] = None
+    calculated_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class DecisionSummaryResponse(BaseModel):
+    id: str
+    submission_id: str
+    decision_type: str
+    offered_capacity: Optional[float] = None
+    quoted_rate: Optional[float] = None
+    quoted_premium: Optional[float] = None
+    terms_conditions: Optional[str] = None
+    exclusions: Optional[str] = None
+    decline_reason_code: Optional[str] = None
+    decline_notes: Optional[str] = None
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class SubmissionCreate(BaseModel):
+    carrier_name: str = Field(
+        ..., min_length=1, description="Name of submitting carrier"
+    )
+    insured_name: str = Field(..., min_length=1, description="Name of insured entity")
+    risk_type: str = Field(..., description="Risk category: CYBER or DO")
+    primary_limit: float = Field(
+        ..., gt=0, description="Primary limit in USD (must be > 0)"
+    )
+    attachment_point: float = Field(
+        ..., ge=0, description="Attachment point in USD (must be >= 0)"
+    )
+    ceded_limit: float = Field(
+        ..., gt=0, description="Ceded limit in USD (must be > 0)"
+    )
+    carrier_premium: float = Field(
+        ..., gt=0, description="Gross premium in USD (must be > 0)"
+    )
+    policy_start_date: str = Field(
+        ..., description="Policy effective start date (YYYY-MM-DD)"
+    )
+    policy_end_date: str = Field(..., description="Policy expiration date (YYYY-MM-DD)")
+    cyber_profile: Optional[CyberProfileCreate] = None
+    do_profile: Optional[DoProfileCreate] = None
+
+    @field_validator("risk_type")
+    @classmethod
+    def validate_risk_type(cls, v: str) -> str:
+        upper_v = v.upper().strip()
+        if upper_v not in ("CYBER", "DO"):
+            raise ValueError("risk_type must be either 'CYBER' or 'DO'")
+        return upper_v
+
+    @field_validator("policy_start_date", "policy_end_date")
+    @classmethod
+    def validate_date_format(cls, v: str) -> str:
+        try:
+            datetime.strptime(v.strip(), "%Y-%m-%d")
+        except ValueError:
+            raise ValueError("Date must be in valid YYYY-MM-DD format")
+        return v.strip()
+
+
+class SubmissionResponse(BaseModel):
+    id: str
+    carrier_name: str
+    insured_name: str
     risk_type: str
+    primary_limit: float
+    attachment_point: float
+    ceded_limit: float
+    carrier_premium: float
+    policy_start_date: str
+    policy_end_date: str
     status: str
     risk_score: float
-    missing_flags_count: int
-    created_at: datetime
-
-    class Config:
-        from_attributes = True
-
-
-class SubmissionSummaryResponse(BaseModel):
-    id: str
-    submission_number: str
-    carrier_name: str
-    insured_name: str
-    risk_type: str
-    primary_limit: float
-    attachment_point: float
-    ceded_limit: float
-    carrier_premium: float
-    policy_start_date: date
-    policy_end_date: date
-    status: str
-    calculated_score: Optional[float] = None
-    risk_tier: Optional[str] = None
-    missing_flags_count: int = 0
+    risk_tier: str
     created_at: datetime
     updated_at: datetime
+    cyber_profile: Optional[CyberProfileResponse] = None
+    do_profile: Optional[DoProfileResponse] = None
+    risk_score_detail: Optional[RiskScoreResponse] = None
+    flags: List[MissingInfoFlagResponse] = []
+    decisions: List[DecisionSummaryResponse] = []
 
     class Config:
         from_attributes = True
 
 
-class SubmissionDetailResponse(BaseModel):
-    id: str
-    submission_number: str
-    carrier_name: str
-    insured_name: str
-    risk_type: str
-    primary_limit: float
-    attachment_point: float
-    ceded_limit: float
-    carrier_premium: float
-    policy_start_date: date
-    policy_end_date: date
-    status: str
-    created_at: datetime
-    updated_at: datetime
-    cyber_profile: Optional[CyberProfileSchema] = None
-    do_profile: Optional[DoProfileSchema] = None
-    risk_score: Optional[RiskScoreResponse] = None
-    flags: List[MissingInfoFlagResponse] = Field(default_factory=list)
-    decision: Optional[Dict[str, Any]] = None
-
-    class Config:
-        from_attributes = True
-
-
-class PaginatedSubmissionsResponse(BaseModel):
+class SubmissionListResponse(BaseModel):
+    items: List[SubmissionResponse]
     total: int
     skip: int
     limit: int
-    items: List[SubmissionSummaryResponse]

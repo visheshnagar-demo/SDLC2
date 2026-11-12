@@ -4,31 +4,33 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy.pool import StaticPool
 from fastapi.testclient import TestClient
 
-import server.models  # noqa: F401 - ensure all models register with Base.metadata
-from server.database import Base, get_db
+from server.database import Base, get_db, seed_data
 from server.main import app
 
-# Shared test engine using SQLite in-memory with StaticPool
+# In-memory SQLite test database shared across threads in tests
 TEST_DATABASE_URL = "sqlite:///:memory:"
 
-test_engine = create_engine(
-    TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
+engine = create_engine(
+    TEST_DATABASE_URL, connect_args={"check_same_thread": False}, poolclass=StaticPool
 )
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
 @pytest.fixture(scope="session", autouse=True)
-def setup_test_database():
-    Base.metadata.create_all(bind=test_engine)
+def setup_database():
+    Base.metadata.create_all(bind=engine)
+    db = TestingSessionLocal()
+    try:
+        seed_data(db)
+    finally:
+        db.close()
     yield
-    Base.metadata.drop_all(bind=test_engine)
+    Base.metadata.drop_all(bind=engine)
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def db_session():
-    connection = test_engine.connect()
+    connection = engine.connect()
     transaction = connection.begin()
     session = TestingSessionLocal(bind=connection)
 
@@ -39,7 +41,7 @@ def db_session():
     connection.close()
 
 
-@pytest.fixture(scope="function")
+@pytest.fixture
 def client(db_session):
     def override_get_db():
         try:
