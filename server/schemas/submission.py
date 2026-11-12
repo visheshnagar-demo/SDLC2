@@ -56,6 +56,43 @@ def normalize_risk_type(raw_val: Any) -> Optional[str]:
     return upper_s
 
 
+def format_risk_type_display(raw_val: Any) -> str:
+    if raw_val is None:
+        return "Cyber"
+    s = str(raw_val).strip()
+    upper_s = s.upper()
+    if "CYBER" in upper_s:
+        return "Cyber"
+    cleaned = (
+        upper_s.replace("&", "")
+        .replace("/", "")
+        .replace("-", "")
+        .replace("_", "")
+        .replace(" ", "")
+    )
+    if (
+        cleaned
+        in (
+            "DO",
+            "DAND_O",
+            "DANDO",
+            "DORISK",
+            "DIRECTOR",
+            "DIRECTORS",
+            "OFFICER",
+            "OFFICERS",
+            "EXECUTIVE",
+        )
+        or "DO" in upper_s
+        or "D&O" in upper_s
+        or "D & O" in upper_s
+        or "DIRECTOR" in upper_s
+        or "OFFICER" in upper_s
+    ):
+        return "D&O"
+    return "Cyber" if "CYBER" in upper_s else "D&O"
+
+
 class CyberProfileBase(BaseModel):
     mfa_enabled: Optional[bool] = None
     edr_implemented: Optional[bool] = None
@@ -510,17 +547,30 @@ class SubmissionResponse(BaseModel):
     limit: Optional[float] = None
     premium: Optional[float] = None
 
+    @field_validator("risk_type", mode="before")
+    @classmethod
+    def format_risk_type_field(cls, v: Any) -> str:
+        return format_risk_type_display(v)
+
     @model_validator(mode="before")
     @classmethod
     def populate_aliases(cls, data: Any) -> Any:
         if isinstance(data, dict):
-            if "risk_category" not in data and "risk_type" in data:
-                data["risk_category"] = data["risk_type"]
+            raw_r = data.get("risk_type")
+            if raw_r:
+                formatted_r = format_risk_type_display(raw_r)
+                data["risk_type"] = formatted_r
+                if "risk_category" not in data:
+                    data["risk_category"] = formatted_r
             if "limit" not in data and "primary_limit" in data:
                 data["limit"] = data["primary_limit"]
             if "premium" not in data and "carrier_premium" in data:
                 data["premium"] = data["carrier_premium"]
         return data
+
+
+class SubmissionCreatedResponse(SubmissionResponse):
+    pass
 
 
 class SubmissionListResponse(BaseModel):

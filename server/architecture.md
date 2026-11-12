@@ -41,6 +41,8 @@ graph TD
 - server/routers/__init__.py
 - server/routers/submissions.py
 - server/routers/underwriting.py
+- server/routes/__init__.py
+- server/routes/submissions.py
 - server/schemas/__init__.py
 - server/schemas/decision.py
 - server/schemas/submission.py
