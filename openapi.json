@@ -1,0 +1,1640 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Facultative Reinsurance Request Portal & Underwriter Review Queue API",
+    "description": "Online portal for submitting Cyber and D&O facultative requests, risk scoring, missing info flagging, and underwriter decisioning.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/api/v1/submissions/decline-reasons": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Get master decline reasons catalogue (alias)",
+        "operationId": "get_decline_reasons_alias_api_v1_submissions_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Decline Reasons Alias Api V1 Submissions Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions": {
+      "post": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Create and ingest facultative reinsurance request",
+        "operationId": "create_submission_api_v1_submissions_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmissionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "List submissions with filtering and pagination",
+        "operationId": "list_submissions_api_v1_submissions_get",
+        "parameters": [
+          {
+            "name": "risk_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by risk category (CYBER, DO)",
+              "title": "Risk Type"
+            },
+            "description": "Filter by risk category (CYBER, DO)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (PENDING, QUOTED, DECLINED)",
+              "title": "Status"
+            },
+            "description": "Filter by status (PENDING, QUOTED, DECLINED)"
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum risk score threshold",
+              "title": "Min Score"
+            },
+            "description": "Minimum risk score threshold"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Records to skip",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Records to skip"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max records to return",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max records to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Retrieve full detail of a submission",
+        "operationId": "get_submission_api_v1_submissions__submission_id__get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}/flags": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Retrieve missing information flags for a submission",
+        "operationId": "get_submission_flags_api_v1_submissions__submission_id__flags_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MissingInfoFlagResponse"
+                  },
+                  "title": "Response Get Submission Flags Api V1 Submissions  Submission Id  Flags Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}/decisions": {
+      "post": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Record Quote or Decline decision",
+        "operationId": "record_decision_api_v1_submissions__submission_id__decisions_post",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/reasons": {
+      "get": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Get master decline reasons catalogue",
+        "operationId": "get_decline_reasons_api_v1_underwriting_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Decline Reasons Api V1 Underwriting Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/decline-reasons": {
+      "get": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Get master decline reasons catalogue (alias)",
+        "operationId": "get_decline_reasons_explicit_api_v1_underwriting_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Decline Reasons Explicit Api V1 Underwriting Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/submissions/{submission_id}/decisions": {
+      "post": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Record Quote or Decline decision via underwriting namespace",
+        "operationId": "record_decision_underwriting_api_v1_underwriting_submissions__submission_id__decisions_post",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decline-reasons": {
+      "get": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Get Root Decline Reasons",
+        "operationId": "get_root_decline_reasons_api_v1_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Root Decline Reasons Api V1 Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Root",
+        "operationId": "root__get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "tags": [
+          "Health"
+        ],
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "CyberProfileCreate": {
+        "properties": {
+          "mfa_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mfa Enabled"
+          },
+          "edr_implemented": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edr Implemented"
+          },
+          "offline_backups": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offline Backups"
+          },
+          "encryption_at_rest": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encryption At Rest"
+          },
+          "record_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Count"
+          },
+          "prior_ransomware_claims": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prior Ransomware Claims"
+          },
+          "prior_claims_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prior Claims Amount",
+            "default": 0.0
+          },
+          "security_training": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Security Training"
+          }
+        },
+        "type": "object",
+        "title": "CyberProfileCreate"
+      },
+      "CyberProfileResponse": {
+        "properties": {
+          "mfa_enabled": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mfa Enabled"
+          },
+          "edr_implemented": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Edr Implemented"
+          },
+          "offline_backups": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offline Backups"
+          },
+          "encryption_at_rest": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Encryption At Rest"
+          },
+          "record_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Record Count"
+          },
+          "prior_ransomware_claims": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prior Ransomware Claims"
+          },
+          "prior_claims_amount": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Prior Claims Amount",
+            "default": 0.0
+          },
+          "security_training": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Security Training"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "CyberProfileResponse"
+      },
+      "DecisionCreate": {
+        "properties": {
+          "decision_type": {
+            "type": "string",
+            "title": "Decision Type",
+            "description": "Decision type: QUOTE or DECLINE"
+          },
+          "offered_capacity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offered Capacity",
+            "description": "Capacity offered in USD"
+          },
+          "quoted_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Rate",
+            "description": "Quoted rate percentage e.g. 3.5"
+          },
+          "quoted_premium": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Premium",
+            "description": "Total quoted premium in USD"
+          },
+          "terms_conditions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Conditions",
+            "description": "Underwriting terms and conditions"
+          },
+          "exclusions": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclusions",
+            "description": "List of specific exclusion clauses",
+            "default": []
+          },
+          "decline_reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Reason Code",
+            "description": "Standardized decline reason code"
+          },
+          "decline_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Notes",
+            "description": "Underwriter notes explaining decline"
+          }
+        },
+        "type": "object",
+        "required": [
+          "decision_type"
+        ],
+        "title": "DecisionCreate"
+      },
+      "DecisionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "decision_type": {
+            "type": "string",
+            "title": "Decision Type"
+          },
+          "offered_capacity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offered Capacity"
+          },
+          "quoted_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Rate"
+          },
+          "quoted_premium": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Premium"
+          },
+          "terms_conditions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Conditions"
+          },
+          "exclusions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclusions"
+          },
+          "decline_reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Reason Code"
+          },
+          "decline_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_id",
+          "decision_type",
+          "created_at"
+        ],
+        "title": "DecisionResponse"
+      },
+      "DecisionSummaryResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "decision_type": {
+            "type": "string",
+            "title": "Decision Type"
+          },
+          "offered_capacity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Offered Capacity"
+          },
+          "quoted_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Rate"
+          },
+          "quoted_premium": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quoted Premium"
+          },
+          "terms_conditions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms Conditions"
+          },
+          "exclusions": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Exclusions"
+          },
+          "decline_reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Reason Code"
+          },
+          "decline_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Notes"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_id",
+          "decision_type",
+          "created_at"
+        ],
+        "title": "DecisionSummaryResponse"
+      },
+      "DeclineReason": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "category": {
+            "type": "string",
+            "title": "Category"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "label",
+          "category",
+          "description"
+        ],
+        "title": "DeclineReason"
+      },
+      "DoProfileCreate": {
+        "properties": {
+          "leverage_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leverage Ratio"
+          },
+          "executive_turnover_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Executive Turnover Rate"
+          },
+          "active_litigation": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Litigation"
+          },
+          "litigation_details": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Litigation Details"
+          },
+          "independent_board_charter": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Independent Board Charter"
+          },
+          "regulatory_investigations": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Regulatory Investigations"
+          },
+          "annual_revenue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Revenue"
+          }
+        },
+        "type": "object",
+        "title": "DoProfileCreate"
+      },
+      "DoProfileResponse": {
+        "properties": {
+          "leverage_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Leverage Ratio"
+          },
+          "executive_turnover_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Executive Turnover Rate"
+          },
+          "active_litigation": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Active Litigation"
+          },
+          "litigation_details": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Litigation Details"
+          },
+          "independent_board_charter": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Independent Board Charter"
+          },
+          "regulatory_investigations": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Regulatory Investigations"
+          },
+          "annual_revenue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Revenue"
+          },
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_id",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "DoProfileResponse"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "MissingInfoFlagResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "field_name": {
+            "type": "string",
+            "title": "Field Name"
+          },
+          "flag_code": {
+            "type": "string",
+            "title": "Flag Code"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity"
+          },
+          "is_resolved": {
+            "type": "boolean",
+            "title": "Is Resolved"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_id",
+          "field_name",
+          "flag_code",
+          "description",
+          "severity",
+          "is_resolved",
+          "created_at"
+        ],
+        "title": "MissingInfoFlagResponse"
+      },
+      "RiskScoreResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "submission_id": {
+            "type": "string",
+            "title": "Submission Id"
+          },
+          "overall_score": {
+            "type": "number",
+            "title": "Overall Score"
+          },
+          "risk_tier": {
+            "type": "string",
+            "title": "Risk Tier"
+          },
+          "breakdown_json": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Breakdown Json"
+          },
+          "calculated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Calculated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "submission_id",
+          "overall_score",
+          "risk_tier",
+          "calculated_at"
+        ],
+        "title": "RiskScoreResponse"
+      },
+      "SubmissionCreate": {
+        "properties": {
+          "carrier_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Carrier Name",
+            "description": "Name of submitting carrier"
+          },
+          "insured_name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Insured Name",
+            "description": "Name of insured entity"
+          },
+          "risk_type": {
+            "type": "string",
+            "title": "Risk Type",
+            "description": "Risk category: CYBER or DO"
+          },
+          "primary_limit": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Primary Limit",
+            "description": "Primary limit in USD (must be > 0)"
+          },
+          "attachment_point": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Attachment Point",
+            "description": "Attachment point in USD (must be >= 0)"
+          },
+          "ceded_limit": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Ceded Limit",
+            "description": "Ceded limit in USD (must be > 0)"
+          },
+          "carrier_premium": {
+            "type": "number",
+            "exclusiveMinimum": 0.0,
+            "title": "Carrier Premium",
+            "description": "Gross premium in USD (must be > 0)"
+          },
+          "policy_start_date": {
+            "type": "string",
+            "title": "Policy Start Date",
+            "description": "Policy effective start date (YYYY-MM-DD)"
+          },
+          "policy_end_date": {
+            "type": "string",
+            "title": "Policy End Date",
+            "description": "Policy expiration date (YYYY-MM-DD)"
+          },
+          "cyber_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CyberProfileCreate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "do_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DoProfileCreate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "carrier_name",
+          "insured_name",
+          "risk_type",
+          "primary_limit",
+          "attachment_point",
+          "ceded_limit",
+          "carrier_premium",
+          "policy_start_date",
+          "policy_end_date"
+        ],
+        "title": "SubmissionCreate"
+      },
+      "SubmissionListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/SubmissionResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "skip": {
+            "type": "integer",
+            "title": "Skip"
+          },
+          "limit": {
+            "type": "integer",
+            "title": "Limit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "skip",
+          "limit"
+        ],
+        "title": "SubmissionListResponse"
+      },
+      "SubmissionResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "carrier_name": {
+            "type": "string",
+            "title": "Carrier Name"
+          },
+          "insured_name": {
+            "type": "string",
+            "title": "Insured Name"
+          },
+          "risk_type": {
+            "type": "string",
+            "title": "Risk Type"
+          },
+          "primary_limit": {
+            "type": "number",
+            "title": "Primary Limit"
+          },
+          "attachment_point": {
+            "type": "number",
+            "title": "Attachment Point"
+          },
+          "ceded_limit": {
+            "type": "number",
+            "title": "Ceded Limit"
+          },
+          "carrier_premium": {
+            "type": "number",
+            "title": "Carrier Premium"
+          },
+          "policy_start_date": {
+            "type": "string",
+            "title": "Policy Start Date"
+          },
+          "policy_end_date": {
+            "type": "string",
+            "title": "Policy End Date"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "risk_score": {
+            "type": "number",
+            "title": "Risk Score"
+          },
+          "risk_tier": {
+            "type": "string",
+            "title": "Risk Tier"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          },
+          "cyber_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CyberProfileResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "do_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DoProfileResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "risk_score_detail": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RiskScoreResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "flags": {
+            "items": {
+              "$ref": "#/components/schemas/MissingInfoFlagResponse"
+            },
+            "type": "array",
+            "title": "Flags",
+            "default": []
+          },
+          "decisions": {
+            "items": {
+              "$ref": "#/components/schemas/DecisionSummaryResponse"
+            },
+            "type": "array",
+            "title": "Decisions",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "carrier_name",
+          "insured_name",
+          "risk_type",
+          "primary_limit",
+          "attachment_point",
+          "ceded_limit",
+          "carrier_premium",
+          "policy_start_date",
+          "policy_end_date",
+          "status",
+          "risk_score",
+          "risk_tier",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "SubmissionResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
