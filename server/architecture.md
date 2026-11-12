@@ -56,7 +56,27 @@ graph TD
 - server/tests/test_underwriting.py
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/components/CarrierSubmissionWizard.jsx
+- client/src/components/CarrierTrackingPortal.jsx
+- client/src/components/CyberRiskDisclosures.jsx
+- client/src/components/DecisionWorkbenchModal.jsx
+- client/src/components/DoRiskDisclosures.jsx
+- client/src/components/MissingInfoFlagsDrawer.jsx
+- client/src/components/RiskScoreBadge.jsx
+- client/src/components/UnderwriterQueueDashboard.jsx
+- client/src/components/__tests__/CarrierSubmissionWizard.test.jsx
+- client/src/components/__tests__/UnderwriterQueueDashboard.test.jsx
+- client/src/main.jsx
+- client/src/pages/CarrierSubmissionPage.jsx
+- client/src/pages/CarrierTrackingPage.jsx
+- client/src/pages/SubmissionDetailPage.jsx
+- client/src/pages/UnderwriterQueuePage.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - POST /api/v1/submissions
