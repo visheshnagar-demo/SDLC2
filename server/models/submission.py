@@ -1,8 +1,12 @@
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Float, DateTime
 from sqlalchemy.orm import relationship
 from server.database import Base
+
+
+def _utcnow():
+    return datetime.now(timezone.utc)
 
 
 class Submission(Base):
@@ -27,10 +31,8 @@ class Submission(Base):
     risk_tier = Column(
         String(50), default="MEDIUM", nullable=False
     )  # LOW, MEDIUM, HIGH
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
-    updated_at = Column(
-        DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False
-    )
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
+    updated_at = Column(DateTime, default=_utcnow, onupdate=_utcnow, nullable=False)
 
     cyber_profile = relationship(
         "CyberRiskProfile",
@@ -61,3 +63,11 @@ class Submission(Base):
     audit_logs = relationship(
         "AuditLog", back_populates="submission", cascade="all, delete-orphan"
     )
+
+    @property
+    def limit(self) -> float:
+        return self.primary_limit
+
+    @property
+    def premium(self) -> float:
+        return self.carrier_premium

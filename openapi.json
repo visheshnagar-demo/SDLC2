@@ -324,6 +324,110 @@
         }
       }
     },
+    "/api/v1/submissions/{submission_id}/quote": {
+      "post": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Record Quote decision convenience endpoint",
+        "operationId": "record_quote_convenience_api_v1_submissions__submission_id__quote_post",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}/decline": {
+      "post": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Record Decline decision convenience endpoint",
+        "operationId": "record_decline_convenience_api_v1_submissions__submission_id__decline_post",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/underwriting/reasons": {
       "get": {
         "tags": [
@@ -426,6 +530,47 @@
         }
       }
     },
+    "/api/v1/underwriting/decisions": {
+      "post": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Record decision with submission_id in payload",
+        "operationId": "record_decision_with_body_api_v1_underwriting_decisions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/decline-reasons": {
       "get": {
         "tags": [
@@ -444,6 +589,47 @@
                   },
                   "type": "array",
                   "title": "Response Get Root Decline Reasons Api V1 Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decisions": {
+      "post": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Post Root Decision",
+        "operationId": "post_root_decision_api_v1_decisions_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionCreate"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -763,18 +949,13 @@
           },
           "exclusions": {
             "anyOf": [
-              {
-                "items": {
-                  "type": "string"
-                },
-                "type": "array"
-              },
+              {},
               {
                 "type": "null"
               }
             ],
             "title": "Exclusions",
-            "description": "List of specific exclusion clauses",
+            "description": "List or string of specific exclusion clauses",
             "default": []
           },
           "decline_reason_code": {
@@ -800,6 +981,127 @@
             ],
             "title": "Decline Notes",
             "description": "Underwriter notes explaining decline"
+          },
+          "submission_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submission Id"
+          },
+          "capacity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "premium": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Premium"
+          },
+          "terms": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Terms"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Code"
+          },
+          "decline_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Reason"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "comments": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Comments"
           }
         },
         "type": "object",
@@ -868,9 +1170,7 @@
           },
           "exclusions": {
             "anyOf": [
-              {
-                "type": "string"
-              },
+              {},
               {
                 "type": "null"
               }
@@ -903,6 +1203,72 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
+          "capacity": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Capacity"
+          },
+          "rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate"
+          },
+          "premium": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Premium"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "reason_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason Code"
           }
         },
         "type": "object",
@@ -1348,55 +1714,83 @@
       "SubmissionCreate": {
         "properties": {
           "carrier_name": {
-            "type": "string",
-            "minLength": 1,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Carrier Name",
-            "description": "Name of submitting carrier"
+            "default": "Standard Carrier Mutual"
           },
           "insured_name": {
-            "type": "string",
-            "minLength": 1,
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Insured Name",
-            "description": "Name of insured entity"
+            "default": "Insured Entity Corp"
           },
           "risk_type": {
             "type": "string",
             "title": "Risk Type",
-            "description": "Risk category: CYBER or DO"
+            "default": "CYBER"
           },
           "primary_limit": {
             "type": "number",
-            "exclusiveMinimum": 0.0,
             "title": "Primary Limit",
-            "description": "Primary limit in USD (must be > 0)"
+            "default": 1000000.0
           },
           "attachment_point": {
             "type": "number",
-            "minimum": 0.0,
             "title": "Attachment Point",
-            "description": "Attachment point in USD (must be >= 0)"
+            "default": 0.0
           },
           "ceded_limit": {
-            "type": "number",
-            "exclusiveMinimum": 0.0,
-            "title": "Ceded Limit",
-            "description": "Ceded limit in USD (must be > 0)"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Ceded Limit"
           },
           "carrier_premium": {
             "type": "number",
-            "exclusiveMinimum": 0.0,
             "title": "Carrier Premium",
-            "description": "Gross premium in USD (must be > 0)"
+            "default": 50000.0
           },
           "policy_start_date": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Policy Start Date",
-            "description": "Policy effective start date (YYYY-MM-DD)"
+            "default": "2026-06-01"
           },
           "policy_end_date": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Policy End Date",
-            "description": "Policy expiration date (YYYY-MM-DD)"
+            "default": "2027-06-01"
           },
           "cyber_profile": {
             "anyOf": [
@@ -1417,20 +1811,84 @@
                 "type": "null"
               }
             ]
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "premium": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Premium"
+          },
+          "risk_category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Category"
+          },
+          "start_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Start Date"
+          },
+          "end_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "End Date"
+          },
+          "cyber_risk_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/CyberProfileCreate"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "do_risk_profile": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/DoProfileCreate"
+              },
+              {
+                "type": "null"
+              }
+            ]
           }
         },
         "type": "object",
-        "required": [
-          "carrier_name",
-          "insured_name",
-          "risk_type",
-          "primary_limit",
-          "attachment_point",
-          "ceded_limit",
-          "carrier_premium",
-          "policy_start_date",
-          "policy_end_date"
-        ],
         "title": "SubmissionCreate"
       },
       "SubmissionListResponse": {
@@ -1573,6 +2031,28 @@
             "type": "array",
             "title": "Decisions",
             "default": []
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "premium": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Premium"
           }
         },
         "type": "object",

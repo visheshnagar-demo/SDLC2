@@ -23,46 +23,55 @@ class FlaggingEngine:
                         submission_id=submission.id,
                         field_name="cyber_profile",
                         flag_code="MISSING_CYBER_PROFILE",
-                        description="Complete Cyber risk disclosure profile is missing from submission",
+                        description="Missing Info: Cyber Risk Profile - Complete Cyber risk disclosure profile is missing from submission",
                         severity="HIGH",
                         is_resolved=False,
                     )
                 )
             else:
-                if not cyber_profile.mfa_enabled:
+                if (
+                    cyber_profile.mfa_enabled is False
+                    or cyber_profile.mfa_enabled is None
+                ):
                     flags.append(
                         MissingInfoFlag(
                             id=str(uuid.uuid4()),
                             submission_id=submission.id,
                             field_name="mfa_enabled",
                             flag_code="MISSING_MFA_DETAILS",
-                            description="Missing MFA confirmation across enterprise administrative access",
+                            description="Missing Info: MFA Details - MFA confirmation across enterprise administrative access required",
                             severity="HIGH",
                             is_resolved=False,
                         )
                     )
 
-                if not cyber_profile.offline_backups:
+                if (
+                    cyber_profile.offline_backups is False
+                    or cyber_profile.offline_backups is None
+                ):
                     flags.append(
                         MissingInfoFlag(
                             id=str(uuid.uuid4()),
                             submission_id=submission.id,
                             field_name="offline_backups",
                             flag_code="MISSING_BACKUP_CONTROLS",
-                            description="Offline immutable backup strategy disclosure required",
+                            description="Missing Info: Backup Controls - Offline immutable backup strategy disclosure required",
                             severity="MEDIUM",
                             is_resolved=False,
                         )
                     )
 
-                if not cyber_profile.edr_implemented:
+                if (
+                    cyber_profile.edr_implemented is False
+                    or cyber_profile.edr_implemented is None
+                ):
                     flags.append(
                         MissingInfoFlag(
                             id=str(uuid.uuid4()),
                             submission_id=submission.id,
                             field_name="edr_implemented",
                             flag_code="MISSING_EDR_CONTROLS",
-                            description="Endpoint Detection and Response (EDR) implementation status missing",
+                            description="Missing Info: EDR Controls - Endpoint Detection and Response implementation status required",
                             severity="MEDIUM",
                             is_resolved=False,
                         )
@@ -75,20 +84,23 @@ class FlaggingEngine:
                             submission_id=submission.id,
                             field_name="record_count",
                             flag_code="MISSING_RECORD_VOLUME",
-                            description="Sensitive data record count not specified",
+                            description="Missing Info: Record Volume - Sensitive data record count disclosure required",
                             severity="MEDIUM",
                             is_resolved=False,
                         )
                     )
 
-                if not cyber_profile.encryption_at_rest:
+                if (
+                    cyber_profile.encryption_at_rest is False
+                    or cyber_profile.encryption_at_rest is None
+                ):
                     flags.append(
                         MissingInfoFlag(
                             id=str(uuid.uuid4()),
                             submission_id=submission.id,
                             field_name="encryption_at_rest",
                             flag_code="MISSING_ENCRYPTION_DISCLOSURE",
-                            description="Data encryption at rest disclosure missing",
+                            description="Missing Info: Encryption Disclosure - Data encryption at rest disclosure required",
                             severity="LOW",
                             is_resolved=False,
                         )
@@ -104,7 +116,7 @@ class FlaggingEngine:
                             submission_id=submission.id,
                             field_name="prior_claims_amount",
                             flag_code="INCOMPLETE_CLAIM_HISTORY",
-                            description="Prior ransomware claim amount not disclosed",
+                            description="Missing Info: Claim History - Prior ransomware claim amount required",
                             severity="HIGH",
                             is_resolved=False,
                         )
@@ -118,7 +130,7 @@ class FlaggingEngine:
                         submission_id=submission.id,
                         field_name="do_profile",
                         flag_code="MISSING_DO_PROFILE",
-                        description="Complete D&O risk disclosure profile is missing from submission",
+                        description="Missing Info: D&O Profile - Complete D&O risk disclosure profile is missing from submission",
                         severity="HIGH",
                         is_resolved=False,
                     )
@@ -131,7 +143,7 @@ class FlaggingEngine:
                             submission_id=submission.id,
                             field_name="leverage_ratio",
                             flag_code="MISSING_FINANCIAL_LEVERAGE",
-                            description="Corporate debt-to-equity leverage ratio disclosure required",
+                            description="Missing Info: Financial Leverage - Corporate debt-to-equity leverage ratio disclosure required",
                             severity="HIGH",
                             is_resolved=False,
                         )
@@ -144,7 +156,7 @@ class FlaggingEngine:
                             submission_id=submission.id,
                             field_name="executive_turnover_rate",
                             flag_code="MISSING_EXECUTIVE_TURNOVER",
-                            description="Executive leadership turnover rate disclosure missing",
+                            description="Missing Info: Executive Turnover - Executive leadership turnover rate disclosure required",
                             severity="MEDIUM",
                             is_resolved=False,
                         )
@@ -160,7 +172,7 @@ class FlaggingEngine:
                             submission_id=submission.id,
                             field_name="litigation_details",
                             flag_code="MISSING_LITIGATION_DETAILS",
-                            description="Active litigation disclosures require supporting case summary",
+                            description="Missing Info: Litigation Details - Active litigation disclosure requires supporting case summary",
                             severity="HIGH",
                             is_resolved=False,
                         )
@@ -176,7 +188,7 @@ class FlaggingEngine:
                             submission_id=submission.id,
                             field_name="independent_board_charter",
                             flag_code="MISSING_BOARD_GOVERNANCE",
-                            description="Independent board charter disclosure missing",
+                            description="Missing Info: Board Governance - Independent board charter disclosure required",
                             severity="MEDIUM",
                             is_resolved=False,
                         )
@@ -189,7 +201,7 @@ class FlaggingEngine:
                             submission_id=submission.id,
                             field_name="annual_revenue",
                             flag_code="MISSING_ANNUAL_REVENUE",
-                            description="Annual enterprise gross revenue not provided",
+                            description="Missing Info: Annual Revenue - Annual enterprise gross revenue required",
                             severity="MEDIUM",
                             is_resolved=False,
                         )

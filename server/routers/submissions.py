@@ -31,6 +31,12 @@ def get_decline_reasons_alias():
     status_code=status.HTTP_201_CREATED,
     summary="Create and ingest facultative reinsurance request",
 )
+@router.post(
+    "/",
+    response_model=SubmissionResponse,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+)
 def create_submission(payload: SubmissionCreate, db: Session = Depends(get_db)):
     submission = SubmissionService.create_submission(db=db, data=payload)
     return submission
@@ -41,6 +47,7 @@ def create_submission(payload: SubmissionCreate, db: Session = Depends(get_db)):
     response_model=SubmissionListResponse,
     summary="List submissions with filtering and pagination",
 )
+@router.get("/", response_model=SubmissionListResponse, include_in_schema=False)
 def list_submissions(
     risk_type: Optional[str] = Query(
         None, description="Filter by risk category (CYBER, DO)"
@@ -86,6 +93,11 @@ def get_submission(submission_id: str, db: Session = Depends(get_db)):
     response_model=List[MissingInfoFlagResponse],
     summary="Retrieve missing information flags for a submission",
 )
+@router.get(
+    "/{submission_id}/flags/",
+    response_model=List[MissingInfoFlagResponse],
+    include_in_schema=False,
+)
 def get_submission_flags(submission_id: str, db: Session = Depends(get_db)):
     return SubmissionService.get_flags(db=db, submission_id=submission_id)
 
@@ -96,9 +108,53 @@ def get_submission_flags(submission_id: str, db: Session = Depends(get_db)):
     status_code=status.HTTP_201_CREATED,
     summary="Record Quote or Decline decision",
 )
+@router.post(
+    "/{submission_id}/decision",
+    response_model=DecisionResponse,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+)
+@router.post(
+    "/{submission_id}/decisions/",
+    response_model=DecisionResponse,
+    status_code=status.HTTP_201_CREATED,
+    include_in_schema=False,
+)
 def record_decision(
     submission_id: str, payload: DecisionCreate, db: Session = Depends(get_db)
 ):
+    decision = DecisionService.record_decision(
+        db=db, submission_id=submission_id, data=payload
+    )
+    return decision
+
+
+@router.post(
+    "/{submission_id}/quote",
+    response_model=DecisionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Record Quote decision convenience endpoint",
+)
+def record_quote_convenience(
+    submission_id: str, payload: DecisionCreate, db: Session = Depends(get_db)
+):
+    payload.decision_type = "QUOTE"
+    decision = DecisionService.record_decision(
+        db=db, submission_id=submission_id, data=payload
+    )
+    return decision
+
+
+@router.post(
+    "/{submission_id}/decline",
+    response_model=DecisionResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="Record Decline decision convenience endpoint",
+)
+def record_decline_convenience(
+    submission_id: str, payload: DecisionCreate, db: Session = Depends(get_db)
+):
+    payload.decision_type = "DECLINE"
     decision = DecisionService.record_decision(
         db=db, submission_id=submission_id, data=payload
     )

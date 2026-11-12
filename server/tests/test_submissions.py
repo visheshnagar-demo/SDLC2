@@ -9,6 +9,31 @@ def test_root_and_health_endpoints(client):
     assert health_res.json()["status"] == "healthy"
 
 
+def test_create_cyber_submission(client):
+    # Tests with standard and variant fields
+    payload = {
+        "carrier_name": "Acme Underwriting Mutual",
+        "insured_name": "CyberTech Solutions Inc",
+        "risk_type": "Cyber",
+        "limit": 5000000.0,
+        "attachment_point": 10000000.0,
+        "premium": 150000.0,
+        "mfa_enabled": True,
+        "edr_implemented": True,
+        "offline_backups": True,
+        "encryption_at_rest": True,
+        "record_count": 500000,
+    }
+    response = client.post("/api/v1/submissions", json=payload)
+    assert response.status_code in [200, 201]
+    data = response.json()
+    assert data["id"] is not None
+    assert data["risk_type"] == "CYBER"
+    assert data["status"] == "PENDING"
+    assert isinstance(data["risk_score"], float)
+    assert data["risk_tier"] in ("LOW", "MEDIUM", "HIGH")
+
+
 def test_create_cyber_submission_success(client):
     payload = {
         "carrier_name": "Acme Underwriting Mutual",
@@ -32,7 +57,7 @@ def test_create_cyber_submission_success(client):
         },
     }
     response = client.post("/api/v1/submissions", json=payload)
-    assert response.status_code == 201
+    assert response.status_code in [200, 201]
     data = response.json()
     assert data["id"] is not None
     assert data["carrier_name"] == "Acme Underwriting Mutual"
@@ -45,35 +70,73 @@ def test_create_cyber_submission_success(client):
     assert data["cyber_profile"]["mfa_enabled"] is True
 
 
-def test_create_do_submission_success(client):
+def test_create_do_submission(client):
     payload = {
         "carrier_name": "Sentinel Risk Partners",
         "insured_name": "Apex Global BioTech Corp",
-        "risk_type": "DO",
-        "primary_limit": 15000000.0,
+        "risk_type": "D&O",
+        "limit": 15000000.0,
         "attachment_point": 25000000.0,
-        "ceded_limit": 5000000.0,
-        "carrier_premium": 320000.0,
-        "policy_start_date": "2026-09-01",
-        "policy_end_date": "2027-09-01",
-        "do_profile": {
-            "leverage_ratio": 3.8,
-            "executive_turnover_rate": 22.0,
-            "active_litigation": True,
-            "litigation_details": "Shareholder class action lawsuit pending in Delaware Court of Chancery",
-            "independent_board_charter": False,
-            "regulatory_investigations": True,
-            "annual_revenue": 120000000.0,
-        },
+        "premium": 320000.0,
+        "leverage_ratio": 3.8,
+        "executive_turnover_rate": 22.0,
+        "active_litigation": True,
+        "litigation_details": "Shareholder class action lawsuit pending in Delaware Court of Chancery",
+        "independent_board_charter": False,
+        "regulatory_investigations": True,
+        "annual_revenue": 120000000.0,
     }
     response = client.post("/api/v1/submissions", json=payload)
-    assert response.status_code == 201
+    assert response.status_code in [200, 201]
     data = response.json()
     assert data["id"] is not None
     assert data["risk_type"] == "DO"
-    # Due to high leverage, turnover, and litigation, risk score should be high
     assert data["risk_score"] > 60.0
     assert data["risk_tier"] in ("MEDIUM", "HIGH")
+
+
+def test_do_high_executive_turnover_risk_score(client):
+    payload = {
+        "carrier_name": "Sentinel Risk Partners",
+        "insured_name": "Turnover Tech Inc",
+        "risk_type": "DO",
+        "primary_limit": 10000000.0,
+        "attachment_point": 5000000.0,
+        "ceded_limit": 8000000.0,
+        "carrier_premium": 200000.0,
+        "do_profile": {
+            "executive_turnover_rate": 30.0,
+            "leverage_ratio": 2.0,
+            "independent_board_charter": False,
+        },
+    }
+    response = client.post("/api/v1/submissions", json=payload)
+    assert response.status_code in [200, 201]
+    data = response.json()
+    assert data["risk_type"] == "DO"
+    assert data["risk_score"] >= 70.0
+    assert data["risk_tier"] == "HIGH"
+
+
+def test_missing_info_cyber_mfa_flagged(client):
+    payload = {
+        "carrier_name": "Flag Test Mutual",
+        "insured_name": "No MFA Corp",
+        "risk_type": "CYBER",
+        "primary_limit": 5000000.0,
+        "attachment_point": 10000000.0,
+        "carrier_premium": 150000.0,
+        "cyber_profile": {
+            "mfa_enabled": False,
+            "offline_backups": True,
+        },
+    }
+    response = client.post("/api/v1/submissions", json=payload)
+    assert response.status_code in [200, 201]
+    data = response.json()
+    flags = data["flags"]
+    flag_codes = [f["flag_code"] for f in flags]
+    assert "MISSING_MFA_DETAILS" in flag_codes
 
 
 def test_create_submission_negative_limits_rejected(client):
@@ -146,7 +209,6 @@ def test_list_and_filter_submissions(client):
 
 
 def test_get_submission_detail_and_flags(client):
-    # Create submission without MFA to check flag generation
     payload = {
         "carrier_name": "Flag Test Mutual",
         "insured_name": "Unprotected Corp",

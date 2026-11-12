@@ -1,8 +1,13 @@
 import uuid
-from datetime import datetime
+from typing import Optional
+from datetime import datetime, timezone
 from sqlalchemy import Column, String, Float, Boolean, DateTime, ForeignKey, Text
 from sqlalchemy.orm import relationship
 from server.database import Base
+
+
+def _utcnow():
+    return datetime.now(timezone.utc)
 
 
 class RiskScore(Base):
@@ -20,7 +25,7 @@ class RiskScore(Base):
     overall_score = Column(Float, nullable=False)
     risk_tier = Column(String(50), nullable=False)  # LOW, MEDIUM, HIGH
     breakdown_json = Column(Text, nullable=True)
-    calculated_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    calculated_at = Column(DateTime, default=_utcnow, nullable=False)
 
     submission = relationship("Submission", back_populates="risk_score_detail")
 
@@ -42,7 +47,7 @@ class MissingInfoFlag(Base):
     description = Column(String(500), nullable=False)
     severity = Column(String(50), default="MEDIUM", nullable=False)  # HIGH, MEDIUM, LOW
     is_resolved = Column(Boolean, default=False, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     submission = relationship("Submission", back_populates="flags")
 
@@ -67,9 +72,33 @@ class UnderwritingDecision(Base):
     exclusions = Column(Text, nullable=True)
     decline_reason_code = Column(String(100), nullable=True)
     decline_notes = Column(Text, nullable=True)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     submission = relationship("Submission", back_populates="decisions")
+
+    @property
+    def decision(self) -> str:
+        return self.decision_type
+
+    @property
+    def capacity(self) -> Optional[float]:
+        return self.offered_capacity
+
+    @property
+    def rate(self) -> Optional[float]:
+        return self.quoted_rate
+
+    @property
+    def premium(self) -> Optional[float]:
+        return self.quoted_premium
+
+    @property
+    def reason(self) -> Optional[str]:
+        return self.decline_reason_code
+
+    @property
+    def reason_code(self) -> Optional[str]:
+        return self.decline_reason_code
 
 
 class AuditLog(Base):
@@ -86,6 +115,6 @@ class AuditLog(Base):
     )
     action = Column(String(100), nullable=False)
     details = Column(Text, nullable=False)
-    created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
+    created_at = Column(DateTime, default=_utcnow, nullable=False)
 
     submission = relationship("Submission", back_populates="audit_logs")
