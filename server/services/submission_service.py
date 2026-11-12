@@ -7,7 +7,11 @@ from fastapi import HTTPException, status
 from server.models.submission import Submission
 from server.models.risk_profile import CyberRiskProfile, DoRiskProfile
 from server.models.evaluation import RiskScore, MissingInfoFlag
-from server.schemas.submission import SubmissionCreate, normalize_risk_type
+from server.schemas.submission import (
+    SubmissionCreate,
+    normalize_risk_type,
+    format_risk_type_display,
+)
 from server.services.scoring_engine import RiskScoringEngine
 from server.services.flagging_engine import FlaggingEngine
 from server.services.audit_service import AuditService
@@ -163,18 +167,28 @@ class SubmissionService:
         if risk_type:
             norm_risk = normalize_risk_type(risk_type)
             if norm_risk in ("CYBER", "DO"):
-                query = query.filter(Submission.risk_type == norm_risk)
+                query = query.filter(
+                    (Submission.risk_type == norm_risk)
+                    | (Submission.risk_type == format_risk_type_display(norm_risk))
+                )
             else:
-                query = query.filter(Submission.risk_type == risk_type.upper().strip())
+                clean_type = risk_type.strip()
+                query = query.filter(
+                    (Submission.risk_type == clean_type)
+                    | (Submission.risk_type == clean_type.upper())
+                )
         if status_filter:
             query = query.filter(Submission.status == status_filter.upper().strip())
         if min_score is not None:
             query = query.filter(Submission.risk_score >= min_score)
 
         total = query.count()
-        # Sort by high risk scores / newest first
+        # Sort by high risk scores descending, then newest first
         items = (
-            query.order_by(Submission.created_at.desc()).offset(skip).limit(limit).all()
+            query.order_by(Submission.risk_score.desc(), Submission.created_at.desc())
+            .offset(skip)
+            .limit(limit)
+            .all()
         )
         return items, total
 

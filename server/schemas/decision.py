@@ -1,6 +1,7 @@
+import json
 from typing import Optional, List, Any
 from datetime import datetime
-from pydantic import BaseModel, Field, model_validator, ConfigDict
+from pydantic import BaseModel, Field, field_validator, model_validator, ConfigDict
 
 
 class DecisionCreate(BaseModel):
@@ -133,7 +134,10 @@ class DecisionCreate(BaseModel):
         # 6. Normalize exclusions
         excl = d.get("exclusions") or d.get("exclusion_clauses")
         if isinstance(excl, str):
-            d["exclusions"] = [s.strip() for s in excl.split(",") if s.strip()]
+            try:
+                d["exclusions"] = json.loads(excl)
+            except Exception:
+                d["exclusions"] = [s.strip() for s in excl.split(",") if s.strip()]
         elif isinstance(excl, list):
             d["exclusions"] = excl
 
@@ -207,6 +211,32 @@ class DecisionResponse(BaseModel):
     premium: Optional[float] = None
     reason: Optional[str] = None
     reason_code: Optional[str] = None
+
+    @field_validator("exclusions", mode="before")
+    @classmethod
+    def parse_exclusions_field(cls, v: Any) -> Any:
+        if isinstance(v, str):
+            try:
+                return json.loads(v)
+            except Exception:
+                return [s.strip() for s in v.split(",") if s.strip()]
+        return v
+
+    @model_validator(mode="after")
+    def set_decision_aliases(self):
+        if not self.decision:
+            self.decision = self.decision_type
+        if self.capacity is None:
+            self.capacity = self.offered_capacity
+        if self.rate is None:
+            self.rate = self.quoted_rate
+        if self.premium is None:
+            self.premium = self.quoted_premium
+        if not self.reason:
+            self.reason = self.decline_reason_code
+        if not self.reason_code:
+            self.reason_code = self.decline_reason_code
+        return self
 
 
 class DeclineReason(BaseModel):

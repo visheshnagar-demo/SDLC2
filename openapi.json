@@ -31,6 +31,234 @@
         }
       }
     },
+    "/api/v1/submissions/review-queue": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Underwriter review queue alias",
+        "operationId": "get_submissions_queue_api_v1_submissions_review_queue_get",
+        "parameters": [
+          {
+            "name": "risk_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by risk category (CYBER, DO, Cyber, D&O)",
+              "title": "Risk Type"
+            },
+            "description": "Filter by risk category (CYBER, DO, Cyber, D&O)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (PENDING, QUOTED, DECLINED)",
+              "title": "Status"
+            },
+            "description": "Filter by status (PENDING, QUOTED, DECLINED)"
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum risk score threshold",
+              "title": "Min Score"
+            },
+            "description": "Minimum risk score threshold"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Records to skip",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Records to skip"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max records to return",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max records to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/queue": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Underwriter review queue",
+        "operationId": "get_submissions_queue_api_v1_submissions_queue_get",
+        "parameters": [
+          {
+            "name": "risk_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by risk category (CYBER, DO, Cyber, D&O)",
+              "title": "Risk Type"
+            },
+            "description": "Filter by risk category (CYBER, DO, Cyber, D&O)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (PENDING, QUOTED, DECLINED)",
+              "title": "Status"
+            },
+            "description": "Filter by status (PENDING, QUOTED, DECLINED)"
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum risk score threshold",
+              "title": "Min Score"
+            },
+            "description": "Minimum risk score threshold"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Records to skip",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Records to skip"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max records to return",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max records to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/submissions": {
       "post": {
         "tags": [
@@ -91,10 +319,10 @@
                   "type": "null"
                 }
               ],
-              "description": "Filter by risk category (CYBER, DO)",
+              "description": "Filter by risk category (CYBER, DO, Cyber, D&O)",
               "title": "Risk Type"
             },
-            "description": "Filter by risk category (CYBER, DO)"
+            "description": "Filter by risk category (CYBER, DO, Cyber, D&O)"
           },
           {
             "name": "status",
@@ -478,6 +706,348 @@
         }
       }
     },
+    "/api/v1/underwriting/review-queue": {
+      "get": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Underwriter review queue alias",
+        "operationId": "get_underwriter_queue_api_v1_underwriting_review_queue_get",
+        "parameters": [
+          {
+            "name": "risk_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by risk category (CYBER, DO, Cyber, D&O)",
+              "title": "Risk Type"
+            },
+            "description": "Filter by risk category (CYBER, DO, Cyber, D&O)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (PENDING, QUOTED, DECLINED)",
+              "title": "Status"
+            },
+            "description": "Filter by status (PENDING, QUOTED, DECLINED)"
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum risk score threshold",
+              "title": "Min Score"
+            },
+            "description": "Minimum risk score threshold"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Records to skip",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Records to skip"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max records to return",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max records to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/submissions": {
+      "get": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Underwriter review queue submissions list",
+        "operationId": "get_underwriter_queue_api_v1_underwriting_submissions_get",
+        "parameters": [
+          {
+            "name": "risk_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by risk category (CYBER, DO, Cyber, D&O)",
+              "title": "Risk Type"
+            },
+            "description": "Filter by risk category (CYBER, DO, Cyber, D&O)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (PENDING, QUOTED, DECLINED)",
+              "title": "Status"
+            },
+            "description": "Filter by status (PENDING, QUOTED, DECLINED)"
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum risk score threshold",
+              "title": "Min Score"
+            },
+            "description": "Minimum risk score threshold"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Records to skip",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Records to skip"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max records to return",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max records to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/queue": {
+      "get": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Underwriter review queue",
+        "operationId": "get_underwriter_queue_api_v1_underwriting_queue_get",
+        "parameters": [
+          {
+            "name": "risk_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by risk category (CYBER, DO, Cyber, D&O)",
+              "title": "Risk Type"
+            },
+            "description": "Filter by risk category (CYBER, DO, Cyber, D&O)"
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Filter by status (PENDING, QUOTED, DECLINED)",
+              "title": "Status"
+            },
+            "description": "Filter by status (PENDING, QUOTED, DECLINED)"
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Minimum risk score threshold",
+              "title": "Min Score"
+            },
+            "description": "Minimum risk score threshold"
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "Records to skip",
+              "default": 0,
+              "title": "Skip"
+            },
+            "description": "Records to skip"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "description": "Max records to return",
+              "default": 20,
+              "title": "Limit"
+            },
+            "description": "Max records to return"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/underwriting/submissions/{submission_id}/decisions": {
       "post": {
         "tags": [
@@ -554,6 +1124,110 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/queue": {
+      "get": {
+        "tags": [
+          "Underwriting"
+        ],
+        "summary": "Root queue endpoint alias",
+        "operationId": "get_root_queue_api_v1_queue_get",
+        "parameters": [
+          {
+            "name": "risk_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Risk Type"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "min_score",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "number"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Min Score"
+            }
+          },
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SubmissionListResponse"
                 }
               }
             }
@@ -1340,9 +2014,7 @@
           },
           "exclusions": {
             "anyOf": [
-              {
-                "type": "string"
-              },
+              {},
               {
                 "type": "null"
               }
@@ -1651,6 +2323,72 @@
             "type": "string",
             "format": "date-time",
             "title": "Created At"
+          },
+          "flag_name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flag Name"
+          },
+          "code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Code"
+          },
+          "field": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Field"
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          },
+          "title": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Title"
+          },
+          "resolved": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Resolved"
           }
         },
         "type": "object",
@@ -1911,6 +2649,34 @@
           "limit": {
             "type": "integer",
             "title": "Limit"
+          },
+          "submissions": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SubmissionResponse"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Submissions"
+          },
+          "queue": {
+            "anyOf": [
+              {
+                "items": {
+                  "$ref": "#/components/schemas/SubmissionResponse"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Queue"
           }
         },
         "type": "object",
@@ -2064,6 +2830,39 @@
               }
             ],
             "title": "Premium"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "overall_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overall Score"
+          },
+          "calculated_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Calculated Score"
           }
         },
         "type": "object",

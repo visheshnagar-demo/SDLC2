@@ -51,6 +51,30 @@ class MissingInfoFlag(Base):
 
     submission = relationship("Submission", back_populates="flags")
 
+    @property
+    def flag_name(self) -> str:
+        return self.description
+
+    @property
+    def code(self) -> str:
+        return self.flag_code
+
+    @property
+    def field(self) -> str:
+        return self.field_name
+
+    @property
+    def message(self) -> str:
+        return self.description
+
+    @property
+    def title(self) -> str:
+        return self.description
+
+    @property
+    def resolved(self) -> bool:
+        return self.is_resolved
+
 
 class UnderwritingDecision(Base):
     __tablename__ = "underwriting_decisions"

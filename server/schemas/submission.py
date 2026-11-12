@@ -259,6 +259,50 @@ class MissingInfoFlagResponse(BaseModel):
     is_resolved: bool
     created_at: datetime
 
+    # Aliases
+    flag_name: Optional[str] = None
+    code: Optional[str] = None
+    field: Optional[str] = None
+    message: Optional[str] = None
+    title: Optional[str] = None
+    resolved: Optional[bool] = None
+
+    @model_validator(mode="before")
+    @classmethod
+    def populate_flag_aliases(cls, data: Any) -> Any:
+        if isinstance(data, dict):
+            d = dict(data)
+            if "flag_name" not in d:
+                d["flag_name"] = d.get("description") or d.get("flag_code")
+            if "code" not in d:
+                d["code"] = d.get("flag_code")
+            if "field" not in d:
+                d["field"] = d.get("field_name")
+            if "message" not in d:
+                d["message"] = d.get("description")
+            if "title" not in d:
+                d["title"] = d.get("description")
+            if "resolved" not in d:
+                d["resolved"] = d.get("is_resolved", False)
+            return d
+        return data
+
+    @model_validator(mode="after")
+    def set_instance_aliases(self):
+        if not self.flag_name:
+            self.flag_name = self.description or self.flag_code
+        if not self.code:
+            self.code = self.flag_code
+        if not self.field:
+            self.field = self.field_name
+        if not self.message:
+            self.message = self.description
+        if not self.title:
+            self.title = self.description
+        if self.resolved is None:
+            self.resolved = self.is_resolved
+        return self
+
 
 class RiskScoreResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
@@ -281,7 +325,7 @@ class DecisionSummaryResponse(BaseModel):
     quoted_rate: Optional[float] = None
     quoted_premium: Optional[float] = None
     terms_conditions: Optional[str] = None
-    exclusions: Optional[str] = None
+    exclusions: Optional[Any] = None
     decline_reason_code: Optional[str] = None
     decline_notes: Optional[str] = None
     created_at: datetime
@@ -546,27 +590,63 @@ class SubmissionResponse(BaseModel):
     risk_category: Optional[str] = None
     limit: Optional[float] = None
     premium: Optional[float] = None
+    score: Optional[float] = None
+    overall_score: Optional[float] = None
+    calculated_score: Optional[float] = None
 
     @field_validator("risk_type", mode="before")
     @classmethod
     def format_risk_type_field(cls, v: Any) -> str:
         return format_risk_type_display(v)
 
+    @field_validator("risk_category", mode="before")
+    @classmethod
+    def format_risk_category_field(cls, v: Any) -> Optional[str]:
+        if v is None:
+            return None
+        return format_risk_type_display(v)
+
     @model_validator(mode="before")
     @classmethod
     def populate_aliases(cls, data: Any) -> Any:
         if isinstance(data, dict):
-            raw_r = data.get("risk_type")
+            d = dict(data)
+            raw_r = d.get("risk_type")
             if raw_r:
                 formatted_r = format_risk_type_display(raw_r)
-                data["risk_type"] = formatted_r
-                if "risk_category" not in data:
-                    data["risk_category"] = formatted_r
-            if "limit" not in data and "primary_limit" in data:
-                data["limit"] = data["primary_limit"]
-            if "premium" not in data and "carrier_premium" in data:
-                data["premium"] = data["carrier_premium"]
+                d["risk_type"] = formatted_r
+                if "risk_category" not in d:
+                    d["risk_category"] = formatted_r
+            if "limit" not in d and "primary_limit" in d:
+                d["limit"] = d["primary_limit"]
+            if "premium" not in d and "carrier_premium" in d:
+                d["premium"] = d["carrier_premium"]
+            if "score" not in d and "risk_score" in d:
+                d["score"] = d["risk_score"]
+            if "overall_score" not in d and "risk_score" in d:
+                d["overall_score"] = d["risk_score"]
+            if "calculated_score" not in d and "risk_score" in d:
+                d["calculated_score"] = d["risk_score"]
+            return d
         return data
+
+    @model_validator(mode="after")
+    def set_after_aliases(self):
+        formatted_r = format_risk_type_display(self.risk_type)
+        self.risk_type = formatted_r
+        if not self.risk_category:
+            self.risk_category = formatted_r
+        if self.limit is None:
+            self.limit = self.primary_limit
+        if self.premium is None:
+            self.premium = self.carrier_premium
+        if self.score is None:
+            self.score = self.risk_score
+        if self.overall_score is None:
+            self.overall_score = self.risk_score
+        if self.calculated_score is None:
+            self.calculated_score = self.risk_score
+        return self
 
 
 class SubmissionCreatedResponse(SubmissionResponse):
@@ -580,3 +660,13 @@ class SubmissionListResponse(BaseModel):
     total: int
     skip: int
     limit: int
+    submissions: Optional[List[SubmissionResponse]] = None
+    queue: Optional[List[SubmissionResponse]] = None
+
+    @model_validator(mode="after")
+    def populate_list_aliases(self):
+        if self.submissions is None:
+            self.submissions = self.items
+        if self.queue is None:
+            self.queue = self.items
+        return self

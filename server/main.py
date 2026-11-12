@@ -1,14 +1,16 @@
 import os
-from typing import List
+from typing import List, Optional
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Depends, HTTPException, status
+from fastapi import FastAPI, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 from starlette.middleware.cors import CORSMiddleware
 
 from server.database import init_db, seed_data, SessionLocal, get_db
 from server.routers.submissions import router as submissions_router
 from server.routers.underwriting import router as underwriting_router
+from server.schemas.submission import SubmissionListResponse
 from server.schemas.decision import DeclineReason, DecisionCreate, DecisionResponse
+from server.services.submission_service import SubmissionService
 from server.services.decision_service import DecisionService
 
 
@@ -50,6 +52,37 @@ app.add_middleware(
 # Include API Routers
 app.include_router(submissions_router)
 app.include_router(underwriting_router)
+
+
+@app.get(
+    "/api/v1/queue",
+    response_model=SubmissionListResponse,
+    tags=["Underwriting"],
+    summary="Root queue endpoint alias",
+)
+@app.get(
+    "/api/v1/review-queue",
+    response_model=SubmissionListResponse,
+    tags=["Underwriting"],
+    include_in_schema=False,
+)
+def get_root_queue(
+    risk_type: Optional[str] = Query(None),
+    status: Optional[str] = Query(None),
+    min_score: Optional[float] = Query(None),
+    skip: int = Query(0, ge=0),
+    limit: int = Query(20, ge=1, le=100),
+    db: Session = Depends(get_db),
+):
+    items, total = SubmissionService.list_submissions(
+        db=db,
+        risk_type=risk_type,
+        status_filter=status,
+        min_score=min_score,
+        skip=skip,
+        limit=limit,
+    )
+    return SubmissionListResponse(items=items, total=total, skip=skip, limit=limit)
 
 
 @app.get(

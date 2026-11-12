@@ -74,4 +74,18 @@ class Submission(Base):
 
     @property
     def risk_category(self) -> str:
-        return self.risk_type
+        from server.schemas.submission import format_risk_type_display
+
+        return format_risk_type_display(self.risk_type)
+
+    @property
+    def score(self) -> float:
+        return self.risk_score
+
+    @property
+    def overall_score(self) -> float:
+        return self.risk_score
+
+    @property
+    def calculated_score(self) -> float:
+        return self.risk_score
