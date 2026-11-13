@@ -1,5 +1,5 @@
 import json
-from fastapi import APIRouter, Depends, Query, Path
+from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session
 from server.database import get_db
 from server.models import Case, AuditLog
@@ -73,19 +73,23 @@ def _format_case_detail(case: Case) -> CaseDetailDTO:
         )
 
     return CaseDetailDTO(
-        id=case.id,
-        case_number=case.case_number,
-        scenario_id=case.scenario_id,
-        cedent_name=case.cedent_name,
-        line_of_business=case.line_of_business,
-        treaty_type=case.treaty_type,
-        requested_limit=case.requested_limit,
-        retention_amount=case.retention_amount,
-        historical_loss_ratio=case.historical_loss_ratio,
-        current_stage=case.current_stage,
-        status=case.status,
-        completeness_score=case.completeness_score,
-        overall_confidence=case.overall_confidence,
+        id=str(case.id),
+        case_number=str(case.case_number),
+        scenario_id=str(case.scenario_id),
+        cedent_name=str(case.cedent_name),
+        line_of_business=str(case.line_of_business),
+        treaty_type=str(case.treaty_type),
+        requested_limit=float(case.requested_limit),
+        retention_amount=float(case.retention_amount),
+        historical_loss_ratio=(
+            float(case.historical_loss_ratio)
+            if case.historical_loss_ratio is not None
+            else None
+        ),
+        current_stage=str(case.current_stage),
+        status=str(case.status),
+        completeness_score=float(case.completeness_score),
+        overall_confidence=float(case.overall_confidence),
         created_at=case.created_at,
         updated_at=case.updated_at,
         extracted_fields=case.extracted_fields,
@@ -246,15 +250,14 @@ def get_bind_readiness(
 @router.post("/{case_id}/bind", response_model=BindConfirmationDTO)
 def execute_bind(
     case_id: str = Path(...),
-    req: BindExecutionDTO = ...,
+    req: BindExecutionDTO = BindExecutionDTO(),
     db: Session = Depends(get_db),
 ) -> BindConfirmationDTO:
     """Execute final policy binding and generate contract binder certificate."""
     return MasterOrchestratorService.execute_bind(
         db=db,
         case_id=case_id,
-        actor_persona=req.actor_persona,
-        signoff_notes=req.signoff_notes,
+        req=req,
     )
 
 
@@ -271,4 +274,4 @@ def get_audit_logs(
     if stage:
         query = query.filter(AuditLog.stage_key == stage)
     logs = query.order_by(AuditLog.timestamp.desc()).limit(limit).all()
-    return [AuditLogEntryDTO.model_validate(l) for l in logs]
+    return [AuditLogEntryDTO.model_validate(log_entry) for log_entry in logs]

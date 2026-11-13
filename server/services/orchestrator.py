@@ -17,6 +17,7 @@ from server.schemas import (
     PricingResultDTO,
     QuoteCreateDTO,
     BindConfirmationDTO,
+    BindExecutionDTO,
 )
 
 
@@ -175,15 +176,53 @@ class MasterOrchestratorService:
     ) -> PricingResultDTO:
         case = cls.get_case(db, case_id)
 
-        # Technical pricing model
-        expected_loss = pricing_input.expected_loss
-        technical_premium = (
-            expected_loss + pricing_input.risk_load + pricing_input.expense_load
+        model_name = (
+            pricing_input.model_name
+            or pricing_input.loss_distribution_model
+            or "RMS RiskLink v23 NA Hurr"
         )
-        recommended_rate = (
-            technical_premium / max(case.requested_limit, 100000.0)
-        ) * 100
-        combined_ratio = pricing_input.target_combined_ratio
+
+        # Calculate expected loss if not explicitly provided
+        if pricing_input.expected_loss is not None:
+            expected_loss = float(pricing_input.expected_loss)
+        elif (
+            pricing_input.requested_limit is not None
+            and pricing_input.historical_loss_ratio is not None
+        ):
+            expected_loss = float(pricing_input.requested_limit) * float(
+                pricing_input.historical_loss_ratio
+            )
+        elif case.requested_limit and case.historical_loss_ratio:
+            expected_loss = float(case.requested_limit) * float(
+                case.historical_loss_ratio
+            )
+        else:
+            expected_loss = float(case.requested_limit or 250000.0) * 0.6
+
+        risk_load = (
+            float(pricing_input.risk_load)
+            if pricing_input.risk_load is not None
+            else expected_loss * 0.32
+        )
+        expense_load = (
+            float(pricing_input.expense_load)
+            if pricing_input.expense_load is not None
+            else expected_loss * 0.20
+        )
+        technical_premium = expected_loss + risk_load + expense_load
+
+        if pricing_input.rate_on_line is not None:
+            recommended_rate = float(pricing_input.rate_on_line)
+        else:
+            limit = pricing_input.requested_limit or case.requested_limit or 100000.0
+            recommended_rate = (technical_premium / max(limit, 100000.0)) * 100
+
+        target_combined = (
+            float(pricing_input.target_combined_ratio)
+            if pricing_input.target_combined_ratio is not None
+            else 86.5
+        )
+        combined_ratio = target_combined
 
         loss_dist = [
             {
@@ -213,7 +252,7 @@ class MasterOrchestratorService:
             db.query(PricingScenario).filter(PricingScenario.case_id == case.id).first()
         )
         if ps:
-            ps.model_name = pricing_input.model_name
+            ps.model_name = model_name
             ps.technical_premium = technical_premium
             ps.recommended_rate = recommended_rate
             ps.expected_loss = expected_loss
@@ -222,7 +261,7 @@ class MasterOrchestratorService:
         else:
             ps = PricingScenario(
                 case_id=case.id,
-                model_name=pricing_input.model_name,
+                model_name=model_name,
                 technical_premium=technical_premium,
                 recommended_rate=recommended_rate,
                 expected_loss=expected_loss,
@@ -238,7 +277,7 @@ class MasterOrchestratorService:
             agent_name="PricingAgent",
             action_type="PRICING_CALCULATED",
             confidence_score=0.96,
-            rationale=f"Actuarial pricing calculated for {pricing_input.model_name}: Tech Premium ${technical_premium:,.2f}, Combined Ratio {combined_ratio:.1f}%.",
+            rationale=f"Actuarial pricing calculated for {model_name}: Tech Premium ${technical_premium:,.2f}, Combined Ratio {combined_ratio:.1f}%.",
             actor_persona="Actuary / Pricing Specialist",
             timestamp=datetime.now(timezone.utc),
         )
@@ -260,21 +299,40 @@ class MasterOrchestratorService:
     ) -> Quote:
         case = cls.get_case(db, case_id)
 
-        rol = (quote_data.ceded_premium / max(quote_data.limit_amount, 1.0)) * 100
+        structure_type = (
+            quote_data.structure_type or quote_data.option_type or "Quota Share"
+        )
+        limit_amount = float(quote_data.limit_amount or case.requested_limit or 0.0)
+        retention_amount = float(
+            quote_data.retention_amount or case.retention_amount or 0.0
+        )
+        ceded_premium = float(quote_data.ceded_premium or 0.0)
+        commission_rate = float(quote_data.commission_rate or 20.0)
+        expected_loss_ratio = float(quote_data.expected_loss_ratio or 56.0)
+        combined_ratio = (
+            float(quote_data.combined_ratio)
+            if quote_data.combined_ratio
+            else (expected_loss_ratio + commission_rate)
+        )
+        status = quote_data.status or "DRAFT"
+
+        rol = (
+            (ceded_premium / max(limit_amount, 1.0)) * 100 if limit_amount > 0 else 0.0
+        )
 
         quote = Quote(
             case_id=case.id,
             option_name=quote_data.option_name,
-            structure_type=quote_data.structure_type,
-            limit_amount=quote_data.limit_amount,
-            retention_amount=quote_data.retention_amount,
-            ceded_premium=quote_data.ceded_premium,
+            structure_type=structure_type,
+            limit_amount=limit_amount,
+            retention_amount=retention_amount,
+            ceded_premium=ceded_premium,
             rate_on_line=rol,
-            commission_rate=quote_data.commission_rate,
-            expected_loss_ratio=quote_data.expected_loss_ratio,
-            combined_ratio=quote_data.combined_ratio,
-            status="APPROVED",
-            is_selected=False,
+            commission_rate=commission_rate,
+            expected_loss_ratio=expected_loss_ratio,
+            combined_ratio=combined_ratio,
+            status=status,
+            is_selected=quote_data.is_selected,
         )
         db.add(quote)
 
@@ -284,7 +342,7 @@ class MasterOrchestratorService:
             agent_name="QuoteAgent",
             action_type="QUOTE_CREATED",
             confidence_score=0.98,
-            rationale=f"New quote option '{quote_data.option_name}' structured with limit ${quote_data.limit_amount:,.2f}.",
+            rationale=f"New quote option '{quote_data.option_name}' structured with limit ${limit_amount:,.2f}.",
             actor_persona="Reinsurance Underwriter",
             timestamp=datetime.now(timezone.utc),
         )
@@ -362,7 +420,7 @@ class MasterOrchestratorService:
 
     @classmethod
     def execute_bind(
-        cls, db: Session, case_id: str, actor_persona: str, signoff_notes: str
+        cls, db: Session, case_id: str, req: BindExecutionDTO | None = None
     ) -> BindConfirmationDTO:
         case = cls.get_case(db, case_id)
 
@@ -370,6 +428,19 @@ class MasterOrchestratorService:
             raise HTTPException(
                 status_code=400, detail="Bind checklist not initialized for case."
             )
+
+        actor_persona = "Reinsurance Underwriter"
+        signoff_notes = "All pre-bind compliance and treaty wording verified. Final binder authorized."
+        if req:
+            if req.underwriter_id:
+                actor_persona = req.underwriter_id
+            elif req.actor_persona:
+                actor_persona = req.actor_persona
+
+            if req.binder_notes:
+                signoff_notes = req.binder_notes
+            elif req.signoff_notes:
+                signoff_notes = req.signoff_notes
 
         # Ensure all checklist items are checked for bind
         case.bind_checklist.sanctions_cleared = True
@@ -412,6 +483,10 @@ class MasterOrchestratorService:
             handoff_stage.status = "COMPLETED"
             handoff_stage.agent_reasoning = f"Binder certificate {cert_hash[:16]} generated and transmitted to Downstream PAS."
 
+        effective_date_str = now.strftime("%Y-%m-%d")
+        if req and req.effective_date:
+            effective_date_str = str(req.effective_date)
+
         pas_payload = {
             "policy_number": case.case_number,
             "cedent": case.cedent_name,
@@ -420,7 +495,7 @@ class MasterOrchestratorService:
             "limit": case.requested_limit,
             "retention": case.retention_amount,
             "binder_hash": cert_hash,
-            "effective_date": now.strftime("%Y-%m-%d"),
+            "effective_date": effective_date_str,
             "bound_by": actor_persona,
             "signoff_notes": signoff_notes,
             "status": "BOUND",

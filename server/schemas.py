@@ -1,5 +1,5 @@
 from datetime import datetime
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class ExtractedFieldDTO(BaseModel):
@@ -18,18 +18,18 @@ class ExtractedFieldDTO(BaseModel):
 class QuoteDTO(BaseModel):
     id: str
     option_name: str
-    structure_type: str
+    structure_type: str = "Quota Share"
     limit_amount: float
-    retention_amount: float
+    retention_amount: float = 0.0
     ceded_premium: float
-    rate_on_line: float
-    commission_rate: float
-    expected_loss_ratio: float
-    combined_ratio: float
-    status: str
-    is_selected: bool
+    rate_on_line: float = 0.0
+    commission_rate: float = 0.0
+    expected_loss_ratio: float = 0.0
+    combined_ratio: float = 0.0
+    status: str = "DRAFT"
+    is_selected: bool = False
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class StageStatusDTO(BaseModel):
@@ -62,13 +62,13 @@ class AuditLogEntryDTO(BaseModel):
 class BindReadinessDTO(BaseModel):
     id: str
     case_id: str
-    sanctions_cleared: bool
-    pricing_hurdle_cleared: bool
-    capacity_approved: bool
-    financial_rating_confirmed: bool
-    wording_approved: bool
-    hitl_signed_off: bool
-    is_ready_to_bind: bool
+    sanctions_cleared: bool = True
+    pricing_hurdle_cleared: bool = True
+    capacity_approved: bool = True
+    financial_rating_confirmed: bool = True
+    wording_approved: bool = True
+    hitl_signed_off: bool = True
+    is_ready_to_bind: bool = True
     binder_certificate_hash: str | None = None
     bound_at: datetime | None = None
     bound_by: str | None = None
@@ -97,7 +97,7 @@ class CaseDetailDTO(BaseModel):
     treaty_type: str
     requested_limit: float
     retention_amount: float
-    historical_loss_ratio: float | None
+    historical_loss_ratio: float | None = None
     current_stage: str
     status: str
     completeness_score: float
@@ -123,12 +123,12 @@ class DemoScenario(BaseModel):
     treaty_type: str
     requested_limit: float
     expected_behavior: str
-    tags: list[str]
+    tags: list[str] = []
 
 
 class ExecuteStageRequest(BaseModel):
-    actor_persona: str
-    parameters: dict = {}
+    actor_persona: str = "Reinsurance Underwriter"
+    parameters: dict = Field(default_factory=dict)
 
 
 class StageExecutionResultDTO(BaseModel):
@@ -144,45 +144,69 @@ class OverrideRequest(BaseModel):
     field_name: str | None = None
     override_value: str
     rationale: str
-    actor_persona: str
+    actor_persona: str = "Reinsurance Underwriter"
 
 
 class PricingInputDTO(BaseModel):
-    model_name: str
-    expected_loss: float
-    risk_load: float
-    expense_load: float
-    target_combined_ratio: float
+    model_name: str | None = None
+    loss_distribution_model: str | None = None
+    line_of_business: str | None = None
+    historical_loss_ratio: float | None = None
+    requested_limit: float | None = None
+    attachment_point: float | None = None
+    expected_loss: float | None = None
+    risk_load: float | None = None
+    expense_load: float | None = None
+    target_combined_ratio: float | None = None
+    rate_on_line: float | None = None
+    layer_structure: str | None = None
+    benchmark_loss_rate: float | None = None
+
+    model_config = ConfigDict(extra="allow")
 
 
 class PricingResultDTO(BaseModel):
     technical_premium: float
     recommended_rate: float
-    expected_loss: float
-    combined_ratio: float
-    loss_distribution: list[dict]
+    expected_loss: float = 0.0
+    combined_ratio: float = 0.0
+    loss_distribution: list[dict] = Field(default_factory=list)
+
+    model_config = ConfigDict(extra="allow")
 
 
 class QuoteCreateDTO(BaseModel):
     option_name: str
-    structure_type: str
-    limit_amount: float
-    retention_amount: float
-    ceded_premium: float
-    commission_rate: float
-    expected_loss_ratio: float
-    combined_ratio: float
+    structure_type: str | None = None
+    option_type: str | None = None
+    limit_amount: float = 0.0
+    retention_amount: float = 0.0
+    ceded_premium: float = 0.0
+    commission_rate: float = 0.0
+    expected_loss_ratio: float = 0.0
+    combined_ratio: float = 0.0
+    status: str = "DRAFT"
+    is_selected: bool = False
+
+    model_config = ConfigDict(extra="allow")
 
 
 class ApprovalDecisionDTO(BaseModel):
-    decision: str  # APPROVED or REJECTED
-    actor_persona: str
-    rationale: str
+    decision: str = "APPROVED"  # APPROVED or REJECTED
+    actor_persona: str = "Reinsurance Underwriter"
+    rationale: str = ""
 
 
 class BindExecutionDTO(BaseModel):
-    actor_persona: str
-    signoff_notes: str
+    quote_id: str | None = None
+    underwriter_id: str | None = None
+    effective_date: str | datetime | None = None
+    expiration_date: str | datetime | None = None
+    binder_notes: str | None = None
+    actor_persona: str | None = None
+    signoff_notes: str | None = None
+
+    model_config = ConfigDict(extra="allow")
 
 
 class BindConfirmationDTO(BaseModel):
@@ -192,4 +216,6 @@ class BindConfirmationDTO(BaseModel):
     binder_certificate_hash: str
     bound_at: datetime
     bound_by: str
-    pas_payload: dict
+    pas_payload: dict = Field(default_factory=dict)
+
+    model_config = ConfigDict(extra="allow")

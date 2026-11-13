@@ -587,11 +587,11 @@
           }
         ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BindExecutionDTO"
+                "$ref": "#/components/schemas/BindExecutionDTO",
+                "default": {}
               }
             }
           }
@@ -720,23 +720,21 @@
         "properties": {
           "decision": {
             "type": "string",
-            "title": "Decision"
+            "title": "Decision",
+            "default": "APPROVED"
           },
           "actor_persona": {
             "type": "string",
-            "title": "Actor Persona"
+            "title": "Actor Persona",
+            "default": "Reinsurance Underwriter"
           },
           "rationale": {
             "type": "string",
-            "title": "Rationale"
+            "title": "Rationale",
+            "default": ""
           }
         },
         "type": "object",
-        "required": [
-          "decision",
-          "actor_persona",
-          "rationale"
-        ],
         "title": "ApprovalDecisionDTO"
       },
       "AuditLogEntryDTO": {
@@ -827,6 +825,7 @@
             "title": "Pas Payload"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "case_id",
@@ -834,27 +833,100 @@
           "status",
           "binder_certificate_hash",
           "bound_at",
-          "bound_by",
-          "pas_payload"
+          "bound_by"
         ],
         "title": "BindConfirmationDTO"
       },
       "BindExecutionDTO": {
         "properties": {
+          "quote_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Quote Id"
+          },
+          "underwriter_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Underwriter Id"
+          },
+          "effective_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Date"
+          },
+          "expiration_date": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiration Date"
+          },
+          "binder_notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Binder Notes"
+          },
           "actor_persona": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Actor Persona"
           },
           "signoff_notes": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Signoff Notes"
           }
         },
+        "additionalProperties": true,
         "type": "object",
-        "required": [
-          "actor_persona",
-          "signoff_notes"
-        ],
         "title": "BindExecutionDTO"
       },
       "BindReadinessDTO": {
@@ -869,31 +941,38 @@
           },
           "sanctions_cleared": {
             "type": "boolean",
-            "title": "Sanctions Cleared"
+            "title": "Sanctions Cleared",
+            "default": true
           },
           "pricing_hurdle_cleared": {
             "type": "boolean",
-            "title": "Pricing Hurdle Cleared"
+            "title": "Pricing Hurdle Cleared",
+            "default": true
           },
           "capacity_approved": {
             "type": "boolean",
-            "title": "Capacity Approved"
+            "title": "Capacity Approved",
+            "default": true
           },
           "financial_rating_confirmed": {
             "type": "boolean",
-            "title": "Financial Rating Confirmed"
+            "title": "Financial Rating Confirmed",
+            "default": true
           },
           "wording_approved": {
             "type": "boolean",
-            "title": "Wording Approved"
+            "title": "Wording Approved",
+            "default": true
           },
           "hitl_signed_off": {
             "type": "boolean",
-            "title": "Hitl Signed Off"
+            "title": "Hitl Signed Off",
+            "default": true
           },
           "is_ready_to_bind": {
             "type": "boolean",
-            "title": "Is Ready To Bind"
+            "title": "Is Ready To Bind",
+            "default": true
           },
           "binder_certificate_hash": {
             "anyOf": [
@@ -933,14 +1012,7 @@
         "type": "object",
         "required": [
           "id",
-          "case_id",
-          "sanctions_cleared",
-          "pricing_hurdle_cleared",
-          "capacity_approved",
-          "financial_rating_confirmed",
-          "wording_approved",
-          "hitl_signed_off",
-          "is_ready_to_bind"
+          "case_id"
         ],
         "title": "BindReadinessDTO"
       },
@@ -1076,7 +1148,6 @@
           "treaty_type",
           "requested_limit",
           "retention_amount",
-          "historical_loss_ratio",
           "current_stage",
           "status",
           "completeness_score",
@@ -1125,7 +1196,8 @@
               "type": "string"
             },
             "type": "array",
-            "title": "Tags"
+            "title": "Tags",
+            "default": []
           }
         },
         "type": "object",
@@ -1137,8 +1209,7 @@
           "line_of_business",
           "treaty_type",
           "requested_limit",
-          "expected_behavior",
-          "tags"
+          "expected_behavior"
         ],
         "title": "DemoScenario"
       },
@@ -1146,19 +1217,16 @@
         "properties": {
           "actor_persona": {
             "type": "string",
-            "title": "Actor Persona"
+            "title": "Actor Persona",
+            "default": "Reinsurance Underwriter"
           },
           "parameters": {
             "additionalProperties": true,
             "type": "object",
-            "title": "Parameters",
-            "default": {}
+            "title": "Parameters"
           }
         },
         "type": "object",
-        "required": [
-          "actor_persona"
-        ],
         "title": "ExecuteStageRequest"
       },
       "ExtractedFieldDTO": {
@@ -1255,49 +1323,166 @@
           },
           "actor_persona": {
             "type": "string",
-            "title": "Actor Persona"
+            "title": "Actor Persona",
+            "default": "Reinsurance Underwriter"
           }
         },
         "type": "object",
         "required": [
           "stage_key",
           "override_value",
-          "rationale",
-          "actor_persona"
+          "rationale"
         ],
         "title": "OverrideRequest"
       },
       "PricingInputDTO": {
         "properties": {
           "model_name": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Model Name"
           },
+          "loss_distribution_model": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loss Distribution Model"
+          },
+          "line_of_business": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Line Of Business"
+          },
+          "historical_loss_ratio": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Historical Loss Ratio"
+          },
+          "requested_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Limit"
+          },
+          "attachment_point": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachment Point"
+          },
           "expected_loss": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Expected Loss"
           },
           "risk_load": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Risk Load"
           },
           "expense_load": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Expense Load"
           },
           "target_combined_ratio": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Target Combined Ratio"
+          },
+          "rate_on_line": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate On Line"
+          },
+          "layer_structure": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Layer Structure"
+          },
+          "benchmark_loss_rate": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Benchmark Loss Rate"
           }
         },
+        "additionalProperties": true,
         "type": "object",
-        "required": [
-          "model_name",
-          "expected_loss",
-          "risk_load",
-          "expense_load",
-          "target_combined_ratio"
-        ],
         "title": "PricingInputDTO"
       },
       "PricingResultDTO": {
@@ -1312,11 +1497,13 @@
           },
           "expected_loss": {
             "type": "number",
-            "title": "Expected Loss"
+            "title": "Expected Loss",
+            "default": 0.0
           },
           "combined_ratio": {
             "type": "number",
-            "title": "Combined Ratio"
+            "title": "Combined Ratio",
+            "default": 0.0
           },
           "loss_distribution": {
             "items": {
@@ -1327,13 +1514,11 @@
             "title": "Loss Distribution"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "technical_premium",
-          "recommended_rate",
-          "expected_loss",
-          "combined_ratio",
-          "loss_distribution"
+          "recommended_rate"
         ],
         "title": "PricingResultDTO"
       },
@@ -1391,44 +1576,72 @@
             "title": "Option Name"
           },
           "structure_type": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Structure Type"
+          },
+          "option_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Option Type"
           },
           "limit_amount": {
             "type": "number",
-            "title": "Limit Amount"
+            "title": "Limit Amount",
+            "default": 0.0
           },
           "retention_amount": {
             "type": "number",
-            "title": "Retention Amount"
+            "title": "Retention Amount",
+            "default": 0.0
           },
           "ceded_premium": {
             "type": "number",
-            "title": "Ceded Premium"
+            "title": "Ceded Premium",
+            "default": 0.0
           },
           "commission_rate": {
             "type": "number",
-            "title": "Commission Rate"
+            "title": "Commission Rate",
+            "default": 0.0
           },
           "expected_loss_ratio": {
             "type": "number",
-            "title": "Expected Loss Ratio"
+            "title": "Expected Loss Ratio",
+            "default": 0.0
           },
           "combined_ratio": {
             "type": "number",
-            "title": "Combined Ratio"
+            "title": "Combined Ratio",
+            "default": 0.0
+          },
+          "status": {
+            "type": "string",
+            "title": "Status",
+            "default": "DRAFT"
+          },
+          "is_selected": {
+            "type": "boolean",
+            "title": "Is Selected",
+            "default": false
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
-          "option_name",
-          "structure_type",
-          "limit_amount",
-          "retention_amount",
-          "ceded_premium",
-          "commission_rate",
-          "expected_loss_ratio",
-          "combined_ratio"
+          "option_name"
         ],
         "title": "QuoteCreateDTO"
       },
@@ -1444,7 +1657,8 @@
           },
           "structure_type": {
             "type": "string",
-            "title": "Structure Type"
+            "title": "Structure Type",
+            "default": "Quota Share"
           },
           "limit_amount": {
             "type": "number",
@@ -1452,7 +1666,8 @@
           },
           "retention_amount": {
             "type": "number",
-            "title": "Retention Amount"
+            "title": "Retention Amount",
+            "default": 0.0
           },
           "ceded_premium": {
             "type": "number",
@@ -1460,43 +1675,42 @@
           },
           "rate_on_line": {
             "type": "number",
-            "title": "Rate On Line"
+            "title": "Rate On Line",
+            "default": 0.0
           },
           "commission_rate": {
             "type": "number",
-            "title": "Commission Rate"
+            "title": "Commission Rate",
+            "default": 0.0
           },
           "expected_loss_ratio": {
             "type": "number",
-            "title": "Expected Loss Ratio"
+            "title": "Expected Loss Ratio",
+            "default": 0.0
           },
           "combined_ratio": {
             "type": "number",
-            "title": "Combined Ratio"
+            "title": "Combined Ratio",
+            "default": 0.0
           },
           "status": {
             "type": "string",
-            "title": "Status"
+            "title": "Status",
+            "default": "DRAFT"
           },
           "is_selected": {
             "type": "boolean",
-            "title": "Is Selected"
+            "title": "Is Selected",
+            "default": false
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
           "option_name",
-          "structure_type",
           "limit_amount",
-          "retention_amount",
-          "ceded_premium",
-          "rate_on_line",
-          "commission_rate",
-          "expected_loss_ratio",
-          "combined_ratio",
-          "status",
-          "is_selected"
+          "ceded_premium"
         ],
         "title": "QuoteDTO"
       },
