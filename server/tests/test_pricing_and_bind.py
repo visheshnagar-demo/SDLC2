@@ -44,6 +44,26 @@ def test_tc07_actuarial_pricing_calculation(client):
     assert len(pricing_data["loss_distribution"]) >= 3
 
 
+def test_pricing_calculation_percentage_normalization(client):
+    load_res = client.post("/api/v1/qtb/scenarios/SCENARIO_A/load")
+    case_id = load_res.json()["id"]
+
+    # Test with ratio expressed as percentage (e.g. 58.2)
+    pricing_payload = {
+        "line_of_business": "PROPERTY_CASUALTY",
+        "historical_loss_ratio": 58.2,
+        "requested_limit": 10000000.0,
+        "target_combined_ratio": 85.0,
+    }
+    pricing_res = client.post(
+        f"/cases/{case_id}/pricing/calculate", json=pricing_payload
+    )
+    assert pricing_res.status_code == 200
+    pricing_data = pricing_res.json()
+    assert abs(pricing_data["expected_loss"] - 5820000.0) < 0.01
+    assert pricing_data["technical_premium"] > 0
+
+
 def test_quote_creation(client):
     load_res = client.post("/api/v1/qtb/scenarios/SCENARIO_A/load")
     case_id = load_res.json()["id"]
@@ -78,12 +98,28 @@ def test_tc08_quote_builder_and_capacity_check(client):
         "expected_loss_ratio": 62.0,
         "status": "DRAFT",
     }
+    # Test via both standard and alias paths
     quote_res = client.post(f"/api/v1/qtb/cases/{case_id}/quotes", json=quote_payload)
     assert quote_res.status_code == 201
     quote_data = quote_res.json()
     assert quote_data["option_name"] == "Option 1: 50% Quota Share"
     assert quote_data["limit_amount"] == 25000000.0
     assert quote_data["ceded_premium"] == 3000000.0
+    assert quote_data["status"] == "DRAFT"
+
+    # Test alias route /cases/{case_id}/quotes
+    quote_res2 = client.post(f"/cases/{case_id}/quotes", json=quote_payload)
+    assert quote_res2.status_code == 201
+
+
+def test_quote_builder_optional_defaults(client):
+    load_res = client.post("/scenarios/SCENARIO_A/load")
+    case_id = load_res.json()["id"]
+
+    # Minimal payload with optional fields omitted
+    quote_res = client.post(f"/cases/{case_id}/quotes", json={})
+    assert quote_res.status_code == 201
+    quote_data = quote_res.json()
     assert quote_data["status"] == "DRAFT"
 
 
@@ -117,7 +153,7 @@ def test_bind_readiness_and_execution(client):
 
 
 def test_tc10_bind_execution_and_audit_logs(client):
-    load_res = client.post("/api/v1/qtb/scenarios/SCENARIO_A/load")
+    load_res = client.post("/scenarios/SCENARIO_A/load")
     case_id = load_res.json()["id"]
 
     bind_payload = {
@@ -127,7 +163,8 @@ def test_tc10_bind_execution_and_audit_logs(client):
         "expiration_date": "2027-01-01T00:00:00Z",
         "binder_notes": "All sanctions and capacity clearances verified.",
     }
-    bind_res = client.post(f"/api/v1/qtb/cases/{case_id}/bind", json=bind_payload)
+    # Test via /cases/{case_id}/bind
+    bind_res = client.post(f"/cases/{case_id}/bind", json=bind_payload)
     assert bind_res.status_code == 200
     bind_data = bind_res.json()
     assert bind_data["status"] == "BOUND"
@@ -139,7 +176,7 @@ def test_tc10_bind_execution_and_audit_logs(client):
     )
 
     # Audit log check
-    logs_res = client.get(f"/api/v1/qtb/cases/{case_id}/audit-logs")
+    logs_res = client.get(f"/cases/{case_id}/audit-logs")
     assert logs_res.status_code == 200
     logs = logs_res.json()
     assert any(log["action_type"] == "POLICY_BOUND" for log in logs)

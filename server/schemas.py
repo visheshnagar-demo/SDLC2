@@ -6,22 +6,22 @@ class ExtractedFieldDTO(BaseModel):
     id: str
     field_name: str
     extracted_value: str
-    confidence_score: float
-    source_document: str
-    source_citation_page: int
-    is_overridden: bool
+    confidence_score: float = 0.90
+    source_document: str = "Submission_Doc.pdf"
+    source_citation_page: int = 1
+    is_overridden: bool = False
     overridden_value: str | None = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class QuoteDTO(BaseModel):
     id: str
     option_name: str
     structure_type: str = "Quota Share"
-    limit_amount: float
+    limit_amount: float = 0.0
     retention_amount: float = 0.0
-    ceded_premium: float
+    ceded_premium: float = 0.0
     rate_on_line: float = 0.0
     commission_rate: float = 0.0
     expected_loss_ratio: float = 0.0
@@ -39,11 +39,11 @@ class StageStatusDTO(BaseModel):
     stage_order: int
     status: str
     agent_name: str
-    agent_reasoning: str
-    confidence_score: float
+    agent_reasoning: str = ""
+    confidence_score: float = 0.95
     updated_at: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class AuditLogEntryDTO(BaseModel):
@@ -52,11 +52,11 @@ class AuditLogEntryDTO(BaseModel):
     agent_name: str
     action_type: str
     confidence_score: float | None = None
-    rationale: str
-    actor_persona: str
+    rationale: str = ""
+    actor_persona: str = "Reinsurance Underwriter"
     timestamp: datetime
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class BindReadinessDTO(BaseModel):
@@ -73,7 +73,7 @@ class BindReadinessDTO(BaseModel):
     bound_at: datetime | None = None
     bound_by: str | None = None
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class PricingScenarioDTO(BaseModel):
@@ -85,7 +85,7 @@ class PricingScenarioDTO(BaseModel):
     combined_ratio: float
     loss_distribution: list[dict] = []
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class CaseDetailDTO(BaseModel):
@@ -111,7 +111,7 @@ class CaseDetailDTO(BaseModel):
     bind_checklist: BindReadinessDTO | None = None
     pricing_scenarios: list[PricingScenarioDTO] = []
 
-    model_config = ConfigDict(from_attributes=True)
+    model_config = ConfigDict(from_attributes=True, extra="allow")
 
 
 class DemoScenario(BaseModel):
@@ -125,10 +125,14 @@ class DemoScenario(BaseModel):
     expected_behavior: str
     tags: list[str] = []
 
+    model_config = ConfigDict(extra="allow")
+
 
 class ExecuteStageRequest(BaseModel):
     actor_persona: str = "Reinsurance Underwriter"
     parameters: dict = Field(default_factory=dict)
+
+    model_config = ConfigDict(extra="allow")
 
 
 class StageExecutionResultDTO(BaseModel):
@@ -138,6 +142,8 @@ class StageExecutionResultDTO(BaseModel):
     confidence_score: float
     updated_case: CaseDetailDTO
 
+    model_config = ConfigDict(extra="allow")
+
 
 class OverrideRequest(BaseModel):
     stage_key: str
@@ -146,21 +152,23 @@ class OverrideRequest(BaseModel):
     rationale: str
     actor_persona: str = "Reinsurance Underwriter"
 
+    model_config = ConfigDict(extra="allow")
+
 
 class PricingInputDTO(BaseModel):
     model_name: str | None = None
     loss_distribution_model: str | None = None
     line_of_business: str | None = None
-    historical_loss_ratio: float | None = None
-    requested_limit: float | None = None
-    attachment_point: float | None = None
-    expected_loss: float | None = None
-    risk_load: float | None = None
-    expense_load: float | None = None
-    target_combined_ratio: float | None = None
-    rate_on_line: float | None = None
+    historical_loss_ratio: float | str | None = None
+    requested_limit: float | str | None = None
+    attachment_point: float | str | None = None
+    expected_loss: float | str | None = None
+    risk_load: float | str | None = None
+    expense_load: float | str | None = None
+    target_combined_ratio: float | str | None = None
+    rate_on_line: float | str | None = None
     layer_structure: str | None = None
-    benchmark_loss_rate: float | None = None
+    benchmark_loss_rate: float | str | None = None
 
     model_config = ConfigDict(extra="allow")
 
@@ -176,17 +184,18 @@ class PricingResultDTO(BaseModel):
 
 
 class QuoteCreateDTO(BaseModel):
-    option_name: str
-    structure_type: str | None = None
+    option_name: str | None = "Standard Quote"
+    structure_type: str | None = "Quota Share"
     option_type: str | None = None
-    limit_amount: float = 0.0
-    retention_amount: float = 0.0
-    ceded_premium: float = 0.0
-    commission_rate: float = 0.0
-    expected_loss_ratio: float = 0.0
-    combined_ratio: float = 0.0
-    status: str = "DRAFT"
-    is_selected: bool = False
+    limit_amount: float | str | None = 0.0
+    retention_amount: float | str | None = 0.0
+    ceded_premium: float | str | None = 0.0
+    rate_on_line: float | str | None = None
+    commission_rate: float | str | None = 0.0
+    expected_loss_ratio: float | str | None = 0.0
+    combined_ratio: float | str | None = 0.0
+    status: str | None = "DRAFT"
+    is_selected: bool | None = False
 
     model_config = ConfigDict(extra="allow")
 
@@ -195,6 +204,8 @@ class ApprovalDecisionDTO(BaseModel):
     decision: str = "APPROVED"  # APPROVED or REJECTED
     actor_persona: str = "Reinsurance Underwriter"
     rationale: str = ""
+
+    model_config = ConfigDict(extra="allow")
 
 
 class BindExecutionDTO(BaseModel):

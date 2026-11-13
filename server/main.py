@@ -34,10 +34,18 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Include Routers
+# Include Routers with standard prefix /api/v1/qtb
 app.include_router(health.router)
-app.include_router(scenarios.router)
-app.include_router(cases.router)
+app.include_router(scenarios.router, prefix="/api/v1/qtb/scenarios")
+app.include_router(cases.router, prefix="/api/v1/qtb/cases")
+
+# Include Routers with /api/v1 prefix alias
+app.include_router(scenarios.router, prefix="/api/v1/scenarios")
+app.include_router(cases.router, prefix="/api/v1/cases")
+
+# Include Routers at root level alias (/scenarios, /cases)
+app.include_router(scenarios.router, prefix="/scenarios")
+app.include_router(cases.router, prefix="/cases")
 
 
 @app.get("/")

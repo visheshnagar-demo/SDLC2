@@ -5,7 +5,7 @@ from server.schemas import DemoScenario, CaseDetailDTO
 from server.services.fixtures import DEMO_SCENARIOS, load_scenario_into_db
 from server.routers.cases import _format_case_detail
 
-router = APIRouter(prefix="/api/v1/qtb/scenarios", tags=["Scenarios"])
+router = APIRouter(tags=["Scenarios"])
 
 
 @router.get("", response_model=list[DemoScenario])

@@ -427,11 +427,22 @@
           }
         ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/QuoteCreateDTO"
+                "$ref": "#/components/schemas/QuoteCreateDTO",
+                "default": {
+                  "option_name": "Standard Quote",
+                  "structure_type": "Quota Share",
+                  "limit_amount": 0.0,
+                  "retention_amount": 0.0,
+                  "ceded_premium": 0.0,
+                  "commission_rate": 0.0,
+                  "expected_loss_ratio": 0.0,
+                  "combined_ratio": 0.0,
+                  "status": "DRAFT",
+                  "is_selected": false
+                }
               }
             }
           }
@@ -489,11 +500,15 @@
           }
         ],
         "requestBody": {
-          "required": true,
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/ApprovalDecisionDTO"
+                "$ref": "#/components/schemas/ApprovalDecisionDTO",
+                "default": {
+                  "decision": "APPROVED",
+                  "actor_persona": "Reinsurance Underwriter",
+                  "rationale": ""
+                }
               }
             }
           }
@@ -590,8 +605,15 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/BindExecutionDTO",
-                "default": {}
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/BindExecutionDTO"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
               }
             }
           }
@@ -697,6 +719,1336 @@
         }
       }
     },
+    "/api/v1/scenarios": {
+      "get": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "List Scenarios",
+        "description": "List all available synthetic demonstration scenarios.",
+        "operationId": "list_scenarios_api_v1_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DemoScenario"
+                  },
+                  "type": "array",
+                  "title": "Response List Scenarios Api V1 Scenarios Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/scenarios/{scenario_id}/load": {
+      "post": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "Load Scenario",
+        "description": "Load and reset active case state to chosen scenario.",
+        "operationId": "load_scenario_api_v1_scenarios__scenario_id__load_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetailDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "List Cases",
+        "description": "Retrieve all active cases.",
+        "operationId": "list_cases_api_v1_cases_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CaseDetailDTO"
+                  },
+                  "type": "array",
+                  "title": "Response List Cases Api V1 Cases Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Case",
+        "description": "Get current case details, stage, and artifacts.",
+        "operationId": "get_case_api_v1_cases__case_id__get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetailDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/stages": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Case Stages",
+        "description": "Retrieve status of all 12 workflow stages for a case.",
+        "operationId": "get_case_stages_api_v1_cases__case_id__stages_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StageStatusDTO"
+                  },
+                  "title": "Response Get Case Stages Api V1 Cases  Case Id  Stages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/stages/{stage_key}/execute": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Execute Stage",
+        "description": "Trigger simulated agent processing for a specific workflow stage.",
+        "operationId": "execute_stage_api_v1_cases__case_id__stages__stage_key__execute_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "stage_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Stage Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteStageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StageExecutionResultDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/overrides": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Record Override",
+        "description": "Record human-in-the-loop exception override.",
+        "operationId": "record_override_api_v1_cases__case_id__overrides_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OverrideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogEntryDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/pricing/calculate": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Calculate Pricing",
+        "description": "Run actuarial pricing scenario calculations.",
+        "operationId": "calculate_pricing_api_v1_cases__case_id__pricing_calculate_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PricingInputDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingResultDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/quotes": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Create Quote",
+        "description": "Create or update structured quote terms.",
+        "operationId": "create_quote_api_v1_cases__case_id__quotes_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteCreateDTO",
+                "default": {
+                  "option_name": "Standard Quote",
+                  "structure_type": "Quota Share",
+                  "limit_amount": 0.0,
+                  "retention_amount": 0.0,
+                  "ceded_premium": 0.0,
+                  "commission_rate": 0.0,
+                  "expected_loss_ratio": 0.0,
+                  "combined_ratio": 0.0,
+                  "status": "DRAFT",
+                  "is_selected": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/approvals/{approval_id}": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Submit Approval",
+        "description": "Submit human governance approval or rejection.",
+        "operationId": "submit_approval_api_v1_cases__case_id__approvals__approval_id__post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "approval_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Approval Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalDecisionDTO",
+                "default": {
+                  "decision": "APPROVED",
+                  "actor_persona": "Reinsurance Underwriter",
+                  "rationale": ""
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Submit Approval Api V1 Cases  Case Id  Approvals  Approval Id  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/bind-readiness": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Bind Readiness",
+        "description": "Verify 6-point bind readiness checklist status.",
+        "operationId": "get_bind_readiness_api_v1_cases__case_id__bind_readiness_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindReadinessDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/bind": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Execute Bind",
+        "description": "Execute final policy binding and generate contract binder certificate.",
+        "operationId": "execute_bind_api_v1_cases__case_id__bind_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/BindExecutionDTO"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindConfirmationDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/cases/{case_id}/audit-logs": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Audit Logs",
+        "description": "Fetch chronologically sorted audit trail.",
+        "operationId": "get_audit_logs_api_v1_cases__case_id__audit_logs_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional stage filter",
+              "title": "Stage"
+            },
+            "description": "Optional stage filter"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditLogEntryDTO"
+                  },
+                  "title": "Response Get Audit Logs Api V1 Cases  Case Id  Audit Logs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scenarios": {
+      "get": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "List Scenarios",
+        "description": "List all available synthetic demonstration scenarios.",
+        "operationId": "list_scenarios_scenarios_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DemoScenario"
+                  },
+                  "type": "array",
+                  "title": "Response List Scenarios Scenarios Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/scenarios/{scenario_id}/load": {
+      "post": {
+        "tags": [
+          "Scenarios"
+        ],
+        "summary": "Load Scenario",
+        "description": "Load and reset active case state to chosen scenario.",
+        "operationId": "load_scenario_scenarios__scenario_id__load_post",
+        "parameters": [
+          {
+            "name": "scenario_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Scenario Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetailDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "List Cases",
+        "description": "Retrieve all active cases.",
+        "operationId": "list_cases_cases_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/CaseDetailDTO"
+                  },
+                  "type": "array",
+                  "title": "Response List Cases Cases Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Case",
+        "description": "Get current case details, stage, and artifacts.",
+        "operationId": "get_case_cases__case_id__get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/CaseDetailDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/stages": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Case Stages",
+        "description": "Retrieve status of all 12 workflow stages for a case.",
+        "operationId": "get_case_stages_cases__case_id__stages_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/StageStatusDTO"
+                  },
+                  "title": "Response Get Case Stages Cases  Case Id  Stages Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/stages/{stage_key}/execute": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Execute Stage",
+        "description": "Trigger simulated agent processing for a specific workflow stage.",
+        "operationId": "execute_stage_cases__case_id__stages__stage_key__execute_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "stage_key",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Stage Key"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ExecuteStageRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StageExecutionResultDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/overrides": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Record Override",
+        "description": "Record human-in-the-loop exception override.",
+        "operationId": "record_override_cases__case_id__overrides_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OverrideRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuditLogEntryDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/pricing/calculate": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Calculate Pricing",
+        "description": "Run actuarial pricing scenario calculations.",
+        "operationId": "calculate_pricing_cases__case_id__pricing_calculate_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PricingInputDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingResultDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/quotes": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Create Quote",
+        "description": "Create or update structured quote terms.",
+        "operationId": "create_quote_cases__case_id__quotes_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuoteCreateDTO",
+                "default": {
+                  "option_name": "Standard Quote",
+                  "structure_type": "Quota Share",
+                  "limit_amount": 0.0,
+                  "retention_amount": 0.0,
+                  "ceded_premium": 0.0,
+                  "commission_rate": 0.0,
+                  "expected_loss_ratio": 0.0,
+                  "combined_ratio": 0.0,
+                  "status": "DRAFT",
+                  "is_selected": false
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QuoteDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/approvals/{approval_id}": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Submit Approval",
+        "description": "Submit human governance approval or rejection.",
+        "operationId": "submit_approval_cases__case_id__approvals__approval_id__post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "approval_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Approval Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ApprovalDecisionDTO",
+                "default": {
+                  "decision": "APPROVED",
+                  "actor_persona": "Reinsurance Underwriter",
+                  "rationale": ""
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true,
+                  "title": "Response Submit Approval Cases  Case Id  Approvals  Approval Id  Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/bind-readiness": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Bind Readiness",
+        "description": "Verify 6-point bind readiness checklist status.",
+        "operationId": "get_bind_readiness_cases__case_id__bind_readiness_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindReadinessDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/bind": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Execute Bind",
+        "description": "Execute final policy binding and generate contract binder certificate.",
+        "operationId": "execute_bind_cases__case_id__bind_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/BindExecutionDTO"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindConfirmationDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/cases/{case_id}/audit-logs": {
+      "get": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Get Audit Logs",
+        "description": "Fetch chronologically sorted audit trail.",
+        "operationId": "get_audit_logs_cases__case_id__audit_logs_get",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          },
+          {
+            "name": "stage",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Optional stage filter",
+              "title": "Stage"
+            },
+            "description": "Optional stage filter"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 200,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditLogEntryDTO"
+                  },
+                  "title": "Response Get Audit Logs Cases  Case Id  Audit Logs Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/": {
       "get": {
         "summary": "Root",
@@ -734,6 +2086,7 @@
             "default": ""
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "title": "ApprovalDecisionDTO"
       },
@@ -768,11 +2121,13 @@
           },
           "rationale": {
             "type": "string",
-            "title": "Rationale"
+            "title": "Rationale",
+            "default": ""
           },
           "actor_persona": {
             "type": "string",
-            "title": "Actor Persona"
+            "title": "Actor Persona",
+            "default": "Reinsurance Underwriter"
           },
           "timestamp": {
             "type": "string",
@@ -780,14 +2135,13 @@
             "title": "Timestamp"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
           "stage_key",
           "agent_name",
           "action_type",
-          "rationale",
-          "actor_persona",
           "timestamp"
         ],
         "title": "AuditLogEntryDTO"
@@ -1009,6 +2363,7 @@
             "title": "Bound By"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1138,6 +2493,7 @@
             "default": []
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1200,6 +2556,7 @@
             "default": []
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "scenario_id",
@@ -1226,6 +2583,7 @@
             "title": "Parameters"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "title": "ExecuteStageRequest"
       },
@@ -1245,19 +2603,23 @@
           },
           "confidence_score": {
             "type": "number",
-            "title": "Confidence Score"
+            "title": "Confidence Score",
+            "default": 0.9
           },
           "source_document": {
             "type": "string",
-            "title": "Source Document"
+            "title": "Source Document",
+            "default": "Submission_Doc.pdf"
           },
           "source_citation_page": {
             "type": "integer",
-            "title": "Source Citation Page"
+            "title": "Source Citation Page",
+            "default": 1
           },
           "is_overridden": {
             "type": "boolean",
-            "title": "Is Overridden"
+            "title": "Is Overridden",
+            "default": false
           },
           "overridden_value": {
             "anyOf": [
@@ -1271,15 +2633,12 @@
             "title": "Overridden Value"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
           "field_name",
-          "extracted_value",
-          "confidence_score",
-          "source_document",
-          "source_citation_page",
-          "is_overridden"
+          "extracted_value"
         ],
         "title": "ExtractedFieldDTO"
       },
@@ -1327,6 +2686,7 @@
             "default": "Reinsurance Underwriter"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "stage_key",
@@ -1376,6 +2736,9 @@
                 "type": "number"
               },
               {
+                "type": "string"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -1385,6 +2748,9 @@
             "anyOf": [
               {
                 "type": "number"
+              },
+              {
+                "type": "string"
               },
               {
                 "type": "null"
@@ -1398,6 +2764,9 @@
                 "type": "number"
               },
               {
+                "type": "string"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -1407,6 +2776,9 @@
             "anyOf": [
               {
                 "type": "number"
+              },
+              {
+                "type": "string"
               },
               {
                 "type": "null"
@@ -1420,6 +2792,9 @@
                 "type": "number"
               },
               {
+                "type": "string"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -1429,6 +2804,9 @@
             "anyOf": [
               {
                 "type": "number"
+              },
+              {
+                "type": "string"
               },
               {
                 "type": "null"
@@ -1442,6 +2820,9 @@
                 "type": "number"
               },
               {
+                "type": "string"
+              },
+              {
                 "type": "null"
               }
             ],
@@ -1451,6 +2832,9 @@
             "anyOf": [
               {
                 "type": "number"
+              },
+              {
+                "type": "string"
               },
               {
                 "type": "null"
@@ -1473,6 +2857,9 @@
             "anyOf": [
               {
                 "type": "number"
+              },
+              {
+                "type": "string"
               },
               {
                 "type": "null"
@@ -1558,6 +2945,7 @@
             "default": []
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1572,8 +2960,16 @@
       "QuoteCreateDTO": {
         "properties": {
           "option_name": {
-            "type": "string",
-            "title": "Option Name"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Option Name",
+            "default": "Standard Quote"
           },
           "structure_type": {
             "anyOf": [
@@ -1584,7 +2980,8 @@
                 "type": "null"
               }
             ],
-            "title": "Structure Type"
+            "title": "Structure Type",
+            "default": "Quota Share"
           },
           "option_type": {
             "anyOf": [
@@ -1598,51 +2995,136 @@
             "title": "Option Type"
           },
           "limit_amount": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Limit Amount",
             "default": 0.0
           },
           "retention_amount": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Retention Amount",
             "default": 0.0
           },
           "ceded_premium": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Ceded Premium",
             "default": 0.0
           },
+          "rate_on_line": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rate On Line"
+          },
           "commission_rate": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Commission Rate",
             "default": 0.0
           },
           "expected_loss_ratio": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Expected Loss Ratio",
             "default": 0.0
           },
           "combined_ratio": {
-            "type": "number",
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Combined Ratio",
             "default": 0.0
           },
           "status": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Status",
             "default": "DRAFT"
           },
           "is_selected": {
-            "type": "boolean",
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Is Selected",
             "default": false
           }
         },
         "additionalProperties": true,
         "type": "object",
-        "required": [
-          "option_name"
-        ],
         "title": "QuoteCreateDTO"
       },
       "QuoteDTO": {
@@ -1662,7 +3144,8 @@
           },
           "limit_amount": {
             "type": "number",
-            "title": "Limit Amount"
+            "title": "Limit Amount",
+            "default": 0.0
           },
           "retention_amount": {
             "type": "number",
@@ -1671,7 +3154,8 @@
           },
           "ceded_premium": {
             "type": "number",
-            "title": "Ceded Premium"
+            "title": "Ceded Premium",
+            "default": 0.0
           },
           "rate_on_line": {
             "type": "number",
@@ -1708,9 +3192,7 @@
         "type": "object",
         "required": [
           "id",
-          "option_name",
-          "limit_amount",
-          "ceded_premium"
+          "option_name"
         ],
         "title": "QuoteDTO"
       },
@@ -1736,6 +3218,7 @@
             "$ref": "#/components/schemas/CaseDetailDTO"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "stage_key",
@@ -1774,11 +3257,13 @@
           },
           "agent_reasoning": {
             "type": "string",
-            "title": "Agent Reasoning"
+            "title": "Agent Reasoning",
+            "default": ""
           },
           "confidence_score": {
             "type": "number",
-            "title": "Confidence Score"
+            "title": "Confidence Score",
+            "default": 0.95
           },
           "updated_at": {
             "type": "string",
@@ -1786,6 +3271,7 @@
             "title": "Updated At"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1794,8 +3280,6 @@
           "stage_order",
           "status",
           "agent_name",
-          "agent_reasoning",
-          "confidence_score",
           "updated_at"
         ],
         "title": "StageStatusDTO"

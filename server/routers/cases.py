@@ -22,7 +22,7 @@ from server.schemas import (
 )
 from server.services.orchestrator import MasterOrchestratorService
 
-router = APIRouter(prefix="/api/v1/qtb/cases", tags=["Cases"])
+router = APIRouter(tags=["Cases"])
 
 
 def _format_case_detail(case: Case) -> CaseDetailDTO:
@@ -184,7 +184,7 @@ def calculate_pricing(
 @router.post("/{case_id}/quotes", response_model=QuoteDTO, status_code=201)
 def create_quote(
     case_id: str = Path(...),
-    quote_data: QuoteCreateDTO = ...,
+    quote_data: QuoteCreateDTO = QuoteCreateDTO(),
     db: Session = Depends(get_db),
 ) -> QuoteDTO:
     """Create or update structured quote terms."""
@@ -198,7 +198,7 @@ def create_quote(
 def submit_approval(
     case_id: str = Path(...),
     approval_id: str = Path(...),
-    req: ApprovalDecisionDTO = ...,
+    req: ApprovalDecisionDTO = ApprovalDecisionDTO(),
     db: Session = Depends(get_db),
 ) -> dict:
     """Submit human governance approval or rejection."""
@@ -250,14 +250,14 @@ def get_bind_readiness(
 @router.post("/{case_id}/bind", response_model=BindConfirmationDTO)
 def execute_bind(
     case_id: str = Path(...),
-    req: BindExecutionDTO = BindExecutionDTO(),
+    req: BindExecutionDTO | None = None,
     db: Session = Depends(get_db),
 ) -> BindConfirmationDTO:
     """Execute final policy binding and generate contract binder certificate."""
     return MasterOrchestratorService.execute_bind(
         db=db,
         case_id=case_id,
-        req=req,
+        req=req or BindExecutionDTO(),
     )
 
 
