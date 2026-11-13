@@ -59,3 +59,41 @@ def test_br04_pricing_hurdle():
         combined_ratio=98.0, rate_on_line=4.0
     )
     assert eval_fail["passed"] is False
+
+
+def test_business_rules_endpoint(client):
+    # Test GET list of business rules
+    res = client.get("/api/v1/qtb/business-rules")
+    assert res.status_code == 200
+    assert len(res.json()) >= 10
+
+    # Test GET alias /business-rules
+    res_alias = client.get("/business-rules")
+    assert res_alias.status_code == 200
+
+    # Test POST /api/v1/qtb/business-rules/evaluate
+    eval_res = client.post(
+        "/api/v1/qtb/business-rules/evaluate",
+        json={
+            "rule": "BR-02",
+            "requested_limit": 50000000.0,
+            "actor_persona": "Reinsurance Underwriter",
+        },
+    )
+    assert eval_res.status_code == 200
+    data = eval_res.json()
+    assert data["rule"] == "BR-02"
+    assert data["authorized"] is False
+    assert data["exceeds_authority"] is True
+
+    # Test evaluate with Manager
+    eval_mgr = client.post(
+        "/business-rules/evaluate",
+        json={
+            "rule": "BR-02",
+            "requested_limit": 50000000.0,
+            "actor_persona": "Portfolio / Capacity Manager",
+        },
+    )
+    assert eval_mgr.status_code == 200
+    assert eval_mgr.json()["authorized"] is True

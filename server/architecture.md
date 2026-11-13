@@ -33,8 +33,12 @@ graph TD
 - server/main.py
 - server/models.py
 - server/routers/__init__.py
+- server/routers/bind.py
 - server/routers/cases.py
 - server/routers/health.py
+- server/routers/pricing.py
+- server/routers/quotes.py
+- server/routers/rules.py
 - server/routers/scenarios.py
 - server/schemas.py
 - server/services/__init__.py

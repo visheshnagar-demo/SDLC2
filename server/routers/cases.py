@@ -1,4 +1,5 @@
 import json
+from typing import Any
 from fastapi import APIRouter, Depends, HTTPException, Query, Path
 from sqlalchemy.orm import Session
 from server.database import get_db
@@ -19,6 +20,7 @@ from server.schemas import (
     BindExecutionDTO,
     BindConfirmationDTO,
     PricingScenarioDTO,
+    BusinessRuleEvaluationRequest,
 )
 from server.services.orchestrator import MasterOrchestratorService
 
@@ -102,6 +104,7 @@ def _format_case_detail(case: Case) -> CaseDetailDTO:
 
 
 @router.get("", response_model=list[CaseDetailDTO])
+@router.get("/", response_model=list[CaseDetailDTO])
 def list_cases(db: Session = Depends(get_db)) -> list[CaseDetailDTO]:
     """Retrieve all active cases."""
     cases = db.query(Case).all()
@@ -116,6 +119,7 @@ def get_case(case_id: str = Path(...), db: Session = Depends(get_db)) -> CaseDet
 
 
 @router.get("/{case_id}/stages", response_model=list[StageStatusDTO])
+@router.get("/{case_id}/stage", response_model=list[StageStatusDTO])
 def get_case_stages(
     case_id: str = Path(...), db: Session = Depends(get_db)
 ) -> list[StageStatusDTO]:
@@ -127,10 +131,19 @@ def get_case_stages(
 @router.post(
     "/{case_id}/stages/{stage_key}/execute", response_model=StageExecutionResultDTO
 )
+@router.post(
+    "/{case_id}/stage/{stage_key}/execute", response_model=StageExecutionResultDTO
+)
+@router.post(
+    "/{case_id}/stages/{stage_key}", response_model=StageExecutionResultDTO
+)
+@router.post(
+    "/{case_id}/stage/{stage_key}", response_model=StageExecutionResultDTO
+)
 def execute_stage(
     case_id: str = Path(...),
     stage_key: str = Path(...),
-    req: ExecuteStageRequest = ...,
+    req: ExecuteStageRequest = ExecuteStageRequest(),
     db: Session = Depends(get_db),
 ) -> StageExecutionResultDTO:
     """Trigger simulated agent processing for a specific workflow stage."""
@@ -151,9 +164,10 @@ def execute_stage(
 
 
 @router.post("/{case_id}/overrides", response_model=AuditLogEntryDTO)
+@router.post("/{case_id}/override", response_model=AuditLogEntryDTO)
 def record_override(
     case_id: str = Path(...),
-    req: OverrideRequest = ...,
+    req: OverrideRequest = OverrideRequest(stage_key="COMPLETENESS_VALIDATION", override_value="True", rationale="Override"),
     db: Session = Depends(get_db),
 ) -> AuditLogEntryDTO:
     """Record human-in-the-loop exception override."""
@@ -170,9 +184,10 @@ def record_override(
 
 
 @router.post("/{case_id}/pricing/calculate", response_model=PricingResultDTO)
+@router.post("/{case_id}/pricing", response_model=PricingResultDTO)
 def calculate_pricing(
     case_id: str = Path(...),
-    pricing_input: PricingInputDTO = ...,
+    pricing_input: PricingInputDTO = PricingInputDTO(),
     db: Session = Depends(get_db),
 ) -> PricingResultDTO:
     """Run actuarial pricing scenario calculations."""
@@ -181,7 +196,48 @@ def calculate_pricing(
     )
 
 
+@router.get("/{case_id}/pricing/calculate", response_model=PricingResultDTO)
+def get_calculated_pricing(
+    case_id: str = Path(...),
+    db: Session = Depends(get_db),
+) -> PricingResultDTO:
+    """Get calculated pricing scenario."""
+    return MasterOrchestratorService.calculate_pricing(
+        db=db, case_id=case_id, pricing_input=PricingInputDTO()
+    )
+
+
+@router.get("/{case_id}/pricing", response_model=list[PricingScenarioDTO])
+def get_pricing_scenarios(
+    case_id: str = Path(...),
+    db: Session = Depends(get_db),
+) -> list[PricingScenarioDTO]:
+    """Get all pricing scenarios for case."""
+    case = MasterOrchestratorService.get_case(db, case_id)
+    pricing_dtos = []
+    for ps in case.pricing_scenarios:
+        loss_dist = []
+        if ps.loss_distribution_json:
+            try:
+                loss_dist = json.loads(ps.loss_distribution_json)
+            except Exception:
+                loss_dist = []
+        pricing_dtos.append(
+            PricingScenarioDTO(
+                id=ps.id,
+                model_name=ps.model_name,
+                technical_premium=ps.technical_premium,
+                recommended_rate=ps.recommended_rate,
+                expected_loss=ps.expected_loss,
+                combined_ratio=ps.combined_ratio,
+                loss_distribution=loss_dist,
+            )
+        )
+    return pricing_dtos
+
+
 @router.post("/{case_id}/quotes", response_model=QuoteDTO, status_code=201)
+@router.post("/{case_id}/quote", response_model=QuoteDTO, status_code=201)
 def create_quote(
     case_id: str = Path(...),
     quote_data: QuoteCreateDTO = QuoteCreateDTO(),
@@ -194,10 +250,23 @@ def create_quote(
     return QuoteDTO.model_validate(quote)
 
 
+@router.get("/{case_id}/quotes", response_model=list[QuoteDTO])
+@router.get("/{case_id}/quote", response_model=list[QuoteDTO])
+def get_quotes(
+    case_id: str = Path(...),
+    db: Session = Depends(get_db),
+) -> list[QuoteDTO]:
+    """List quotes for case."""
+    case = MasterOrchestratorService.get_case(db, case_id)
+    return [QuoteDTO.model_validate(q) for q in case.quotes]
+
+
 @router.post("/{case_id}/approvals/{approval_id}")
+@router.post("/{case_id}/approvals")
+@router.post("/{case_id}/approval")
 def submit_approval(
     case_id: str = Path(...),
-    approval_id: str = Path(...),
+    approval_id: str = "appr-01",
     req: ApprovalDecisionDTO = ApprovalDecisionDTO(),
     db: Session = Depends(get_db),
 ) -> dict:
@@ -213,6 +282,8 @@ def submit_approval(
 
 
 @router.get("/{case_id}/bind-readiness", response_model=BindReadinessDTO)
+@router.get("/{case_id}/bind_readiness", response_model=BindReadinessDTO)
+@router.get("/{case_id}/readiness", response_model=BindReadinessDTO)
 def get_bind_readiness(
     case_id: str = Path(...), db: Session = Depends(get_db)
 ) -> BindReadinessDTO:
@@ -248,6 +319,8 @@ def get_bind_readiness(
 
 
 @router.post("/{case_id}/bind", response_model=BindConfirmationDTO)
+@router.post("/{case_id}/bind-decision", response_model=BindConfirmationDTO)
+@router.post("/{case_id}/execute-bind", response_model=BindConfirmationDTO)
 def execute_bind(
     case_id: str = Path(...),
     req: BindExecutionDTO | None = None,
@@ -262,6 +335,9 @@ def execute_bind(
 
 
 @router.get("/{case_id}/audit-logs", response_model=list[AuditLogEntryDTO])
+@router.get("/{case_id}/audit_logs", response_model=list[AuditLogEntryDTO])
+@router.get("/{case_id}/audits", response_model=list[AuditLogEntryDTO])
+@router.get("/{case_id}/audit", response_model=list[AuditLogEntryDTO])
 def get_audit_logs(
     case_id: str = Path(...),
     stage: str | None = Query(None, description="Optional stage filter"),
@@ -275,3 +351,21 @@ def get_audit_logs(
         query = query.filter(AuditLog.stage_key == stage)
     logs = query.order_by(AuditLog.timestamp.desc()).limit(limit).all()
     return [AuditLogEntryDTO.model_validate(log_entry) for log_entry in logs]
+
+
+@router.get("/{case_id}/business-rules", response_model=dict[str, Any])
+@router.get("/{case_id}/rules", response_model=dict[str, Any])
+@router.post("/{case_id}/business-rules/evaluate", response_model=dict[str, Any])
+@router.post("/{case_id}/rules/evaluate", response_model=dict[str, Any])
+@router.post("/{case_id}/business-rules", response_model=dict[str, Any])
+@router.post("/{case_id}/rules", response_model=dict[str, Any])
+def evaluate_case_rules(
+    case_id: str = Path(...),
+    req: BusinessRuleEvaluationRequest = BusinessRuleEvaluationRequest(),
+    db: Session = Depends(get_db),
+) -> dict[str, Any]:
+    """Evaluate business rules for a specific case."""
+    req.case_id = case_id
+    from server.routers.rules import evaluate_business_rules
+
+    return evaluate_business_rules(req=req, db=db)

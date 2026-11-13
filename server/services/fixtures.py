@@ -394,10 +394,18 @@ def load_scenario_into_db(db: Session, scenario_id: str) -> Case:
     if not spec:
         raise ValueError(f"Unknown scenario ID: {scenario_id}")
 
-    # Remove existing case with same scenario_id if present
-    existing_case = db.query(Case).filter(Case.scenario_id == scenario_id).first()
-    if existing_case:
+    # Remove existing case with same scenario_id or case_number if present
+    existing_cases = (
+        db.query(Case)
+        .filter(
+            (Case.scenario_id == scenario_id)
+            | (Case.case_number == spec["case_number"])
+        )
+        .all()
+    )
+    for existing_case in existing_cases:
         db.delete(existing_case)
+    if existing_cases:
         db.commit()
 
     # Create new Case
