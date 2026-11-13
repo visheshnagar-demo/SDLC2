@@ -62,4 +62,25 @@ describe("Gen Re Quote-To-Bind App Component", () => {
       ).toBeInTheDocument();
     });
   });
+
+  it("allows opening persona switcher and changing persona", async () => {
+    render(<App />);
+
+    const switcherBtn = screen.getByLabelText("Switch Persona");
+    expect(switcherBtn).toBeInTheDocument();
+    fireEvent.click(switcherBtn);
+
+    await waitFor(() => {
+      expect(screen.getByText(/Simulate Human Persona/i)).toBeInTheDocument();
+      expect(screen.getByText(/Michael Sterling/i)).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText(/Michael Sterling/i));
+
+    await waitFor(() => {
+      expect(screen.getAllByText(/Michael Sterling/i).length).toBeGreaterThan(
+        0,
+      );
+    });
+  });
 });

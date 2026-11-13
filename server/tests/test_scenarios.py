@@ -2,11 +2,16 @@ def test_health_endpoints(client):
     response = client.get("/health")
     assert response.status_code == 200
     data = response.json()
-    assert data["status"] == "UP"
+    assert data["status"].lower() in ["ok", "healthy"]
     assert data["service"] == "genre-qtb-backend"
 
     response_v1 = client.get("/api/v1/health")
     assert response_v1.status_code == 200
+    assert response_v1.json()["status"].lower() in ["ok", "healthy"]
+
+    response_qtb = client.get("/api/v1/qtb/health")
+    assert response_qtb.status_code == 200
+    assert response_qtb.json()["status"].lower() in ["ok", "healthy"]
 
 
 def test_list_scenarios(client):

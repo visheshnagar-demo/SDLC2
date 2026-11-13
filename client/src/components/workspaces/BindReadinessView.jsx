@@ -2,16 +2,11 @@ import React, { useState } from "react";
 import {
   Award,
   CheckCircle2,
-  XCircle,
   AlertTriangle,
   FileCheck,
-  Send,
-  Download,
   Copy,
   Check,
   ShieldCheck,
-  Terminal,
-  Sparkles,
 } from "lucide-react";
 
 export default function BindReadinessView({ activeCase, onExecuteBind }) {
@@ -20,16 +15,24 @@ export default function BindReadinessView({ activeCase, onExecuteBind }) {
   const [copiedJson, setCopiedJson] = useState(false);
 
   const checklist = activeCase?.bindChecklist || [];
-  const allGatesPassed = checklist.every((item) => item.passed);
-  const isBound = activeCase?.bindConfirmation?.bound;
+  const allGatesPassed =
+    checklist.length > 0 && checklist.every((item) => item?.passed);
+  const isBound = Boolean(
+    activeCase?.bindConfirmation?.bound ||
+    activeCase?.bind_checklist?.is_ready_to_bind ||
+    activeCase?.status?.toLowerCase().includes("bound"),
+  );
 
   const handleBind = () => {
     setIsBinding(true);
     setTimeout(() => {
-      onExecuteBind({
-        underwriterName: "Sarah Jenkins (VP Underwriting)",
-        caseNumber: activeCase?.caseNumber,
-      });
+      if (onExecuteBind) {
+        onExecuteBind({
+          underwriterName: "Sarah Jenkins (VP Underwriting)",
+          caseNumber:
+            activeCase?.caseNumber || activeCase?.case_number || "GEN-2026-QTB",
+        });
+      }
       setIsBinding(false);
     }, 800);
   };
@@ -43,23 +46,41 @@ export default function BindReadinessView({ activeCase, onExecuteBind }) {
     policy_number:
       activeCase?.bindConfirmation?.pasPolicyNumber || "POL-RE-2026-7712",
     cedent: {
-      name: activeCase?.cedentName,
-      broker: activeCase?.brokerName,
-      line_of_business: activeCase?.lineOfBusiness,
+      name:
+        activeCase?.cedentName ||
+        activeCase?.cedent_name ||
+        "Pacific Mutual Reinsurance",
+      broker:
+        activeCase?.brokerName ||
+        activeCase?.broker_name ||
+        "Aon Re Global Solutions",
+      line_of_business:
+        activeCase?.lineOfBusiness ||
+        activeCase?.line_of_business ||
+        "Property & Casualty",
       jurisdiction: "United States",
     },
     coverage: {
-      limit: activeCase?.requestedLimit,
-      attachment: activeCase?.attachmentPoint,
-      gross_premium: activeCase?.grossPremium,
-      ceding_commission: activeCase?.cedingCommission,
-      rate_on_line: activeCase?.rateOnLine,
-      effective_date: activeCase?.effectiveDate,
-      expiry_date: activeCase?.expiryDate,
+      limit: activeCase?.requestedLimit || "$10,000,000",
+      attachment: activeCase?.attachmentPoint || "$2,500,000",
+      gross_premium:
+        activeCase?.grossPremium || activeCase?.gross_premium || "$1,250,000",
+      ceding_commission:
+        activeCase?.cedingCommission ||
+        activeCase?.ceding_commission ||
+        "28.5%",
+      rate_on_line:
+        activeCase?.rateOnLine || activeCase?.rate_on_line || "6.8%",
+      effective_date: activeCase?.effectiveDate || "2026-11-01",
+      expiry_date: activeCase?.expiryDate || "2027-10-31",
     },
     governance: {
       sanctions_status: "CLEARED",
-      hurdle_roe: activeCase?.pricingData?.roeProjected + "%",
+      hurdle_roe: `${
+        activeCase?.pricingData?.roeProjected ||
+        activeCase?.pricing_data?.roe_projected ||
+        "16.4"
+      }%`,
       authority_signoff:
         activeCase?.bindConfirmation?.boundBy || "Sarah Jenkins",
       audit_traceability_id:
@@ -83,7 +104,10 @@ export default function BindReadinessView({ activeCase, onExecuteBind }) {
               Stage 10, 11 & 12: Bind Readiness & Contract Handoff
             </span>
             <span className="text-xs text-slate-400 font-mono">
-              Case: {activeCase?.caseNumber}
+              Case:{" "}
+              {activeCase?.caseNumber ||
+                activeCase?.case_number ||
+                "GEN-2026-QTB"}
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
@@ -141,46 +165,49 @@ export default function BindReadinessView({ activeCase, onExecuteBind }) {
                 : "bg-amber-100 text-amber-800 border border-amber-200"
             }`}
           >
-            {checklist.filter((i) => i.passed).length} of 6 Gates Cleared
+            {checklist.filter((i) => i?.passed).length} of 6 Gates Cleared
           </span>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3.5">
-          {checklist.map((gate) => (
-            <div
-              key={gate.id}
-              className={`p-4 rounded-xl border transition flex flex-col justify-between ${
-                gate.passed
-                  ? "bg-emerald-50/60 border-emerald-300/80"
-                  : "bg-amber-50/60 border-amber-300/80"
-              }`}
-            >
-              <div>
-                <div className="flex items-start justify-between gap-2 mb-2">
-                  <span className="text-xs font-bold text-slate-900 leading-snug">
-                    {gate.label}
-                  </span>
-                  {gate.passed ? (
-                    <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
-                      <Check className="w-3 h-3" />
+          {checklist.map((gate, gIdx) => {
+            if (!gate) return null;
+            return (
+              <div
+                key={gate.id || gIdx}
+                className={`p-4 rounded-xl border transition flex flex-col justify-between ${
+                  gate.passed
+                    ? "bg-emerald-50/60 border-emerald-300/80"
+                    : "bg-amber-50/60 border-amber-300/80"
+                }`}
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <span className="text-xs font-bold text-slate-900 leading-snug">
+                      {gate.label || `Gate ${gIdx + 1}`}
                     </span>
-                  ) : (
-                    <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center flex-shrink-0">
-                      <AlertTriangle className="w-3 h-3" />
-                    </span>
-                  )}
+                    {gate.passed ? (
+                      <span className="w-5 h-5 rounded-full bg-emerald-600 text-white flex items-center justify-center flex-shrink-0">
+                        <Check className="w-3 h-3" />
+                      </span>
+                    ) : (
+                      <span className="w-5 h-5 rounded-full bg-amber-500 text-white flex items-center justify-center flex-shrink-0">
+                        <AlertTriangle className="w-3 h-3" />
+                      </span>
+                    )}
+                  </div>
+                  <div className="text-[11px] text-slate-600 font-mono">
+                    {gate.citation || "Verification Record"}
+                  </div>
                 </div>
-                <div className="text-[11px] text-slate-600 font-mono">
-                  {gate.citation}
-                </div>
-              </div>
 
-              <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-200/60 text-[10px] text-slate-500">
-                <span>{gate.agent}</span>
-                <span>{gate.timestamp}</span>
+                <div className="flex items-center justify-between pt-3 mt-3 border-t border-slate-200/60 text-[10px] text-slate-500">
+                  <span>{gate.agent || "Agent"}</span>
+                  <span>{gate.timestamp || "Today"}</span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </div>
 
@@ -234,7 +261,7 @@ export default function BindReadinessView({ activeCase, onExecuteBind }) {
                   Binder Reference
                 </span>
                 <span className="text-sm font-bold text-slate-900 font-mono mt-0.5 block">
-                  {activeCase?.bindConfirmation?.binderId}
+                  {activeCase?.bindConfirmation?.binderId || "BND-GENRE-889102"}
                 </span>
               </div>
               <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg">
@@ -242,7 +269,8 @@ export default function BindReadinessView({ activeCase, onExecuteBind }) {
                   PAS Policy Number
                 </span>
                 <span className="text-sm font-bold text-teal-700 font-mono mt-0.5 block">
-                  {activeCase?.bindConfirmation?.pasPolicyNumber}
+                  {activeCase?.bindConfirmation?.pasPolicyNumber ||
+                    "POL-RE-2026-7712"}
                 </span>
               </div>
               <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg">
@@ -250,7 +278,7 @@ export default function BindReadinessView({ activeCase, onExecuteBind }) {
                   Authorized By
                 </span>
                 <span className="text-sm font-bold text-slate-900 mt-0.5 block">
-                  {activeCase?.bindConfirmation?.boundBy}
+                  {activeCase?.bindConfirmation?.boundBy || "Sarah Jenkins"}
                 </span>
               </div>
               <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-lg">
@@ -258,7 +286,8 @@ export default function BindReadinessView({ activeCase, onExecuteBind }) {
                   Execution Timestamp
                 </span>
                 <span className="text-xs font-medium text-slate-700 mt-0.5 block font-mono">
-                  {activeCase?.bindConfirmation?.boundAt}
+                  {activeCase?.bindConfirmation?.boundAt ||
+                    new Date().toISOString()}
                 </span>
               </div>
             </div>

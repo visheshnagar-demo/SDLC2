@@ -156,6 +156,7 @@ class OverrideRequest(BaseModel):
 
 
 class PricingInputDTO(BaseModel):
+    case_id: str | None = None
     model_name: str | None = None
     loss_distribution_model: str | None = None
     line_of_business: str | None = None
@@ -184,6 +185,7 @@ class PricingResultDTO(BaseModel):
 
 
 class QuoteCreateDTO(BaseModel):
+    case_id: str | None = None
     option_name: str | None = "Standard Quote"
     structure_type: str | None = "Quota Share"
     option_type: str | None = None
@@ -209,6 +211,7 @@ class ApprovalDecisionDTO(BaseModel):
 
 
 class BindExecutionDTO(BaseModel):
+    case_id: str | None = None
     quote_id: str | None = None
     underwriter_id: str | None = None
     effective_date: str | datetime | None = None
@@ -228,5 +231,20 @@ class BindConfirmationDTO(BaseModel):
     bound_at: datetime
     bound_by: str
     pas_payload: dict = Field(default_factory=dict)
+
+    model_config = ConfigDict(extra="allow")
+
+
+class BusinessRuleEvaluationRequest(BaseModel):
+    rule: str | None = None
+    rule_id: str | None = None
+    case_id: str | None = None
+    requested_limit: float | str | None = None
+    actor_persona: str | None = "Reinsurance Underwriter"
+    existing_exposure: float | str | None = 45000000.0
+    combined_ratio: float | str | None = None
+    rate_on_line: float | str | None = None
+    completeness_score: float | str | None = None
+    parameters: dict = Field(default_factory=dict)
 
     model_config = ConfigDict(extra="allow")

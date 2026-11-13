@@ -1,13 +1,25 @@
 import React, { useState } from "react";
 import { PERSONAS } from "../../services/mockData";
-import { UserCheck, Shield, ChevronDown } from "lucide-react";
+import { ChevronDown } from "lucide-react";
 
 export default function PersonaSwitcher({
-  currentPersonaKey,
+  currentPersonaKey = "underwriter",
   onSelectPersona,
 }) {
   const [isOpen, setIsOpen] = useState(false);
-  const activePersona = PERSONAS[currentPersonaKey] || PERSONAS.underwriter;
+  const activePersona = (PERSONAS && PERSONAS[currentPersonaKey]) ||
+    (PERSONAS && PERSONAS.underwriter) || {
+      id: "underwriter",
+      name: "Sarah Jenkins",
+      role: "VP Reinsurance Underwriting",
+      shortRole: "Underwriter",
+      authorityLimit: "$15,000,000",
+      authorityAmount: 15000000,
+      avatar: "SJ",
+      badgeColor: "bg-emerald-600",
+    };
+
+  const personaList = PERSONAS ? Object.values(PERSONAS) : [];
 
   return (
     <div className="relative inline-block text-left">
@@ -18,16 +30,19 @@ export default function PersonaSwitcher({
         aria-label="Switch Persona"
       >
         <span
-          className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] text-white ${activePersona.badgeColor}`}
+          className={`w-6 h-6 rounded-full flex items-center justify-center font-bold text-[10px] text-white ${
+            activePersona?.badgeColor || "bg-teal-600"
+          }`}
         >
-          {activePersona.avatar}
+          {activePersona?.avatar || "UW"}
         </span>
         <div className="text-left hidden sm:block">
           <div className="font-semibold text-slate-100 leading-tight">
-            {activePersona.name}
+            {activePersona?.name || "Underwriter"}
           </div>
           <div className="text-[10px] text-teal-400 leading-tight">
-            {activePersona.shortRole} • Auth: {activePersona.authorityLimit}
+            {activePersona?.shortRole || "UW"} • Auth:{" "}
+            {activePersona?.authorityLimit || "$15M"}
           </div>
         </div>
         <ChevronDown className="w-3.5 h-3.5 text-slate-400 ml-1" />
@@ -44,13 +59,16 @@ export default function PersonaSwitcher({
             </p>
           </div>
           <div className="space-y-1">
-            {Object.values(PERSONAS).map((p) => {
+            {personaList.map((p) => {
+              if (!p) return null;
               const isSelected = p.id === currentPersonaKey;
               return (
                 <button
-                  key={p.id}
+                  key={p.id || p.name}
                   onClick={() => {
-                    onSelectPersona(p.id);
+                    if (onSelectPersona) {
+                      onSelectPersona(p.id);
+                    }
                     setIsOpen(false);
                   }}
                   className={`w-full flex items-start gap-3 px-2.5 py-2 rounded-lg text-left text-xs transition ${
@@ -60,22 +78,26 @@ export default function PersonaSwitcher({
                   }`}
                 >
                   <span
-                    className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-xs text-white ${p.badgeColor}`}
+                    className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-xs text-white ${
+                      p.badgeColor || "bg-teal-600"
+                    }`}
                   >
-                    {p.avatar}
+                    {p.avatar || "UW"}
                   </span>
                   <div className="flex-1 min-w-0">
                     <div className="font-medium text-white flex items-center justify-between">
-                      <span>{p.name}</span>
+                      <span>{p.name || "Persona"}</span>
                       {isSelected && (
                         <span className="text-[10px] text-teal-400 font-semibold uppercase">
                           Active
                         </span>
                       )}
                     </div>
-                    <div className="text-[11px] text-slate-400">{p.role}</div>
+                    <div className="text-[11px] text-slate-400">
+                      {p.role || "Role"}
+                    </div>
                     <div className="text-[10px] text-teal-300 font-mono mt-0.5">
-                      Auth Limit: {p.authorityLimit}
+                      Auth Limit: {p.authorityLimit || "N/A"}
                     </div>
                   </div>
                 </button>

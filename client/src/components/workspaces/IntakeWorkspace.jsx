@@ -1,11 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   FileText,
   Upload,
-  CheckCircle2,
-  AlertCircle,
-  Eye,
-  Download,
   ShieldCheck,
   ArrowRight,
   Sparkles,
@@ -17,12 +13,44 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
   );
   const [isUploading, setIsUploading] = useState(false);
 
+  useEffect(() => {
+    if (activeCase?.documents?.[0]) {
+      setSelectedDoc(activeCase.documents[0]);
+    }
+  }, [activeCase]);
+
   const handleSimulateUpload = () => {
     setIsUploading(true);
     setTimeout(() => {
       setIsUploading(false);
     }, 800);
   };
+
+  const docList = activeCase?.documents || [
+    {
+      name: "PACIFIC_MUTUAL_SLIP_2026.pdf",
+      size: "2.4 MB",
+      type: "Treaty Slip",
+      pages: 8,
+      status: "Extracted (100%)",
+    },
+    {
+      name: "SOV_SCHEDULE_EXPOSURES_V4.xlsx",
+      size: "14.8 MB",
+      type: "Exposure Schedule",
+      pages: 120,
+      status: "Validated",
+    },
+    {
+      name: "5YR_HISTORICAL_LOSS_RUNS.pdf",
+      size: "1.8 MB",
+      type: "Loss Experience",
+      pages: 24,
+      status: "Audited",
+    },
+  ];
+
+  const currentDoc = selectedDoc || docList[0];
 
   return (
     <div className="space-y-6">
@@ -34,7 +62,10 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
               Stage 01 & 02: Intake & Classification
             </span>
             <span className="text-xs text-slate-400 font-mono">
-              Case: {activeCase?.caseNumber}
+              Case:{" "}
+              {activeCase?.caseNumber ||
+                activeCase?.case_number ||
+                "GEN-2026-QTB"}
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
@@ -57,7 +88,7 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
           </button>
 
           <button
-            onClick={() => onNextStage("extraction")}
+            onClick={() => onNextStage && onNextStage("extraction")}
             className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg transition shadow-sm"
           >
             <span>Proceed to Extracted Review</span>
@@ -82,7 +113,9 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                   Cedent Name
                 </span>
                 <span className="font-semibold text-slate-900 text-sm">
-                  {activeCase?.cedentName}
+                  {activeCase?.cedentName ||
+                    activeCase?.cedent_name ||
+                    "Pacific Mutual Reinsurance Partners"}
                 </span>
               </div>
               <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-100">
@@ -91,7 +124,9 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                     Placing Broker
                   </span>
                   <span className="font-medium text-slate-800">
-                    {activeCase?.brokerName}
+                    {activeCase?.brokerName ||
+                      activeCase?.broker_name ||
+                      "Aon Re Global Solutions"}
                   </span>
                 </div>
                 <div>
@@ -99,7 +134,9 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                     Line of Business
                   </span>
                   <span className="font-medium text-slate-800 truncate block">
-                    {activeCase?.lineOfBusiness}
+                    {activeCase?.lineOfBusiness ||
+                      activeCase?.line_of_business ||
+                      "Property & Casualty - Catastrophe Treaty"}
                   </span>
                 </div>
               </div>
@@ -109,7 +146,8 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                     Period / Effective
                   </span>
                   <span className="font-medium text-slate-800">
-                    {activeCase?.effectiveDate} to {activeCase?.expiryDate}
+                    {activeCase?.effectiveDate || "2026-11-01"} to{" "}
+                    {activeCase?.expiryDate || "2027-10-31"}
                   </span>
                 </div>
                 <div>
@@ -117,7 +155,7 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                     Requested Limit
                   </span>
                   <span className="font-bold text-teal-700 font-mono">
-                    {activeCase?.requestedLimit}
+                    {activeCase?.requestedLimit || "$10,000,000"}
                   </span>
                 </div>
               </div>
@@ -129,16 +167,17 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
             <h3 className="text-sm font-bold text-slate-900 mb-3 flex items-center justify-between">
               <span>Attached Document Packet</span>
               <span className="text-[10px] font-mono bg-slate-100 px-2 py-0.5 rounded text-slate-600">
-                {activeCase?.documents?.length || 0} Files
+                {docList.length} Files
               </span>
             </h3>
 
             <div className="space-y-2">
-              {activeCase?.documents?.map((doc, idx) => {
-                const isSelected = selectedDoc?.name === doc.name;
+              {docList.map((doc, idx) => {
+                if (!doc) return null;
+                const isSelected = currentDoc?.name === doc.name;
                 return (
                   <div
-                    key={idx}
+                    key={doc.name || idx}
                     onClick={() => setSelectedDoc(doc)}
                     className={`p-3 rounded-lg border transition cursor-pointer flex items-center justify-between ${
                       isSelected
@@ -175,7 +214,7 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-teal-600" />
               <span className="text-xs font-bold text-slate-900 font-mono">
-                {selectedDoc?.name || "Treaty_Slip_Preview.pdf"}
+                {currentDoc?.name || "Treaty_Slip_Preview.pdf"}
               </span>
               <span className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded">
                 OCR Optical Layout
@@ -183,7 +222,7 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[11px] text-slate-400">
-                Page 1 of {selectedDoc?.pages || 8}
+                Page 1 of {currentDoc?.pages || 8}
               </span>
             </div>
           </div>
@@ -205,7 +244,9 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                   REINSURED (CEDENT)
                 </span>
                 <span className="font-semibold text-slate-900">
-                  {activeCase?.cedentName}
+                  {activeCase?.cedentName ||
+                    activeCase?.cedent_name ||
+                    "Pacific Mutual Reinsurance"}
                 </span>
               </div>
               <div className="p-2.5 bg-white border border-slate-200 rounded">
@@ -213,7 +254,9 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                   TYPE OF TREATY
                 </span>
                 <span className="font-semibold text-slate-900">
-                  {activeCase?.lineOfBusiness}
+                  {activeCase?.lineOfBusiness ||
+                    activeCase?.line_of_business ||
+                    "Property & Casualty"}
                 </span>
               </div>
             </div>
@@ -226,8 +269,11 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                 <p className="text-slate-700 text-xs mt-1">
                   This Agreement covers all direct and facultative reinsurance
                   business classified by the Reinsured as{" "}
-                  {activeCase?.lineOfBusiness}, written during the effective
-                  period commencing {activeCase?.effectiveDate}.
+                  {activeCase?.lineOfBusiness ||
+                    activeCase?.line_of_business ||
+                    "Property & Casualty"}
+                  , written during the effective period commencing{" "}
+                  {activeCase?.effectiveDate || "2026-11-01"}.
                 </p>
               </div>
 
@@ -238,11 +284,11 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                 <p className="text-slate-700 text-xs mt-1">
                   The Reinsurer agrees to accept and cover up to{" "}
                   <strong className="text-teal-900">
-                    {activeCase?.requestedLimit}
+                    {activeCase?.requestedLimit || "$10,000,000"}
                   </strong>{" "}
                   in excess of the Reinsured retention of{" "}
                   <strong className="text-teal-900">
-                    {activeCase?.attachmentPoint}
+                    {activeCase?.attachmentPoint || "$2,500,000"}
                   </strong>
                   .
                 </p>
@@ -255,11 +301,11 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                 <p className="text-slate-700 text-xs mt-1">
                   Estimated Subject Gross Premium of{" "}
                   <strong className="text-teal-900">
-                    {activeCase?.grossPremium}
+                    {activeCase?.grossPremium || "$1,250,000"}
                   </strong>
                   . Ceding commission provisionally agreed at{" "}
                   <strong className="text-teal-900">
-                    {activeCase?.cedingCommission}
+                    {activeCase?.cedingCommission || "28.5%"}
                   </strong>
                   , subject to quarterly bordereau reconciliation.
                 </p>
@@ -271,11 +317,17 @@ export default function IntakeWorkspace({ activeCase, onNextStage }) {
                 <Sparkles className="w-4 h-4 text-teal-600" />
                 <span>
                   Document Intelligence Agent has processed this slip with{" "}
-                  <strong>{activeCase?.overallConfidence}% confidence</strong>.
+                  <strong>
+                    {activeCase?.overallConfidence ||
+                      activeCase?.overall_confidence ||
+                      98}
+                    % confidence
+                  </strong>
+                  .
                 </span>
               </div>
               <button
-                onClick={() => onNextStage("extraction")}
+                onClick={() => onNextStage && onNextStage("extraction")}
                 className="text-xs font-bold text-teal-700 hover:text-teal-900 underline"
               >
                 Inspect Extracted Fields →

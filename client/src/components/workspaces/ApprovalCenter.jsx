@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import {
   UserCheck,
-  ShieldCheck,
-  AlertTriangle,
   CheckCircle2,
   XCircle,
   ArrowRight,
@@ -13,32 +11,49 @@ import { PERSONAS } from "../../services/mockData";
 
 export default function ApprovalCenter({
   activeCase,
-  currentPersonaKey,
+  currentPersonaKey = "underwriter",
   onSubmitApproval,
   onNextStage,
 }) {
-  const activePersona = PERSONAS[currentPersonaKey] || PERSONAS.underwriter;
+  const activePersona = (PERSONAS && PERSONAS[currentPersonaKey]) ||
+    (PERSONAS && PERSONAS.underwriter) || {
+      id: "underwriter",
+      name: "Sarah Jenkins",
+      role: "VP Reinsurance Underwriting",
+      shortRole: "Underwriter",
+      authorityLimit: "$15,000,000",
+      authorityAmount: 15000000,
+      avatar: "SJ",
+      badgeColor: "bg-emerald-600",
+    };
+
   const [approvalComments, setApprovalComments] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [actionMessage, setActionMessage] = useState(null);
 
-  const dealLimitNumeric = activeCase?.limitNumeric || 10000000;
-  const userAuthorityNumeric = activePersona.authorityAmount || 0;
+  const dealLimitNumeric =
+    activeCase?.limitNumeric ||
+    (typeof activeCase?.requested_limit === "number"
+      ? activeCase.requested_limit
+      : 10000000);
+  const userAuthorityNumeric = activePersona?.authorityAmount ?? 0;
   const hasAuthority = userAuthorityNumeric >= dealLimitNumeric;
 
   const handleApprove = () => {
     setIsSubmitting(true);
     setTimeout(() => {
-      onSubmitApproval({
-        decision: "APPROVED",
-        comments:
-          approvalComments || "Authorized terms per governance standards.",
-        approverName: activePersona.name,
-      });
+      if (onSubmitApproval) {
+        onSubmitApproval({
+          decision: "APPROVED",
+          comments:
+            approvalComments || "Authorized terms per governance standards.",
+          approverName: activePersona?.name || "Underwriter",
+        });
+      }
       setIsSubmitting(false);
       setActionMessage({
         type: "success",
-        text: `Deal successfully authorized by ${activePersona.name} (${activePersona.shortRole}).`,
+        text: `Deal successfully authorized by ${activePersona?.name || "Underwriter"} (${activePersona?.shortRole || "UW"}).`,
       });
     }, 500);
   };
@@ -46,16 +61,18 @@ export default function ApprovalCenter({
   const handleReject = () => {
     setIsSubmitting(true);
     setTimeout(() => {
-      onSubmitApproval({
-        decision: "REJECTED",
-        comments:
-          approvalComments || "Declined due to exposure / terms mismatch.",
-        approverName: activePersona.name,
-      });
+      if (onSubmitApproval) {
+        onSubmitApproval({
+          decision: "REJECTED",
+          comments:
+            approvalComments || "Declined due to exposure / terms mismatch.",
+          approverName: activePersona?.name || "Underwriter",
+        });
+      }
       setIsSubmitting(false);
       setActionMessage({
         type: "error",
-        text: `Deal declined by ${activePersona.name}.`,
+        text: `Deal declined by ${activePersona?.name || "Underwriter"}.`,
       });
     }, 500);
   };
@@ -70,7 +87,10 @@ export default function ApprovalCenter({
               Stage 08: Review & Approval Center
             </span>
             <span className="text-xs text-slate-400 font-mono">
-              Case: {activeCase?.caseNumber}
+              Case:{" "}
+              {activeCase?.caseNumber ||
+                activeCase?.case_number ||
+                "GEN-2026-QTB"}
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
@@ -84,7 +104,7 @@ export default function ApprovalCenter({
         </div>
 
         <button
-          onClick={() => onNextStage("bind")}
+          onClick={() => onNextStage && onNextStage("bind")}
           className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg transition shadow-sm whitespace-nowrap"
         >
           <span>Proceed to Bind Readiness</span>
@@ -117,16 +137,18 @@ export default function ApprovalCenter({
           <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 text-xs">
             <div className="flex items-center gap-3">
               <span
-                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-white ${activePersona.badgeColor}`}
+                className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-white ${
+                  activePersona?.badgeColor || "bg-emerald-600"
+                }`}
               >
-                {activePersona.avatar}
+                {activePersona?.avatar || "UW"}
               </span>
               <div>
                 <div className="font-bold text-slate-900">
-                  {activePersona.name}
+                  {activePersona?.name || "Underwriter"}
                 </div>
                 <div className="text-[11px] text-slate-500">
-                  {activePersona.role}
+                  {activePersona?.role || "Role"}
                 </div>
               </div>
             </div>
@@ -135,13 +157,13 @@ export default function ApprovalCenter({
               <div className="flex justify-between">
                 <span className="text-slate-500">Individual Authority:</span>
                 <span className="font-bold text-slate-900">
-                  {activePersona.authorityLimit}
+                  {activePersona?.authorityLimit || "$15,000,000"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-slate-500">Deal Limit Required:</span>
                 <span className="font-bold text-teal-800">
-                  {activeCase?.requestedLimit}
+                  {activeCase?.requestedLimit || "$10,000,000"}
                 </span>
               </div>
             </div>
@@ -156,9 +178,9 @@ export default function ApprovalCenter({
                 <div className="flex items-start gap-2 text-amber-700 font-semibold text-xs">
                   <Lock className="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5" />
                   <span>
-                    Referral Required: Deal limit exceeds {activePersona.name}'s
-                    authority ({activePersona.authorityLimit}). Switch to CUO
-                    (Michael Sterling) or submit referral.
+                    Referral Required: Deal limit exceeds {activePersona?.name}
+                    &apos;s authority ({activePersona?.authorityLimit}). Switch
+                    to CUO (Michael Sterling) or submit referral.
                   </span>
                 </div>
               )}
@@ -182,7 +204,9 @@ export default function ApprovalCenter({
                   Treaty Identifier
                 </span>
                 <span className="font-bold text-slate-900 font-mono">
-                  {activeCase?.caseNumber}
+                  {activeCase?.caseNumber ||
+                    activeCase?.case_number ||
+                    "GEN-2026-QTB"}
                 </span>
               </div>
               <div>
@@ -190,7 +214,9 @@ export default function ApprovalCenter({
                   Gross Reinsurance Premium
                 </span>
                 <span className="font-bold text-slate-900 font-mono">
-                  {activeCase?.grossPremium}
+                  {activeCase?.grossPremium ||
+                    activeCase?.gross_premium ||
+                    "$1,250,000"}
                 </span>
               </div>
             </div>
