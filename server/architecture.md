@@ -41,6 +41,7 @@ graph TD
 - server/services/agents.py
 - server/services/fixtures.py
 - server/services/orchestrator.py
+- server/services/pricing_engine.py
 - server/services/rules_engine.py
 - server/tests/__init__.py
 - server/tests/conftest.py
