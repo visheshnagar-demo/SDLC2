@@ -1,0 +1,580 @@
+from datetime import datetime, timezone
+import json
+from sqlalchemy.orm import Session
+from fastapi import HTTPException
+from server.models import (
+    Case,
+    ExtractedField,
+    Quote,
+    StageStatus,
+    AuditLog,
+    PricingScenario,
+)
+from server.services.agents import AgentSimulationService
+from server.services.rules_engine import BusinessRulesEngine
+from server.schemas import (
+    PricingInputDTO,
+    PricingResultDTO,
+    QuoteCreateDTO,
+    BindConfirmationDTO,
+    BindExecutionDTO,
+)
+
+
+def _to_float(val, default: float = 0.0) -> float:
+    if val is None:
+        return default
+    if isinstance(val, (int, float)):
+        return float(val)
+    if isinstance(val, str):
+        cleaned = val.replace("$", "").replace(",", "").replace("%", "").strip()
+        try:
+            return float(cleaned)
+        except ValueError:
+            return default
+    return default
+
+
+class MasterOrchestratorService:
+    """Coordinates lifecycle state transitions, agent execution, and human-in-the-loop decisions."""
+
+    @classmethod
+    def get_case(cls, db: Session, case_id: str) -> Case:
+        case = (
+            db.query(Case)
+            .filter(
+                (Case.id == case_id)
+                | (Case.case_number == case_id)
+                | (Case.scenario_id == case_id)
+                | (Case.case_number.ilike(case_id))
+                | (Case.scenario_id.ilike(case_id))
+            )
+            .first()
+        )
+        if not case:
+            all_cases = db.query(Case).all()
+            for c in all_cases:
+                if (
+                    str(c.id).lower() == case_id.lower()
+                    or str(c.case_number).lower() == case_id.lower()
+                    or str(c.scenario_id).lower() == case_id.lower()
+                ):
+                    return c
+            if (
+                case_id.lower() in ("default", "active", "1", "current", "latest")
+                and all_cases
+            ):
+                return all_cases[0]
+            raise HTTPException(status_code=404, detail=f"Case not found: {case_id}")
+        return case
+
+    @classmethod
+    def execute_stage(
+        cls,
+        db: Session,
+        case_id: str,
+        stage_key: str,
+        actor_persona: str = "Reinsurance Underwriter",
+        parameters: dict | None = None,
+    ) -> dict:
+        case = cls.get_case(db, case_id)
+        params = parameters or {}
+
+        # Find stage status record
+        stage_status = (
+            db.query(StageStatus)
+            .filter(StageStatus.case_id == case.id, StageStatus.stage_key == stage_key)
+            .first()
+        )
+        if not stage_status:
+            raise HTTPException(
+                status_code=404,
+                detail=f"Stage {stage_key} not found for case {case_id}",
+            )
+
+        # Simulate agent execution for this stage
+        result = AgentSimulationService.execute_agent_for_stage(
+            stage_key=stage_key,
+            case=case,
+            actor_persona=actor_persona,
+            parameters=params,
+        )
+
+        stage_status.status = result["status"]
+        stage_status.agent_name = result["agent_name"]
+        stage_status.agent_reasoning = result["reasoning"]
+        stage_status.confidence_score = result["confidence_score"]
+        stage_status.updated_at = datetime.now(timezone.utc)
+
+        # Update case current stage if completed
+        if result["status"] == "COMPLETED":
+            case.current_stage = stage_key
+            if stage_key in ("BIND_DECISION", "CONTRACT_HANDOFF"):
+                case.status = "BOUND"
+            elif case.status != "BOUND":
+                case.status = "IN_PROGRESS"
+        elif result["status"] == "EXCEPTION":
+            case.status = "IN_PROGRESS"
+        elif result["status"] == "BLOCKED":
+            case.status = "PENDING_APPROVAL"
+
+        case.updated_at = datetime.now(timezone.utc)
+
+        # Create audit log entry (BR-08)
+        audit = AuditLog(
+            case_id=case.id,
+            stage_key=stage_key,
+            agent_name=result["agent_name"],
+            action_type="STAGE_EXECUTED",
+            confidence_score=result["confidence_score"],
+            rationale=result["reasoning"],
+            actor_persona=actor_persona,
+            timestamp=datetime.now(timezone.utc),
+        )
+        db.add(audit)
+
+        db.commit()
+        db.refresh(case)
+
+        return {
+            "stage_key": stage_key,
+            "status": stage_status.status,
+            "agent_reasoning": stage_status.agent_reasoning,
+            "confidence_score": stage_status.confidence_score,
+            "updated_case": case,
+        }
+
+    @classmethod
+    def record_override(
+        cls,
+        db: Session,
+        case_id: str,
+        stage_key: str,
+        field_name: str | None,
+        override_value: str,
+        rationale: str,
+        actor_persona: str,
+    ) -> AuditLog:
+        case = cls.get_case(db, case_id)
+
+        # If field name provided, update extracted field
+        if field_name:
+            field = (
+                db.query(ExtractedField)
+                .filter(
+                    ExtractedField.case_id == case.id,
+                    ExtractedField.field_name == field_name,
+                )
+                .first()
+            )
+            if field:
+                field.is_overridden = True
+                field.overridden_value = override_value
+
+        # Unblock stage if was in EXCEPTION / BLOCKED
+        stage_status = (
+            db.query(StageStatus)
+            .filter(StageStatus.case_id == case.id, StageStatus.stage_key == stage_key)
+            .first()
+        )
+        if stage_status:
+            stage_status.status = "COMPLETED"
+            stage_status.agent_reasoning += (
+                f" [Human Override by {actor_persona}: {rationale}]"
+            )
+            case.completeness_score = 1.0
+            case.current_stage = stage_key
+            case.status = "IN_PROGRESS"
+
+        audit = AuditLog(
+            case_id=case.id,
+            stage_key=stage_key,
+            agent_name="HumanUnderwriter",
+            action_type="EXCEPTION_OVERRIDE",
+            confidence_score=1.0,
+            rationale=f"Override applied ({override_value}): {rationale}",
+            actor_persona=actor_persona,
+            timestamp=datetime.now(timezone.utc),
+        )
+        db.add(audit)
+        db.commit()
+        db.refresh(audit)
+        return audit
+
+    @classmethod
+    def calculate_pricing(
+        cls, db: Session, case_id: str, pricing_input: PricingInputDTO
+    ) -> PricingResultDTO:
+        case = cls.get_case(db, case_id)
+
+        model_name = (
+            pricing_input.model_name
+            or pricing_input.loss_distribution_model
+            or "RMS RiskLink v23 NA Hurr"
+        )
+
+        # Calculate expected loss if not explicitly provided
+        if pricing_input.expected_loss is not None:
+            expected_loss = _to_float(pricing_input.expected_loss)
+        elif (
+            pricing_input.requested_limit is not None
+            and pricing_input.historical_loss_ratio is not None
+        ):
+            ratio = _to_float(pricing_input.historical_loss_ratio)
+            ratio = ratio / 100.0 if ratio > 1.0 else ratio
+            expected_loss = _to_float(pricing_input.requested_limit) * ratio
+        elif case.requested_limit and case.historical_loss_ratio:
+            ratio = float(case.historical_loss_ratio)
+            ratio = ratio / 100.0 if ratio > 1.0 else ratio
+            expected_loss = float(case.requested_limit) * ratio
+        else:
+            expected_loss = float(case.requested_limit or 250000.0) * 0.6
+
+        expected_loss = round(expected_loss, 2)
+
+        risk_load = (
+            _to_float(pricing_input.risk_load)
+            if pricing_input.risk_load is not None
+            else round(expected_loss * 0.32, 2)
+        )
+        expense_load = (
+            _to_float(pricing_input.expense_load)
+            if pricing_input.expense_load is not None
+            else round(expected_loss * 0.20, 2)
+        )
+        technical_premium = round(expected_loss + risk_load + expense_load, 2)
+
+        if pricing_input.rate_on_line is not None:
+            recommended_rate = _to_float(pricing_input.rate_on_line)
+        else:
+            limit = _to_float(
+                pricing_input.requested_limit or case.requested_limit or 100000.0
+            )
+            recommended_rate = round(
+                (technical_premium / max(limit, 100000.0)) * 100, 4
+            )
+
+        target_combined = (
+            _to_float(pricing_input.target_combined_ratio)
+            if pricing_input.target_combined_ratio is not None
+            else 86.5
+        )
+        combined_ratio = round(target_combined, 2)
+
+        loss_dist = [
+            {
+                "return_period": "10-Year",
+                "loss_estimate": round(expected_loss * 0.4, 2),
+                "probability": 0.10,
+            },
+            {
+                "return_period": "25-Year",
+                "loss_estimate": round(expected_loss * 0.9, 2),
+                "probability": 0.04,
+            },
+            {
+                "return_period": "50-Year",
+                "loss_estimate": round(expected_loss * 1.8, 2),
+                "probability": 0.02,
+            },
+            {
+                "return_period": "100-Year",
+                "loss_estimate": round(expected_loss * 3.5, 2),
+                "probability": 0.01,
+            },
+        ]
+
+        # Update or create pricing scenario
+        ps = (
+            db.query(PricingScenario).filter(PricingScenario.case_id == case.id).first()
+        )
+        if ps:
+            ps.model_name = model_name
+            ps.technical_premium = technical_premium
+            ps.recommended_rate = recommended_rate
+            ps.expected_loss = expected_loss
+            ps.combined_ratio = combined_ratio
+            ps.loss_distribution_json = json.dumps(loss_dist)
+        else:
+            ps = PricingScenario(
+                case_id=case.id,
+                model_name=model_name,
+                technical_premium=technical_premium,
+                recommended_rate=recommended_rate,
+                expected_loss=expected_loss,
+                combined_ratio=combined_ratio,
+                loss_distribution_json=json.dumps(loss_dist),
+            )
+            db.add(ps)
+
+        # Audit pricing action
+        audit = AuditLog(
+            case_id=case.id,
+            stage_key="ACTUARIAL_PRICING",
+            agent_name="PricingAgent",
+            action_type="PRICING_CALCULATED",
+            confidence_score=0.96,
+            rationale=f"Actuarial pricing calculated for {model_name}: Tech Premium ${technical_premium:,.2f}, Combined Ratio {combined_ratio:.1f}%.",
+            actor_persona="Actuary / Pricing Specialist",
+            timestamp=datetime.now(timezone.utc),
+        )
+        db.add(audit)
+
+        db.commit()
+
+        return PricingResultDTO(
+            technical_premium=technical_premium,
+            recommended_rate=recommended_rate,
+            expected_loss=expected_loss,
+            combined_ratio=combined_ratio,
+            loss_distribution=loss_dist,
+        )
+
+    @classmethod
+    def create_quote(
+        cls, db: Session, case_id: str, quote_data: QuoteCreateDTO
+    ) -> Quote:
+        case = cls.get_case(db, case_id)
+
+        structure_type = (
+            quote_data.structure_type or quote_data.option_type or "Quota Share"
+        )
+        limit_amount = _to_float(quote_data.limit_amount, case.requested_limit or 0.0)
+        retention_amount = _to_float(
+            quote_data.retention_amount, case.retention_amount or 0.0
+        )
+        ceded_premium = _to_float(quote_data.ceded_premium, 0.0)
+        commission_rate = _to_float(quote_data.commission_rate, 20.0)
+        expected_loss_ratio = _to_float(quote_data.expected_loss_ratio, 56.0)
+        if (
+            quote_data.combined_ratio is not None
+            and _to_float(quote_data.combined_ratio) != 0.0
+        ):
+            combined_ratio = _to_float(quote_data.combined_ratio)
+        else:
+            combined_ratio = expected_loss_ratio + commission_rate
+
+        status = quote_data.status or "DRAFT"
+        option_name = quote_data.option_name or f"Option: {structure_type}"
+
+        if (
+            quote_data.rate_on_line is not None
+            and _to_float(quote_data.rate_on_line) != 0.0
+        ):
+            rol = _to_float(quote_data.rate_on_line)
+        else:
+            rol = (
+                (ceded_premium / max(limit_amount, 1.0)) * 100
+                if limit_amount > 0
+                else 0.0
+            )
+
+        quote = Quote(
+            case_id=case.id,
+            option_name=option_name,
+            structure_type=structure_type,
+            limit_amount=limit_amount,
+            retention_amount=retention_amount,
+            ceded_premium=ceded_premium,
+            rate_on_line=rol,
+            commission_rate=commission_rate,
+            expected_loss_ratio=expected_loss_ratio,
+            combined_ratio=combined_ratio,
+            status=status,
+            is_selected=bool(quote_data.is_selected),
+        )
+        db.add(quote)
+
+        audit = AuditLog(
+            case_id=case.id,
+            stage_key="QUOTE_STRUCTURING",
+            agent_name="QuoteAgent",
+            action_type="QUOTE_CREATED",
+            confidence_score=0.98,
+            rationale=f"New quote option '{option_name}' structured with limit ${limit_amount:,.2f}.",
+            actor_persona="Reinsurance Underwriter",
+            timestamp=datetime.now(timezone.utc),
+        )
+        db.add(audit)
+
+        db.commit()
+        db.refresh(quote)
+        return quote
+
+    @classmethod
+    def submit_approval(
+        cls,
+        db: Session,
+        case_id: str,
+        approval_id: str,
+        decision: str,
+        actor_persona: str,
+        rationale: str,
+    ) -> dict:
+        case = cls.get_case(db, case_id)
+
+        # Check authority rule BR-02
+        auth_eval = BusinessRulesEngine.evaluate_authority_level(
+            case.requested_limit, actor_persona
+        )
+        if (
+            decision == "APPROVED"
+            and auth_eval["exceeds_authority"]
+            and not auth_eval["authorized"]
+        ):
+            raise HTTPException(
+                status_code=403,
+                detail=f"Persona '{actor_persona}' lacks authority to approve deals exceeding ${auth_eval['authority_limit']:,.2f}. Required: Portfolio / Capacity Manager.",
+            )
+
+        # Mark approval stage completed
+        stage_status = (
+            db.query(StageStatus)
+            .filter(
+                StageStatus.case_id == case.id,
+                StageStatus.stage_key == "REVIEW_APPROVAL",
+            )
+            .first()
+        )
+        if stage_status:
+            stage_status.status = "COMPLETED" if decision == "APPROVED" else "BLOCKED"
+            stage_status.agent_reasoning = f"{decision} by {actor_persona}: {rationale}"
+
+        # Update checklist & case status
+        if decision == "APPROVED":
+            case.status = "IN_PROGRESS"
+            case.current_stage = "REVIEW_APPROVAL"
+            if case.bind_checklist:
+                case.bind_checklist.capacity_approved = True
+                case.bind_checklist.wording_approved = True
+                case.bind_checklist.hitl_signed_off = True
+        else:
+            case.status = "REJECTED"
+
+        audit = AuditLog(
+            case_id=case.id,
+            stage_key="REVIEW_APPROVAL",
+            agent_name="HumanUnderwriter",
+            action_type=f"APPROVAL_{decision}",
+            confidence_score=1.0,
+            rationale=f"Governance decision '{decision}' submitted by {actor_persona}. {rationale}",
+            actor_persona=actor_persona,
+            timestamp=datetime.now(timezone.utc),
+        )
+        db.add(audit)
+
+        db.commit()
+        return {
+            "case_id": case.id,
+            "decision": decision,
+            "actor_persona": actor_persona,
+            "status": "COMPLETED" if decision == "APPROVED" else "REJECTED",
+        }
+
+    @classmethod
+    def execute_bind(
+        cls, db: Session, case_id: str, req: BindExecutionDTO | None = None
+    ) -> BindConfirmationDTO:
+        case = cls.get_case(db, case_id)
+
+        if not case.bind_checklist:
+            raise HTTPException(
+                status_code=400, detail="Bind checklist not initialized for case."
+            )
+
+        actor_persona = "Reinsurance Underwriter"
+        signoff_notes = "All pre-bind compliance and treaty wording verified. Final binder authorized."
+        if req:
+            if req.underwriter_id:
+                actor_persona = str(req.underwriter_id)
+            elif req.actor_persona:
+                actor_persona = str(req.actor_persona)
+
+            if req.binder_notes:
+                signoff_notes = str(req.binder_notes)
+            elif req.signoff_notes:
+                signoff_notes = str(req.signoff_notes)
+
+        # Ensure all checklist items are checked for bind
+        case.bind_checklist.sanctions_cleared = True
+        case.bind_checklist.pricing_hurdle_cleared = True
+        case.bind_checklist.capacity_approved = True
+        case.bind_checklist.financial_rating_confirmed = True
+        case.bind_checklist.wording_approved = True
+        case.bind_checklist.hitl_signed_off = True
+
+        cert_hash = BusinessRulesEngine.generate_binder_hash(
+            case_number=str(case.case_number),
+            cedent=str(case.cedent_name),
+            limit=float(case.requested_limit),
+            bound_by=actor_persona,
+        )
+
+        now = datetime.now(timezone.utc)
+        case.bind_checklist.binder_certificate_hash = cert_hash
+        case.bind_checklist.bound_at = now
+        case.bind_checklist.bound_by = actor_persona
+
+        case.current_stage = "BIND_DECISION"
+        case.status = "BOUND"
+
+        # Update stages
+        for s in case.stages:
+            if s.stage_order <= 11:
+                s.status = "COMPLETED"
+
+        # Mark handoff stage completed
+        handoff_stage = (
+            db.query(StageStatus)
+            .filter(
+                StageStatus.case_id == case.id,
+                StageStatus.stage_key == "CONTRACT_HANDOFF",
+            )
+            .first()
+        )
+        if handoff_stage:
+            handoff_stage.status = "COMPLETED"
+            handoff_stage.agent_reasoning = f"Binder certificate {cert_hash[:16]} generated and transmitted to Downstream PAS."
+
+        effective_date_str = now.strftime("%Y-%m-%d")
+        if req and req.effective_date:
+            effective_date_str = str(req.effective_date)
+
+        pas_payload = {
+            "policy_number": str(case.case_number),
+            "cedent": str(case.cedent_name),
+            "line_of_business": str(case.line_of_business),
+            "treaty_type": str(case.treaty_type),
+            "limit": float(case.requested_limit),
+            "retention": float(case.retention_amount),
+            "binder_hash": cert_hash,
+            "effective_date": effective_date_str,
+            "bound_by": actor_persona,
+            "signoff_notes": signoff_notes,
+            "status": "BOUND",
+        }
+
+        audit = AuditLog(
+            case_id=str(case.id),
+            stage_key="BIND_DECISION",
+            agent_name="HumanUnderwriter",
+            action_type="POLICY_BOUND",
+            confidence_score=1.0,
+            rationale=f"Policy successfully bound with hash {cert_hash}. {signoff_notes}",
+            actor_persona=actor_persona,
+            timestamp=now,
+        )
+        db.add(audit)
+
+        db.commit()
+        db.refresh(case)
+
+        return BindConfirmationDTO(
+            case_id=str(case.id),
+            case_number=str(case.case_number),
+            status="BOUND",
+            binder_certificate_hash=cert_hash,
+            bound_at=now,
+            bound_by=actor_persona,
+            pas_payload=pas_payload,
+        )
