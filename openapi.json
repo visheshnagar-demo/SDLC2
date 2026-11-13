@@ -1877,6 +1877,66 @@
         }
       }
     },
+    "/api/v1/qtb/cases/{case_id}/bind/execute": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Execute Bind",
+        "description": "Execute final policy binding and generate contract binder certificate.",
+        "operationId": "execute_bind_api_v1_qtb_cases__case_id__bind_execute_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/BindExecutionDTO"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindConfirmationDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/qtb/cases/{case_id}/bind": {
       "post": {
         "tags": [
@@ -3392,6 +3452,66 @@
                     "$ref": "#/components/schemas/QuoteDTO"
                   },
                   "title": "Response List Quotes Standalone Api V1 Qtb Quotes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/qtb/bind/decision": {
+      "post": {
+        "tags": [
+          "Bind"
+        ],
+        "summary": "Execute Bind Standalone",
+        "description": "Execute final policy binding and generate contract binder certificate.",
+        "operationId": "execute_bind_standalone_api_v1_qtb_bind_decision_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindExecutionDTO",
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindConfirmationDTO"
                 }
               }
             }
@@ -5488,6 +5608,66 @@
         }
       }
     },
+    "/api/v1/cases/{case_id}/bind/execute": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Execute Bind",
+        "description": "Execute final policy binding and generate contract binder certificate.",
+        "operationId": "execute_bind_api_v1_cases__case_id__bind_execute_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/BindExecutionDTO"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindConfirmationDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/cases/{case_id}/bind": {
       "post": {
         "tags": [
@@ -7003,6 +7183,66 @@
                     "$ref": "#/components/schemas/QuoteDTO"
                   },
                   "title": "Response List Quotes Standalone Api V1 Quotes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/bind/decision": {
+      "post": {
+        "tags": [
+          "Bind"
+        ],
+        "summary": "Execute Bind Standalone",
+        "description": "Execute final policy binding and generate contract binder certificate.",
+        "operationId": "execute_bind_standalone_api_v1_bind_decision_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindExecutionDTO",
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindConfirmationDTO"
                 }
               }
             }
@@ -9099,6 +9339,66 @@
         }
       }
     },
+    "/cases/{case_id}/bind/execute": {
+      "post": {
+        "tags": [
+          "Cases"
+        ],
+        "summary": "Execute Bind",
+        "description": "Execute final policy binding and generate contract binder certificate.",
+        "operationId": "execute_bind_cases__case_id__bind_execute_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/BindExecutionDTO"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Req"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindConfirmationDTO"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/cases/{case_id}/bind": {
       "post": {
         "tags": [
@@ -10614,6 +10914,66 @@
                     "$ref": "#/components/schemas/QuoteDTO"
                   },
                   "title": "Response List Quotes Standalone Quotes Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bind/decision": {
+      "post": {
+        "tags": [
+          "Bind"
+        ],
+        "summary": "Execute Bind Standalone",
+        "description": "Execute final policy binding and generate contract binder certificate.",
+        "operationId": "execute_bind_standalone_bind_decision_post",
+        "parameters": [
+          {
+            "name": "case_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Case Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindExecutionDTO",
+                "default": {}
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BindConfirmationDTO"
                 }
               }
             }

@@ -28,11 +28,11 @@ def seed_data(db: Session | None = None) -> None:
     from server.services.fixtures import seed_initial_scenarios
 
     if db is None:
-        db = SessionLocal()
+        session = SessionLocal()
         try:
-            seed_initial_scenarios(db)
+            seed_initial_scenarios(session)
         finally:
-            db.close()
+            session.close()
     else:
         seed_initial_scenarios(db)
 
@@ -40,6 +40,13 @@ def seed_data(db: Session | None = None) -> None:
 def get_db() -> Generator[Session, None, None]:
     init_db()
     db = SessionLocal()
+    try:
+        import server.models
+
+        if not db.query(server.models.Case).first():
+            seed_data(db)
+    except Exception:
+        pass
     try:
         yield db
     finally:

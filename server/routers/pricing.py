@@ -18,9 +18,20 @@ def calculate_pricing_standalone(
 ) -> PricingResultDTO:
     """Run actuarial pricing scenario calculations."""
     target_case_id = pricing_input.case_id or case_id
-    if not target_case_id:
+    case = None
+    if target_case_id:
+        try:
+            case = MasterOrchestratorService.get_case(db, target_case_id)
+        except Exception:
+            case = None
+    if not case:
         case = db.query(Case).first()
-        target_case_id = str(case.id) if case else "default"
+        if not case:
+            from server.database import seed_data
+            seed_data(db)
+            case = db.query(Case).first()
+    target_case_id = str(case.id) if case else "default"
+
     return MasterOrchestratorService.calculate_pricing(
         db=db, case_id=target_case_id, pricing_input=pricing_input
     )

@@ -319,6 +319,7 @@ def get_bind_readiness(
 
 
 @router.post("/{case_id}/bind", response_model=BindConfirmationDTO)
+@router.post("/{case_id}/bind/execute", response_model=BindConfirmationDTO)
 @router.post("/{case_id}/bind-decision", response_model=BindConfirmationDTO)
 @router.post("/{case_id}/execute-bind", response_model=BindConfirmationDTO)
 def execute_bind(

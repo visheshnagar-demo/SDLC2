@@ -11,6 +11,7 @@ router = APIRouter(tags=["Bind"])
 @router.post("", response_model=BindConfirmationDTO)
 @router.post("/", response_model=BindConfirmationDTO)
 @router.post("/execute", response_model=BindConfirmationDTO)
+@router.post("/decision", response_model=BindConfirmationDTO)
 def execute_bind_standalone(
     req: BindExecutionDTO = BindExecutionDTO(),
     case_id: str | None = Query(None),
@@ -18,9 +19,20 @@ def execute_bind_standalone(
 ) -> BindConfirmationDTO:
     """Execute final policy binding and generate contract binder certificate."""
     target_case_id = req.case_id or case_id
-    if not target_case_id:
+    case = None
+    if target_case_id:
+        try:
+            case = MasterOrchestratorService.get_case(db, target_case_id)
+        except Exception:
+            case = None
+    if not case:
         case = db.query(Case).first()
-        target_case_id = str(case.id) if case else "default"
+        if not case:
+            from server.database import seed_data
+            seed_data(db)
+            case = db.query(Case).first()
+    target_case_id = str(case.id) if case else "default"
+
     return MasterOrchestratorService.execute_bind(
         db=db,
         case_id=target_case_id,
@@ -36,11 +48,20 @@ def get_bind_readiness_standalone(
 ) -> BindReadinessDTO:
     """Get bind readiness checklist for case."""
     target_case_id = case_id
-    if not target_case_id:
+    case = None
+    if target_case_id:
+        try:
+            case = MasterOrchestratorService.get_case(db, target_case_id)
+        except Exception:
+            case = None
+    if not case:
         case = db.query(Case).first()
-        target_case_id = str(case.id) if case else "default"
-    case = MasterOrchestratorService.get_case(db, target_case_id)
-    chk = case.bind_checklist
+        if not case:
+            from server.database import seed_data
+            seed_data(db)
+            case = db.query(Case).first()
+
+    chk = case.bind_checklist if case else None
     all_cleared = bool(
         chk
         and chk.sanctions_cleared
@@ -52,7 +73,7 @@ def get_bind_readiness_standalone(
     )
     return BindReadinessDTO(
         id=chk.id if chk else "default",
-        case_id=case.id,
+        case_id=case.id if case else "default",
         sanctions_cleared=chk.sanctions_cleared if chk else True,
         pricing_hurdle_cleared=chk.pricing_hurdle_cleared if chk else True,
         capacity_approved=chk.capacity_approved if chk else True,

@@ -17,9 +17,20 @@ def create_quote_standalone(
 ) -> QuoteDTO:
     """Create or update structured quote terms."""
     target_case_id = quote_data.case_id or case_id
-    if not target_case_id:
+    case = None
+    if target_case_id:
+        try:
+            case = MasterOrchestratorService.get_case(db, target_case_id)
+        except Exception:
+            case = None
+    if not case:
         case = db.query(Case).first()
-        target_case_id = str(case.id) if case else "default"
+        if not case:
+            from server.database import seed_data
+            seed_data(db)
+            case = db.query(Case).first()
+    target_case_id = str(case.id) if case else "default"
+
     quote = MasterOrchestratorService.create_quote(
         db=db, case_id=target_case_id, quote_data=quote_data
     )

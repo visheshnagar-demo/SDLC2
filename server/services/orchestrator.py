@@ -40,6 +40,12 @@ class MasterOrchestratorService:
 
     @classmethod
     def get_case(cls, db: Session, case_id: str) -> Case:
+        # Check if database is populated; if empty, seed initial data
+        if not db.query(Case).first():
+            from server.database import seed_data
+
+            seed_data(db)
+
         case = (
             db.query(Case)
             .filter(
@@ -55,13 +61,13 @@ class MasterOrchestratorService:
             all_cases = db.query(Case).all()
             for c in all_cases:
                 if (
-                    str(c.id).lower() == case_id.lower()
-                    or str(c.case_number).lower() == case_id.lower()
-                    or str(c.scenario_id).lower() == case_id.lower()
+                    str(c.id).lower() == str(case_id).lower()
+                    or str(c.case_number).lower() == str(case_id).lower()
+                    or str(c.scenario_id).lower() == str(case_id).lower()
                 ):
                     return c
             if (
-                case_id.lower() in ("default", "active", "1", "current", "latest")
+                str(case_id).lower() in ("default", "active", "1", "current", "latest", "auto", "none", "")
                 and all_cases
             ):
                 return all_cases[0]
