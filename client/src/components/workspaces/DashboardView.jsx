@@ -17,7 +17,6 @@ import {
   Clock,
   ShieldCheck,
   Check,
-  ArrowRight,
   Sparkles,
   Zap,
 } from "lucide-react";
@@ -42,12 +41,24 @@ export default function DashboardView({
   allScenarios = [],
   onSelectScenario,
   onNavigateStage,
-  onExecuteStage,
 }) {
-  const stageIdx = STAGES.findIndex(
-    (s) => s.key === activeCase?.currentStageKey,
+  const currentKey = (
+    activeCase?.currentStageKey ||
+    activeCase?.current_stage ||
+    "intake"
+  ).toLowerCase();
+
+  const stageIdx = (STAGES || []).findIndex(
+    (s) =>
+      s?.key?.toLowerCase() === currentKey ||
+      s?.title?.toLowerCase() === currentKey,
   );
   const currentStageIndex = stageIdx >= 0 ? stageIdx : 0;
+  const isBound = Boolean(
+    activeCase?.bindConfirmation?.bound ||
+    activeCase?.bind_checklist?.is_ready_to_bind ||
+    activeCase?.status?.toLowerCase().includes("bound"),
+  );
 
   return (
     <div className="space-y-6">
@@ -137,15 +148,12 @@ export default function DashboardView({
 
         {/* Stepper Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-2.5">
-          {STAGES.map((stg, idx) => {
-            const Icon = STAGE_ICON_MAP[stg.icon] || FileText;
+          {(STAGES || []).map((stg, idx) => {
+            if (!stg) return null;
+            const Icon = (stg.icon && STAGE_ICON_MAP[stg.icon]) || FileText;
             const isCompleted =
-              idx < currentStageIndex ||
-              (idx === currentStageIndex &&
-                activeCase?.bindConfirmation?.bound);
-            const isCurrent =
-              idx === currentStageIndex && !activeCase?.bindConfirmation?.bound;
-            const isPending = idx > currentStageIndex;
+              idx < currentStageIndex || (idx === currentStageIndex && isBound);
+            const isCurrent = idx === currentStageIndex && !isBound;
 
             let badgeStyle = "bg-slate-100 text-slate-500 border-slate-200";
             if (isCompleted)
@@ -156,13 +164,13 @@ export default function DashboardView({
 
             return (
               <button
-                key={stg.key}
-                onClick={() => onNavigateStage(stg.key)}
+                key={stg.key || idx}
+                onClick={() => onNavigateStage && onNavigateStage(stg.key)}
                 className={`flex flex-col text-left p-3 rounded-lg border transition duration-150 relative group ${badgeStyle}`}
               >
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] font-mono font-bold px-1.5 py-0.5 rounded bg-white/80 border border-slate-200/60 text-slate-700">
-                    {String(stg.number).padStart(2, "0")}
+                    {String(stg.number || idx + 1).padStart(2, "0")}
                   </span>
                   {isCompleted ? (
                     <span className="w-4 h-4 rounded-full bg-emerald-600 text-white flex items-center justify-center">
@@ -175,15 +183,17 @@ export default function DashboardView({
 
                 <div className="flex items-center gap-1.5 mb-1">
                   <Icon
-                    className={`w-3.5 h-3.5 ${isCurrent ? "text-teal-600" : "text-slate-500"}`}
+                    className={`w-3.5 h-3.5 ${
+                      isCurrent ? "text-teal-600" : "text-slate-500"
+                    }`}
                   />
                   <span className="text-xs font-semibold text-slate-900 leading-tight truncate">
-                    {stg.title}
+                    {stg.title || `Stage ${idx + 1}`}
                   </span>
                 </div>
 
                 <span className="text-[10px] text-slate-500 truncate mt-auto">
-                  {stg.agent}
+                  {stg.agent || "Agent"}
                 </span>
               </button>
             );
@@ -298,14 +308,22 @@ export default function DashboardView({
             <tbody className="divide-y divide-slate-100">
               {(allScenarios || []).map((sc) => {
                 if (!sc) return null;
-                const isSelected = sc.id === activeCase?.id;
+                const isSelected =
+                  sc.id === activeCase?.id ||
+                  sc.id === activeCase?.scenario_id ||
+                  sc.id === activeCase?.scenarioId;
                 const confScore =
                   typeof sc.confidence === "number"
                     ? sc.confidence
                     : typeof sc.overallConfidence === "number"
                       ? sc.overallConfidence
-                      : 90;
+                      : typeof sc.overall_confidence === "number"
+                        ? sc.overall_confidence
+                        : 90;
                 const statusStr = String(sc.status || "In Review");
+                const isRef = Boolean(
+                  sc.requiresReferral ?? sc.requires_referral,
+                );
 
                 return (
                   <tr
@@ -313,11 +331,11 @@ export default function DashboardView({
                     className={`hover:bg-slate-50 transition cursor-pointer ${
                       isSelected ? "bg-teal-50/60 font-medium" : ""
                     }`}
-                    onClick={() => onSelectScenario(sc.id)}
+                    onClick={() => onSelectScenario && onSelectScenario(sc.id)}
                   >
                     <td className="py-3 px-4">
                       <div className="font-bold text-slate-900">
-                        {sc.title || sc.id}
+                        {sc.title || sc.name || sc.id}
                       </div>
                       <div className="text-[11px] text-teal-600 font-mono">
                         {sc.id}
@@ -325,17 +343,23 @@ export default function DashboardView({
                     </td>
                     <td className="py-3 px-4">
                       <div className="font-semibold text-slate-800">
-                        {sc.cedentName || "Cedent"}
+                        {sc.cedentName || sc.cedent_name || "Cedent"}
                       </div>
                       <div className="text-[11px] text-slate-500">
-                        Broker: {sc.brokerName || "Aon / Marsh"}
+                        Broker:{" "}
+                        {sc.brokerName || sc.broker_name || "Aon / Marsh"}
                       </div>
                     </td>
                     <td className="py-3 px-4 text-slate-700">
-                      {sc.lineOfBusiness || "Property & Casualty"}
+                      {sc.lineOfBusiness ||
+                        sc.line_of_business ||
+                        "Property & Casualty"}
                     </td>
                     <td className="py-3 px-4 font-mono font-semibold text-slate-900">
-                      {sc.requestedLimit || "N/A"}
+                      {sc.requestedLimit ||
+                        (typeof sc.requested_limit === "number"
+                          ? `$${sc.requested_limit.toLocaleString()}`
+                          : "N/A")}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
@@ -357,7 +381,7 @@ export default function DashboardView({
                     <td className="py-3 px-4">
                       <span
                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
-                          sc.requiresReferral
+                          isRef
                             ? "bg-amber-100 text-amber-800 border border-amber-200"
                             : statusStr.includes("Exception")
                               ? "bg-rose-100 text-rose-800 border border-rose-200"
@@ -371,7 +395,9 @@ export default function DashboardView({
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          onSelectScenario(sc.id);
+                          if (onSelectScenario) {
+                            onSelectScenario(sc.id);
+                          }
                         }}
                         className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition ${
                           isSelected

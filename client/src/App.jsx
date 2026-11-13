@@ -11,15 +11,17 @@ import QuoteBuilder from "./components/workspaces/QuoteBuilder";
 import ApprovalCenter from "./components/workspaces/ApprovalCenter";
 import BindReadinessView from "./components/workspaces/BindReadinessView";
 import { qtbApi } from "./services/api";
-import { INITIAL_AGENT_STREAM } from "./services/mockData";
+import { INITIAL_AGENT_STREAM, INITIAL_SCENARIOS } from "./services/mockData";
 
 export default function App() {
   const [activeScenarioId, setActiveScenarioId] = useState("scenario_a");
   const [currentPersonaKey, setCurrentPersonaKey] = useState("underwriter");
   const [activeView, setActiveView] = useState("dashboard");
-  const [activeCase, setActiveCase] = useState(null);
+  const [activeCase, setActiveCase] = useState(
+    INITIAL_SCENARIOS.scenario_a || null,
+  );
   const [allScenarios, setAllScenarios] = useState([]);
-  const [agentLogs, setAgentLogs] = useState(INITIAL_AGENT_STREAM);
+  const [agentLogs] = useState(INITIAL_AGENT_STREAM);
   const [isConsoleOpen, setIsConsoleOpen] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -29,9 +31,13 @@ export default function App() {
       setIsSyncing(true);
       try {
         const scenarios = await qtbApi.getScenarios();
-        setAllScenarios(scenarios);
+        if (Array.isArray(scenarios) && scenarios.length > 0) {
+          setAllScenarios(scenarios);
+        }
         const caseData = await qtbApi.loadScenario(activeScenarioId);
-        setActiveCase(caseData);
+        if (caseData) {
+          setActiveCase(caseData);
+        }
       } catch (err) {
         console.error("Failed to load initial case data:", err);
       } finally {
@@ -43,11 +49,14 @@ export default function App() {
 
   // Scenario Switcher
   const handleSelectScenario = async (scenarioId) => {
+    if (!scenarioId) return;
     setIsSyncing(true);
     setActiveScenarioId(scenarioId);
     try {
       const caseData = await qtbApi.loadScenario(scenarioId);
-      setActiveCase(caseData);
+      if (caseData) {
+        setActiveCase(caseData);
+      }
       setActiveView("dashboard");
     } catch (err) {
       console.error("Error switching scenario:", err);
@@ -59,11 +68,18 @@ export default function App() {
   // Reset Case
   const handleResetCase = () => {
     setIsSyncing(true);
-    const fresh = qtbApi.resetScenarioState(activeScenarioId);
-    setActiveCase({ ...fresh });
-    setTimeout(() => {
-      setIsSyncing(false);
-    }, 300);
+    try {
+      const fresh = qtbApi.resetScenarioState(activeScenarioId);
+      if (fresh) {
+        setActiveCase({ ...fresh });
+      }
+    } catch (err) {
+      console.error("Error resetting case:", err);
+    } finally {
+      setTimeout(() => {
+        setIsSyncing(false);
+      }, 300);
+    }
   };
 
   // Workflow Stage Navigation
@@ -87,11 +103,14 @@ export default function App() {
 
   // Execute stage simulation
   const handleExecuteStage = async (stageKey) => {
+    if (!activeCase?.id) return;
     setIsSyncing(true);
     try {
       await qtbApi.executeStage(activeCase.id, stageKey);
       const updated = await qtbApi.getCaseDetails(activeCase.id);
-      setActiveCase({ ...updated });
+      if (updated) {
+        setActiveCase({ ...updated });
+      }
     } catch (err) {
       console.error("Error executing stage:", err);
     } finally {
@@ -101,10 +120,11 @@ export default function App() {
 
   // Human-in-the-loop override handler
   const handleUpdateOverride = async (overrideData) => {
+    if (!activeCase?.id) return;
     setIsSyncing(true);
     try {
       const res = await qtbApi.submitOverride(activeCase.id, overrideData);
-      if (res.updatedCase) {
+      if (res?.updatedCase) {
         setActiveCase({ ...res.updatedCase });
       }
     } catch (err) {
@@ -116,26 +136,38 @@ export default function App() {
 
   // Pricing option selector
   const handleSelectQuoteOption = (opt) => {
-    if (activeCase) {
-      activeCase.grossPremium = opt.premium;
-      activeCase.rateOnLine = opt.rol;
-      activeCase.cedingCommission = opt.commission;
-      setActiveCase({ ...activeCase });
+    if (activeCase && opt) {
+      const updated = {
+        ...activeCase,
+        grossPremium: opt.premium || activeCase.grossPremium,
+        gross_premium: opt.premium || activeCase.gross_premium,
+        rateOnLine: opt.rol || activeCase.rateOnLine,
+        rate_on_line: opt.rol || activeCase.rate_on_line,
+        cedingCommission: opt.commission || activeCase.cedingCommission,
+        ceding_commission: opt.commission || activeCase.ceding_commission,
+      };
+      setActiveCase(updated);
     }
   };
 
   // Save quote handler
   const handleSaveQuote = async (quoteData) => {
+    if (!activeCase) return;
     setIsSyncing(true);
     try {
-      await qtbApi.saveQuote(activeCase.id, quoteData);
-      if (activeCase) {
-        activeCase.requestedLimit = quoteData.limit;
-        activeCase.attachmentPoint = quoteData.retention;
-        activeCase.grossPremium = quoteData.premium;
-        activeCase.cedingCommission = quoteData.commission;
-        setActiveCase({ ...activeCase });
+      if (activeCase.id) {
+        await qtbApi.saveQuote(activeCase.id, quoteData);
       }
+      const updated = {
+        ...activeCase,
+        requestedLimit: quoteData.limit || activeCase.requestedLimit,
+        attachmentPoint: quoteData.retention || activeCase.attachmentPoint,
+        grossPremium: quoteData.premium || activeCase.grossPremium,
+        gross_premium: quoteData.premium || activeCase.gross_premium,
+        cedingCommission: quoteData.commission || activeCase.cedingCommission,
+        ceding_commission: quoteData.commission || activeCase.ceding_commission,
+      };
+      setActiveCase(updated);
     } catch (err) {
       console.error("Error saving quote:", err);
     } finally {
@@ -145,6 +177,7 @@ export default function App() {
 
   // Approval submission
   const handleSubmitApproval = async (approvalData) => {
+    if (!activeCase?.id) return;
     setIsSyncing(true);
     try {
       await qtbApi.submitApproval(
@@ -155,7 +188,9 @@ export default function App() {
         approvalData.approverName,
       );
       const updated = await qtbApi.getCaseDetails(activeCase.id);
-      setActiveCase({ ...updated });
+      if (updated) {
+        setActiveCase({ ...updated });
+      }
     } catch (err) {
       console.error("Error submitting approval:", err);
     } finally {
@@ -165,11 +200,14 @@ export default function App() {
 
   // Bind execution
   const handleExecuteBind = async (bindPayload) => {
+    if (!activeCase?.id) return;
     setIsSyncing(true);
     try {
       await qtbApi.executeBind(activeCase.id, bindPayload);
       const updated = await qtbApi.getCaseDetails(activeCase.id);
-      setActiveCase({ ...updated });
+      if (updated) {
+        setActiveCase({ ...updated });
+      }
     } catch (err) {
       console.error("Error executing bind:", err);
     } finally {
@@ -196,7 +234,6 @@ export default function App() {
           activeView={activeView}
           onSelectView={setActiveView}
           activeCase={activeCase}
-          unreadAgentLogsCount={agentLogs.length}
           onToggleConsole={() => setIsConsoleOpen(!isConsoleOpen)}
           isConsoleOpen={isConsoleOpen}
         />

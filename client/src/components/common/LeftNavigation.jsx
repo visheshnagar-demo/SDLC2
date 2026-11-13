@@ -9,19 +9,40 @@ import {
   UserCheck,
   Award,
   Terminal,
-  Activity,
-  ChevronRight,
   Info,
 } from "lucide-react";
 
 export default function LeftNavigation({
-  activeView,
+  activeView = "dashboard",
   onSelectView,
   activeCase,
-  unreadAgentLogsCount,
   onToggleConsole,
-  isConsoleOpen,
+  isConsoleOpen = false,
 }) {
+  const overallConf =
+    activeCase?.overallConfidence ??
+    activeCase?.overall_confidence ??
+    activeCase?.completeness_score ??
+    98;
+  const roeVal =
+    activeCase?.pricingData?.roeProjected ??
+    activeCase?.pricing_data?.roe_projected ??
+    "16.4";
+  const rolVal =
+    activeCase?.rateOnLine ||
+    activeCase?.rate_on_line ||
+    (activeCase?.pricingData?.targetRateOnLine
+      ? `${activeCase.pricingData.targetRateOnLine}%`
+      : "6.8%");
+  const isReferral = Boolean(
+    activeCase?.requiresReferral ?? activeCase?.requires_referral,
+  );
+  const isBound = Boolean(
+    activeCase?.bindConfirmation?.bound ||
+    activeCase?.bind_checklist?.is_ready_to_bind ||
+    activeCase?.status?.toLowerCase().includes("bound"),
+  );
+
   const navItems = [
     {
       id: "dashboard",
@@ -35,14 +56,14 @@ export default function LeftNavigation({
       label: "Submission Workspace",
       subtitle: "Original Slips & Exposure SOVs",
       icon: FileText,
-      badge: `${activeCase?.documents?.length || 0} Docs`,
+      badge: `${activeCase?.documents?.length || 3} Docs`,
     },
     {
       id: "extraction",
       label: "Extracted Data Review",
       subtitle: "AI Citations & Bounding Boxes",
       icon: FileSearch,
-      badge: `${activeCase?.overallConfidence || 0}% Conf.`,
+      badge: `${overallConf}% Conf.`,
     },
     {
       id: "risk",
@@ -56,28 +77,28 @@ export default function LeftNavigation({
       label: "Actuarial Pricing Studio",
       subtitle: "Stochastic Loss Curves & RoE",
       icon: Calculator,
-      badge: `RoE ${activeCase?.pricingData?.roeProjected || "14"}%`,
+      badge: `RoE ${roeVal}%`,
     },
     {
       id: "quote",
       label: "Quote Builder & Terms",
       subtitle: "Layer Structure & Commissions",
       icon: FileSpreadsheet,
-      badge: activeCase?.rateOnLine || "RoL",
+      badge: rolVal,
     },
     {
       id: "approval",
       label: "Approval & Governance",
       subtitle: "HITL Authority & Referral Sign-Off",
       icon: UserCheck,
-      badge: activeCase?.requiresReferral ? "Referral" : "Cleared",
+      badge: isReferral ? "Referral" : "Cleared",
     },
     {
       id: "bind",
       label: "Bind Readiness & Handoff",
       subtitle: "6-Gate Pre-Bind & PAS Contract",
       icon: Award,
-      badge: activeCase?.bindConfirmation?.bound ? "BOUND" : "Ready",
+      badge: isBound ? "BOUND" : "Ready",
     },
   ];
 
@@ -95,7 +116,7 @@ export default function LeftNavigation({
           return (
             <button
               key={item.id}
-              onClick={() => onSelectView(item.id)}
+              onClick={() => onSelectView && onSelectView(item.id)}
               className={`w-full flex items-center justify-between px-3 py-2.5 rounded-lg text-left transition group ${
                 isActive
                   ? "bg-teal-900/40 text-teal-200 border border-teal-500/40 shadow-sm"

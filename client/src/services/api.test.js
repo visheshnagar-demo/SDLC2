@@ -1,6 +1,6 @@
 import { describe, it, expect } from "vitest";
 import { qtbApi } from "./api";
-import { INITIAL_SCENARIOS, PERSONAS, STAGES } from "./mockData";
+import { PERSONAS, STAGES } from "./mockData";
 
 describe("qtbApi Service & Mock Fixtures", () => {
   it("should export all required api methods", () => {

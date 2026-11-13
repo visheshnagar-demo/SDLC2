@@ -1,16 +1,12 @@
 import React, { useState } from "react";
 import {
-  FileSearch,
   CheckCircle2,
   AlertTriangle,
   Edit2,
   Save,
   X,
-  Sparkles,
   ShieldAlert,
   ArrowRight,
-  ExternalLink,
-  HelpCircle,
   Mail,
 } from "lucide-react";
 
@@ -25,19 +21,34 @@ export default function ExtractedDataReview({
   const [exceptionReason, setExceptionReason] = useState("");
 
   const handleStartEdit = (field) => {
+    if (!field) return;
     setEditingFieldId(field.id);
     setEditValue(field.value);
   };
 
   const handleSaveEdit = (fieldId) => {
-    onUpdateOverride({ fieldId, newValue: editValue });
+    if (onUpdateOverride) {
+      onUpdateOverride({ fieldId, newValue: editValue });
+    }
     setEditingFieldId(null);
   };
 
   const handleResolveException = () => {
-    onUpdateOverride({ clearException: true, reason: exceptionReason });
+    if (onUpdateOverride) {
+      onUpdateOverride({ clearException: true, reason: exceptionReason });
+    }
     setShowOverrideModal(false);
   };
+
+  const extractedFields = activeCase?.extractedFields || [];
+  const compCheck = activeCase?.completenessCheck || {};
+  const isPassed = compCheck.status === "PASSED";
+  const missingItems = compCheck.missingItems || [];
+  const meanConf =
+    activeCase?.overallConfidence ??
+    activeCase?.overall_confidence ??
+    activeCase?.completeness_score ??
+    98;
 
   return (
     <div className="space-y-6">
@@ -49,7 +60,10 @@ export default function ExtractedDataReview({
               Stage 03 & 04: Extraction & Validation
             </span>
             <span className="text-xs text-slate-400 font-mono">
-              Case: {activeCase?.caseNumber}
+              Case:{" "}
+              {activeCase?.caseNumber ||
+                activeCase?.case_number ||
+                "GEN-2026-QTB"}
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
@@ -63,7 +77,7 @@ export default function ExtractedDataReview({
         </div>
 
         <div className="flex items-center gap-3">
-          {activeCase?.completenessCheck?.status !== "PASSED" && (
+          {!isPassed && (
             <button
               onClick={() => setShowOverrideModal(true)}
               className="flex items-center gap-1.5 px-3 py-2 bg-amber-500 hover:bg-amber-600 text-white text-xs font-semibold rounded-lg transition shadow-sm"
@@ -74,7 +88,7 @@ export default function ExtractedDataReview({
           )}
 
           <button
-            onClick={() => onNextStage("risk")}
+            onClick={() => onNextStage && onNextStage("risk")}
             className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg transition shadow-sm"
           >
             <span>Proceed to Underwriting Risk</span>
@@ -84,7 +98,7 @@ export default function ExtractedDataReview({
       </div>
 
       {/* Completeness & Exception Center Alert (FR-05) */}
-      {activeCase?.completenessCheck?.status !== "PASSED" && (
+      {!isPassed && (
         <div className="bg-amber-50 border border-amber-300 rounded-xl p-5 shadow-sm">
           <div className="flex items-start justify-between gap-4">
             <div className="flex items-start gap-3">
@@ -94,7 +108,8 @@ export default function ExtractedDataReview({
               <div>
                 <h3 className="text-sm font-bold text-amber-900 flex items-center gap-2">
                   Completeness Exception Detected (Score:{" "}
-                  {activeCase?.completenessCheck?.score}%)
+                  {compCheck.score || 68}
+                  %)
                   <span className="text-[10px] bg-amber-200 text-amber-800 px-2 py-0.5 rounded font-mono uppercase">
                     Action Required
                   </span>
@@ -105,20 +120,18 @@ export default function ExtractedDataReview({
                 </p>
 
                 <div className="mt-3 space-y-1.5 text-xs text-amber-900">
-                  {activeCase?.completenessCheck?.missingItems?.map(
-                    (item, idx) => (
-                      <div key={idx} className="flex items-center gap-2">
-                        <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
-                        <span>{item}</span>
-                      </div>
-                    ),
-                  )}
+                  {missingItems.map((item, idx) => (
+                    <div key={idx} className="flex items-center gap-2">
+                      <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                      <span>{item}</span>
+                    </div>
+                  ))}
                 </div>
 
-                {activeCase?.completenessCheck?.rfiGenerated && (
+                {compCheck.rfiGenerated && (
                   <div className="mt-3 p-2.5 bg-amber-100/80 rounded border border-amber-300/80 text-[11px] text-amber-900 flex items-center gap-2">
                     <Mail className="w-4 h-4 text-amber-700 flex-shrink-0" />
-                    <span>{activeCase?.completenessCheck?.rfiDetails}</span>
+                    <span>{compCheck.rfiDetails}</span>
                   </div>
                 )}
               </div>
@@ -143,14 +156,12 @@ export default function ExtractedDataReview({
             </h3>
             <p className="text-xs text-slate-500">
               Mean extraction confidence:{" "}
-              <strong className="text-teal-700">
-                {activeCase?.overallConfidence}%
-              </strong>{" "}
-              with full document citations.
+              <strong className="text-teal-700">{meanConf}%</strong> with full
+              document citations.
             </p>
           </div>
           <span className="text-xs font-mono bg-teal-50 text-teal-800 border border-teal-200 px-2.5 py-1 rounded">
-            {activeCase?.extractedFields?.length || 0} Terms Captured
+            {extractedFields.length} Terms Captured
           </span>
         </div>
 
@@ -167,24 +178,25 @@ export default function ExtractedDataReview({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {activeCase?.extractedFields?.map((field) => {
+              {extractedFields.map((field, fIdx) => {
+                if (!field) return null;
                 const isEditing = editingFieldId === field.id;
                 const isLowConfidence =
                   field.confidence < 80 || field.isMissing;
 
                 return (
                   <tr
-                    key={field.id}
+                    key={field.id || fIdx}
                     className={`hover:bg-slate-50 transition ${
                       isLowConfidence ? "bg-amber-50/50" : ""
                     }`}
                   >
                     <td className="py-3 px-4 font-semibold text-slate-900">
-                      {field.name}
+                      {field.name || `Field ${fIdx + 1}`}
                     </td>
                     <td className="py-3 px-4">
                       <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-600 font-mono text-[10px]">
-                        {field.category}
+                        {field.category || "Coverage"}
                       </span>
                     </td>
                     <td className="py-3 px-4">

@@ -1,14 +1,5 @@
-import React, { useState } from "react";
-import {
-  FileSpreadsheet,
-  GitCompare,
-  CheckCircle2,
-  ArrowRight,
-  ShieldAlert,
-  Sparkles,
-  Send,
-  FileText,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { FileSpreadsheet, GitCompare, ArrowRight } from "lucide-react";
 
 export default function QuoteBuilder({ activeCase, onSaveQuote, onNextStage }) {
   const [limit, setLimit] = useState(
@@ -26,21 +17,35 @@ export default function QuoteBuilder({ activeCase, onSaveQuote, onNextStage }) {
   const [reinstatements, setReinstatements] = useState(
     "1 @ 100% additional premium",
   );
-  const [isSaved, setIsSaved] = useState(false);
+
+  useEffect(() => {
+    if (activeCase?.requestedLimit) setLimit(activeCase.requestedLimit);
+    if (activeCase?.attachmentPoint) setRetention(activeCase.attachmentPoint);
+    if (activeCase?.grossPremium) setPremium(activeCase.grossPremium);
+    if (activeCase?.cedingCommission)
+      setCommission(activeCase.cedingCommission);
+  }, [activeCase]);
 
   const negotiation = activeCase?.negotiation || {};
+  const isReferral = Boolean(
+    activeCase?.requiresReferral ?? activeCase?.requires_referral,
+  );
+  const roundsList = negotiation?.rounds || [];
 
   const handleSaveAndProceed = () => {
-    onSaveQuote({
-      limit,
-      retention,
-      premium,
-      commission,
-      reinstatements,
-    });
-    setIsSaved(true);
+    if (onSaveQuote) {
+      onSaveQuote({
+        limit,
+        retention,
+        premium,
+        commission,
+        reinstatements,
+      });
+    }
     setTimeout(() => {
-      onNextStage("approval");
+      if (onNextStage) {
+        onNextStage("approval");
+      }
     }, 400);
   };
 
@@ -54,7 +59,10 @@ export default function QuoteBuilder({ activeCase, onSaveQuote, onNextStage }) {
               Stage 07 & 09: Quote Structuring & Negotiation
             </span>
             <span className="text-xs text-slate-400 font-mono">
-              Case: {activeCase?.caseNumber}
+              Case:{" "}
+              {activeCase?.caseNumber ||
+                activeCase?.case_number ||
+                "GEN-2026-QTB"}
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
@@ -98,7 +106,11 @@ export default function QuoteBuilder({ activeCase, onSaveQuote, onNextStage }) {
               <input
                 type="text"
                 disabled
-                value={activeCase?.cedentName || ""}
+                value={
+                  activeCase?.cedentName ||
+                  activeCase?.cedent_name ||
+                  "Pacific Mutual"
+                }
                 className="w-full bg-slate-50 border border-slate-200 rounded-lg p-2.5 text-slate-700 font-semibold cursor-not-allowed"
               />
             </div>
@@ -170,7 +182,7 @@ export default function QuoteBuilder({ activeCase, onSaveQuote, onNextStage }) {
                 Authority Level Required:
               </span>
               <span className="font-mono font-bold text-teal-800 text-xs">
-                {activeCase?.requiresReferral
+                {isReferral
                   ? "Senior CUO Referral ($50M+)"
                   : "Standard Underwriter ($15M)"}
               </span>
@@ -191,51 +203,56 @@ export default function QuoteBuilder({ activeCase, onSaveQuote, onNextStage }) {
           </div>
 
           <div className="space-y-3 text-xs">
-            {negotiation?.rounds?.map((rnd) => (
-              <div
-                key={rnd.round}
-                className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2"
-              >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="w-5 h-5 rounded-full bg-slate-800 text-white font-mono text-[10px] flex items-center justify-center font-bold">
-                      {rnd.round}
-                    </span>
-                    <span className="font-bold text-slate-900">
-                      {rnd.source}
+            {roundsList.map((rnd, rIdx) => {
+              if (!rnd) return null;
+              return (
+                <div
+                  key={rnd.round || rIdx}
+                  className="p-3.5 rounded-lg border border-slate-200 bg-slate-50/70 space-y-2"
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="w-5 h-5 rounded-full bg-slate-800 text-white font-mono text-[10px] flex items-center justify-center font-bold">
+                        {rnd.round || rIdx + 1}
+                      </span>
+                      <span className="font-bold text-slate-900">
+                        {rnd.source || "Proposal"}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-slate-400 font-mono">
+                      {rnd.date || "2026-10-20"}
                     </span>
                   </div>
-                  <span className="text-[10px] text-slate-400 font-mono">
-                    {rnd.date}
-                  </span>
-                </div>
 
-                <div className="grid grid-cols-3 gap-2 font-mono text-[11px] pt-1">
-                  <div className="bg-white p-2 rounded border border-slate-100">
-                    <span className="text-[9px] text-slate-400 uppercase block">
-                      Rate on Line
-                    </span>
-                    <span className="font-bold text-slate-800">{rnd.rol}</span>
-                  </div>
-                  <div className="bg-white p-2 rounded border border-slate-100">
-                    <span className="text-[9px] text-slate-400 uppercase block">
-                      Commission
-                    </span>
-                    <span className="font-bold text-slate-800">
-                      {rnd.commission}
-                    </span>
-                  </div>
-                  <div className="bg-white p-2 rounded border border-slate-100">
-                    <span className="text-[9px] text-slate-400 uppercase block">
-                      Status
-                    </span>
-                    <span className="font-bold text-teal-700">
-                      {rnd.status}
-                    </span>
+                  <div className="grid grid-cols-3 gap-2 font-mono text-[11px] pt-1">
+                    <div className="bg-white p-2 rounded border border-slate-100">
+                      <span className="text-[9px] text-slate-400 uppercase block">
+                        Rate on Line
+                      </span>
+                      <span className="font-bold text-slate-800">
+                        {rnd.rol || "N/A"}
+                      </span>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-slate-100">
+                      <span className="text-[9px] text-slate-400 uppercase block">
+                        Commission
+                      </span>
+                      <span className="font-bold text-slate-800">
+                        {rnd.commission || "N/A"}
+                      </span>
+                    </div>
+                    <div className="bg-white p-2 rounded border border-slate-100">
+                      <span className="text-[9px] text-slate-400 uppercase block">
+                        Status
+                      </span>
+                      <span className="font-bold text-teal-700">
+                        {rnd.status || "Pending"}
+                      </span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
             <div className="p-3 bg-purple-50 border border-purple-200 rounded-lg text-xs text-purple-900">
               <span className="font-semibold block mb-0.5">

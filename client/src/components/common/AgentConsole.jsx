@@ -1,15 +1,5 @@
 import React, { useState } from "react";
-import {
-  Terminal,
-  Shield,
-  Sparkles,
-  Filter,
-  Clock,
-  Search,
-  X,
-  CheckCircle,
-  Cpu,
-} from "lucide-react";
+import { Filter, Search, X, Cpu } from "lucide-react";
 
 export default function AgentConsole({ logs = [], isOpen, onClose }) {
   const [filterAgent, setFilterAgent] = useState("ALL");
@@ -91,44 +81,47 @@ export default function AgentConsole({ logs = [], isOpen, onClose }) {
 
       {/* Logs Feed */}
       <div className="flex-1 overflow-y-auto p-4 space-y-2.5 font-mono text-xs">
-        {filteredLogs.map((log) => (
-          <div
-            key={log.id}
-            className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition flex items-start gap-3"
-          >
-            <div className="flex-shrink-0 text-[10px] text-slate-400 mt-0.5 font-semibold">
-              [{log.timestamp}]
-            </div>
-
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="font-semibold text-teal-300 text-xs">
-                  {log.agent}
-                </span>
-                <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 uppercase">
-                  {log.type}
-                </span>
-                <span className="text-[10px] text-emerald-400">
-                  Confidence: {log.confidence}%
-                </span>
-                <span className="text-[10px] text-slate-400">
-                  Latency: {log.latency}
-                </span>
+        {filteredLogs.map((log, lIdx) => {
+          if (!log) return null;
+          return (
+            <div
+              key={log.id || lIdx}
+              className="p-3 rounded-lg bg-slate-900/60 border border-slate-800/80 hover:border-slate-700 transition flex items-start gap-3"
+            >
+              <div className="flex-shrink-0 text-[10px] text-slate-400 mt-0.5 font-semibold">
+                [{log.timestamp || "10:00:00"}]
               </div>
-              <p className="text-slate-200 text-xs font-sans leading-relaxed">
-                {log.message}
-              </p>
-              {log.citation && (
-                <div className="mt-1 text-[11px] text-teal-400/90 font-mono">
-                  ↳ Citation:{" "}
-                  <span className="underline decoration-teal-600/50">
-                    {log.citation}
+
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="font-semibold text-teal-300 text-xs">
+                    {log.agent || "Agent"}
+                  </span>
+                  <span className="text-[10px] px-1.5 py-0.2 rounded bg-slate-800 text-slate-300 uppercase">
+                    {log.type || "Event"}
+                  </span>
+                  <span className="text-[10px] text-emerald-400">
+                    Confidence: {log.confidence || 98}%
+                  </span>
+                  <span className="text-[10px] text-slate-400">
+                    Latency: {log.latency || "120ms"}
                   </span>
                 </div>
-              )}
+                <p className="text-slate-200 text-xs font-sans leading-relaxed">
+                  {log.message || "Simulated agent reasoning log."}
+                </p>
+                {log.citation && (
+                  <div className="mt-1 text-[11px] text-teal-400/90 font-mono">
+                    ↳ Citation:{" "}
+                    <span className="underline decoration-teal-600/50">
+                      {log.citation}
+                    </span>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

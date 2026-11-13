@@ -1,33 +1,67 @@
-import React, { useState } from "react";
-import {
-  Calculator,
-  TrendingUp,
-  Sliders,
-  CheckCircle2,
-  ArrowRight,
-  DollarSign,
-  Percent,
-  Sparkles,
-  RefreshCw,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { Sliders, CheckCircle2, ArrowRight } from "lucide-react";
 
 export default function PricingStudio({
   activeCase,
   onSelectQuoteOption,
   onNextStage,
 }) {
-  const pricing = activeCase?.pricingData || {};
+  const pricing = activeCase?.pricingData || activeCase?.pricing_data || {};
   const [selectedOption, setSelectedOption] = useState(
     pricing?.options?.[0]?.name || "Option A",
   );
-  const [customRol, setCustomRol] = useState(pricing?.targetRateOnLine || 6.8);
+  const [customRol, setCustomRol] = useState(
+    pricing?.targetRateOnLine || pricing?.target_rate_on_line || 6.8,
+  );
   const [customComm, setCustomComm] = useState(28.5);
 
-  // Recalculate dynamic preview based on slider adjustments
-  const baseLimit = activeCase?.limitNumeric || 10000000;
+  useEffect(() => {
+    if (pricing?.options?.[0]?.name && !selectedOption) {
+      setSelectedOption(pricing.options[0].name);
+    }
+    if (pricing?.targetRateOnLine || pricing?.target_rate_on_line) {
+      setCustomRol(pricing.targetRateOnLine || pricing.target_rate_on_line);
+    }
+  }, [pricing, selectedOption]);
+
+  const baseLimit =
+    activeCase?.limitNumeric ||
+    (typeof activeCase?.requested_limit === "number"
+      ? activeCase.requested_limit
+      : 10000000);
   const calculatedPremium = Math.round(baseLimit * (customRol / 100));
   const calculatedCombRatio = (45.0 + customComm + 8.5).toFixed(1);
   const calculatedRoe = (22.5 - (calculatedCombRatio - 75) * 0.8).toFixed(1);
+
+  const optionsList = pricing?.options || [
+    {
+      name: "Option A: 20% Quota Share (Recommended)",
+      limit: "$10,000,000",
+      premium: "$1,250,000",
+      rol: "6.8%",
+      combRatio: "82.4%",
+      roe: "16.4%",
+      status: "Selected",
+    },
+    {
+      name: "Option B: 15% Quota Share + Stop Loss",
+      limit: "$7,500,000",
+      premium: "$975,000",
+      rol: "7.1%",
+      combRatio: "84.1%",
+      roe: "15.2%",
+      status: "Available",
+    },
+    {
+      name: "Option C: 25% Lead Participation",
+      limit: "$12,500,000",
+      premium: "$1,550,000",
+      rol: "6.6%",
+      combRatio: "81.9%",
+      roe: "17.0%",
+      status: "Available",
+    },
+  ];
 
   return (
     <div className="space-y-6">
@@ -39,7 +73,10 @@ export default function PricingStudio({
               Stage 06: Actuarial Pricing Studio
             </span>
             <span className="text-xs text-slate-400 font-mono">
-              Case: {activeCase?.caseNumber}
+              Case:{" "}
+              {activeCase?.caseNumber ||
+                activeCase?.case_number ||
+                "GEN-2026-QTB"}
             </span>
           </div>
           <h2 className="text-xl font-bold text-slate-900 mt-1">
@@ -53,7 +90,7 @@ export default function PricingStudio({
         </div>
 
         <button
-          onClick={() => onNextStage("quote")}
+          onClick={() => onNextStage && onNextStage("quote")}
           className="flex items-center gap-1.5 px-4 py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-semibold rounded-lg transition shadow-sm whitespace-nowrap"
         >
           <span>Proceed to Quote Builder</span>
@@ -68,7 +105,12 @@ export default function PricingStudio({
             Technical Premium
           </span>
           <div className="text-2xl font-bold text-slate-900 font-mono mt-1">
-            ${pricing?.technicalPremium?.toLocaleString() || "1,250,000"}
+            $
+            {(
+              pricing?.technicalPremium ||
+              pricing?.technical_premium ||
+              1250000
+            ).toLocaleString()}
           </div>
           <span className="text-[11px] text-teal-600 font-medium mt-1 block">
             Expected loss + risk load
@@ -127,16 +169,17 @@ export default function PricingStudio({
               </p>
             </div>
             <span className="text-[10px] font-mono bg-teal-50 text-teal-800 border border-teal-200 px-2 py-0.5 rounded">
-              3 Structures Evaluated
+              {optionsList.length} Structures Evaluated
             </span>
           </div>
 
           <div className="space-y-3">
-            {pricing?.options?.map((opt, idx) => {
+            {optionsList.map((opt, idx) => {
+              if (!opt) return null;
               const isSelected = selectedOption === opt.name;
               return (
                 <div
-                  key={idx}
+                  key={opt.name || idx}
                   onClick={() => setSelectedOption(opt.name)}
                   className={`p-4 rounded-xl border-2 transition cursor-pointer flex flex-col sm:flex-row sm:items-center justify-between gap-4 ${
                     isSelected
@@ -286,13 +329,17 @@ export default function PricingStudio({
 
             <button
               onClick={() => {
-                onSelectQuoteOption({
-                  name: selectedOption,
-                  rol: `${customRol}%`,
-                  commission: `${customComm}%`,
-                  premium: `$${calculatedPremium.toLocaleString()}`,
-                });
-                onNextStage("quote");
+                if (onSelectQuoteOption) {
+                  onSelectQuoteOption({
+                    name: selectedOption,
+                    rol: `${customRol}%`,
+                    commission: `${customComm}%`,
+                    premium: `$${calculatedPremium.toLocaleString()}`,
+                  });
+                }
+                if (onNextStage) {
+                  onNextStage("quote");
+                }
               }}
               className="w-full py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-semibold rounded-lg text-xs transition shadow-sm"
             >

@@ -1,23 +1,26 @@
 import React from "react";
 import PersonaSwitcher from "./PersonaSwitcher";
-import {
-  RefreshCw,
-  Activity,
-  ShieldCheck,
-  AlertTriangle,
-  Sparkles,
-  Database,
-} from "lucide-react";
+import { RefreshCw, ShieldCheck, AlertTriangle } from "lucide-react";
 
 export default function Header({
   activeCase,
-  currentPersonaKey,
+  currentPersonaKey = "underwriter",
   onSelectPersona,
-  activeScenarioId,
+  activeScenarioId = "scenario_a",
   onSelectScenario,
   onResetCase,
-  isSyncing,
+  isSyncing = false,
 }) {
+  const caseNumber =
+    activeCase?.caseNumber || activeCase?.case_number || "GEN-2026-QTB-8841";
+  const lob =
+    activeCase?.lineOfBusiness ||
+    activeCase?.line_of_business ||
+    "Property & Casualty - Catastrophe Treaty";
+  const reqReferral = Boolean(
+    activeCase?.requiresReferral ?? activeCase?.requires_referral,
+  );
+
   return (
     <header className="h-16 bg-[#0B192C] border-b border-slate-800 text-white flex items-center justify-between px-6 sticky top-0 z-40 select-none shadow-md">
       {/* Left: Brand & Case Info */}
@@ -50,7 +53,7 @@ export default function Header({
               Case ID:
             </span>
             <span className="text-xs font-semibold text-teal-300 font-mono">
-              {activeCase?.caseNumber || "N/A"}
+              {caseNumber}
             </span>
           </div>
 
@@ -59,12 +62,12 @@ export default function Header({
               LOB:
             </span>
             <span className="text-xs font-medium text-slate-200 truncate max-w-[220px]">
-              {activeCase?.lineOfBusiness}
+              {lob}
             </span>
           </div>
 
           <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-medium bg-slate-900 border border-slate-800">
-            {activeCase?.requiresReferral ? (
+            {reqReferral ? (
               <span className="flex items-center gap-1 text-amber-400 text-[11px]">
                 <AlertTriangle className="w-3.5 h-3.5" /> Referral Deal
               </span>
@@ -86,7 +89,9 @@ export default function Header({
           </span>
           <select
             value={activeScenarioId}
-            onChange={(e) => onSelectScenario(e.target.value)}
+            onChange={(e) =>
+              onSelectScenario && onSelectScenario(e.target.value)
+            }
             className="bg-slate-800 text-xs text-slate-100 font-medium rounded px-2.5 py-1 border border-slate-700 focus:outline-none focus:ring-1 focus:ring-teal-500 cursor-pointer"
             aria-label="Select Demo Scenario"
           >
@@ -121,7 +126,9 @@ export default function Header({
         {/* Live Sync Pulse */}
         <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-900/80 border border-slate-800 text-[10px] text-slate-400">
           <span
-            className={`w-2 h-2 rounded-full ${isSyncing ? "bg-amber-400 animate-ping" : "bg-emerald-400"}`}
+            className={`w-2 h-2 rounded-full ${
+              isSyncing ? "bg-amber-400 animate-ping" : "bg-emerald-400"
+            }`}
           />
           <span className="hidden xl:inline">
             {isSyncing ? "Orchestrator Syncing..." : "12 Agents Active"}
