@@ -17,16 +17,22 @@ export default function AgentConsole({ logs = [], isOpen, onClose }) {
 
   if (!isOpen) return null;
 
-  const agentsList = ["ALL", ...new Set(logs.map((l) => l.agent))];
+  const validLogs = Array.isArray(logs) ? logs : [];
+  const agentsList = [
+    "ALL",
+    ...new Set(validLogs.map((l) => l?.agent).filter(Boolean)),
+  ];
 
-  const filteredLogs = logs.filter((log) => {
+  const filteredLogs = validLogs.filter((log) => {
+    if (!log) return false;
     const matchesAgent = filterAgent === "ALL" || log.agent === filterAgent;
+    const q = (searchQuery || "").toLowerCase();
+    const msg = (log.message || "").toLowerCase();
+    const agt = (log.agent || "").toLowerCase();
+    const cit = (log.citation || "").toLowerCase();
+
     const matchesQuery =
-      searchQuery === "" ||
-      log.message.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      log.agent.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (log.citation &&
-        log.citation.toLowerCase().includes(searchQuery.toLowerCase()));
+      q === "" || msg.includes(q) || agt.includes(q) || cit.includes(q);
     return matchesAgent && matchesQuery;
   });
 

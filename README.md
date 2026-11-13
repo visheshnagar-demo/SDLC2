@@ -84,6 +84,7 @@ Passwords are stored hashed with the app's own hashing utility (never in plainte
 | Frontend | 5173 | http://localhost:5173      |
 | API Docs | 8000 | http://localhost:8000/docs |
 
+
 ## Frontend (client/)
 
 ### Prerequisites
@@ -139,6 +140,20 @@ VITE_API_BASE_URL=http://localhost:8000
 ```
 
 The frontend connects to the backend API at this URL. For production deployment, set `VITE_API_BASE_URL` to the deployed backend URL via `--build-arg` in Docker or via your CI/CD environment.
+
+**React / Vite frontends:**
+The frontend reads `VITE_API_BASE_URL` at build time (baked into the JS bundle):
+```
+VITE_API_BASE_URL=http://localhost:8080/api
+```
+For production, pass `--build-arg VITE_API_BASE_URL=https://<backend>.run.app/api` when building the Docker image.
+
+**Angular frontends:**
+The backend URL is injected at container startup via `API_BASE_URL` env var (runtime, not build time):
+```
+API_BASE_URL=http://localhost:8080/api
+```
+For production, set `API_BASE_URL=https://<backend>.run.app/api` as a Cloud Run env var on the frontend service.
 
 ### Running with the Backend
 
@@ -229,4 +244,5 @@ Passwords are stored hashed with the app's own hashing utility (never in plainte
 | Backend  | 8000 | http://localhost:8000      |
 | Frontend | 5173 | http://localhost:5173      |
 | API Docs | 8000 | http://localhost:8000/docs |
+
 

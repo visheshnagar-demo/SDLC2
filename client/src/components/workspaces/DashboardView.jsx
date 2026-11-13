@@ -44,9 +44,10 @@ export default function DashboardView({
   onNavigateStage,
   onExecuteStage,
 }) {
-  const currentStageIndex = STAGES.findIndex(
+  const stageIdx = STAGES.findIndex(
     (s) => s.key === activeCase?.currentStageKey,
   );
+  const currentStageIndex = stageIdx >= 0 ? stageIdx : 0;
 
   return (
     <div className="space-y-6">
@@ -277,7 +278,7 @@ export default function DashboardView({
             </p>
           </div>
           <span className="text-xs text-slate-400 font-mono">
-            3 Synthetic Cases Loaded
+            {allScenarios.length || 3} Synthetic Cases Loaded
           </span>
         </div>
 
@@ -295,8 +296,17 @@ export default function DashboardView({
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {allScenarios.map((sc) => {
+              {(allScenarios || []).map((sc) => {
+                if (!sc) return null;
                 const isSelected = sc.id === activeCase?.id;
+                const confScore =
+                  typeof sc.confidence === "number"
+                    ? sc.confidence
+                    : typeof sc.overallConfidence === "number"
+                      ? sc.overallConfidence
+                      : 90;
+                const statusStr = String(sc.status || "In Review");
+
                 return (
                   <tr
                     key={sc.id}
@@ -306,39 +316,41 @@ export default function DashboardView({
                     onClick={() => onSelectScenario(sc.id)}
                   >
                     <td className="py-3 px-4">
-                      <div className="font-bold text-slate-900">{sc.title}</div>
+                      <div className="font-bold text-slate-900">
+                        {sc.title || sc.id}
+                      </div>
                       <div className="text-[11px] text-teal-600 font-mono">
                         {sc.id}
                       </div>
                     </td>
                     <td className="py-3 px-4">
                       <div className="font-semibold text-slate-800">
-                        {sc.cedentName}
+                        {sc.cedentName || "Cedent"}
                       </div>
                       <div className="text-[11px] text-slate-500">
-                        Broker: Aon / Marsh
+                        Broker: {sc.brokerName || "Aon / Marsh"}
                       </div>
                     </td>
                     <td className="py-3 px-4 text-slate-700">
-                      {sc.lineOfBusiness}
+                      {sc.lineOfBusiness || "Property & Casualty"}
                     </td>
                     <td className="py-3 px-4 font-mono font-semibold text-slate-900">
-                      {sc.requestedLimit}
+                      {sc.requestedLimit || "N/A"}
                     </td>
                     <td className="py-3 px-4">
                       <div className="flex items-center gap-2">
                         <div className="w-16 bg-slate-200 rounded-full h-1.5 overflow-hidden">
                           <div
                             className={`h-full rounded-full ${
-                              sc.confidence >= 90
+                              confScore >= 90
                                 ? "bg-emerald-500"
                                 : "bg-amber-500"
                             }`}
-                            style={{ width: `${sc.confidence}%` }}
+                            style={{ width: `${confScore}%` }}
                           />
                         </div>
                         <span className="font-mono text-[11px] text-slate-700">
-                          {sc.confidence}%
+                          {confScore}%
                         </span>
                       </div>
                     </td>
@@ -347,12 +359,12 @@ export default function DashboardView({
                         className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold ${
                           sc.requiresReferral
                             ? "bg-amber-100 text-amber-800 border border-amber-200"
-                            : sc.status.includes("Exception")
+                            : statusStr.includes("Exception")
                               ? "bg-rose-100 text-rose-800 border border-rose-200"
                               : "bg-emerald-100 text-emerald-800 border border-emerald-200"
                         }`}
                       >
-                        {sc.status}
+                        {statusStr}
                       </span>
                     </td>
                     <td className="py-3 px-4 text-right">
