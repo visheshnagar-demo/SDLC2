@@ -1,12 +1,5 @@
 import React from "react";
-import {
-  TrendingUp,
-  TrendingDown,
-  Info,
-  ShieldCheck,
-  AlertTriangle,
-  Award,
-} from "lucide-react";
+import { TrendingUp, TrendingDown } from "lucide-react";
 import { Card } from "../common/Card";
 import { Badge } from "../common/Badge";
 

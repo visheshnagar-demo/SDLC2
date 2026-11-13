@@ -7,7 +7,6 @@ import {
   Inbox,
   UserCheck,
   Building2,
-  Lock,
 } from "lucide-react";
 
 export const AppShell = ({ children }) => {
@@ -61,7 +60,7 @@ export const AppShell = ({ children }) => {
                   FacRe Portal
                 </span>
                 <span className="text-xs text-textSecondary hidden sm:block">
-                  Facultative Reinsurance Intake & Underwriter Scoring
+                  Facultative Reinsurance Intake &amp; Underwriter Scoring
                 </span>
               </div>
             </div>

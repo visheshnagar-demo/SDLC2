@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import { ArrowLeft, ShieldCheck, Info } from "lucide-react";
+import { ArrowLeft, Info } from "lucide-react";
 import { AppShell } from "../components/layout/AppShell";
 import { CarrierSubmissionForm } from "../components/carrier/CarrierSubmissionForm";
 

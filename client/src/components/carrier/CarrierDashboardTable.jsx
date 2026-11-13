@@ -30,7 +30,7 @@ export const CarrierDashboardTable = () => {
     try {
       const data = await api.getSubmissions();
       setSubmissions(Array.isArray(data) ? data : data?.items || []);
-    } catch (err) {
+    } catch {
       setError(
         "Unable to load submissions. Please ensure the backend service is running.",
       );

@@ -3,8 +3,6 @@ import { useNavigate } from "react-router-dom";
 import {
   ShieldAlert,
   Building,
-  DollarSign,
-  Calendar,
   AlertTriangle,
   Upload,
   CheckCircle2,
@@ -13,7 +11,6 @@ import {
   ArrowLeft,
   Save,
   Send,
-  Lock,
 } from "lucide-react";
 import { Button } from "../common/Button";
 import { Card } from "../common/Card";

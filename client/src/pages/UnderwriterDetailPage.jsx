@@ -5,12 +5,6 @@ import {
   Lock,
   Unlock,
   AlertTriangle,
-  CheckCircle2,
-  FileText,
-  Building,
-  ShieldCheck,
-  DollarSign,
-  Calendar,
   History,
   Paperclip,
   Upload,
@@ -36,15 +30,14 @@ export const UnderwriterDetailPage = () => {
     setLoading(true);
     setError(null);
     try {
-      // Try underwriter detail first, fallback to generic submission endpoint if needed
       let data;
       try {
         data = await api.getUnderwritingSubmissionDetail(id);
-      } catch (e) {
+      } catch {
         data = await api.getSubmissionById(id);
       }
       setSubmission(data);
-    } catch (err) {
+    } catch {
       setError(
         "Unable to load submission detail. Verify backend service is operational.",
       );
@@ -72,8 +65,7 @@ export const UnderwriterDetailPage = () => {
         active_lock_user_id:
           action === "lock" ? res?.user_id || "current_user" : null,
       }));
-    } catch (err) {
-      // If error, refresh details
+    } catch {
       fetchDetail();
     } finally {
       setLockLoading(false);
@@ -91,8 +83,8 @@ export const UnderwriterDetailPage = () => {
     try {
       await api.uploadAttachment(id, formData);
       fetchDetail();
-    } catch (err) {
-      // Upload error handling
+    } catch {
+      // upload error
     } finally {
       setUploadLoading(false);
     }
@@ -193,7 +185,7 @@ export const UnderwriterDetailPage = () => {
           </div>
         </div>
 
-        {/* Concurrency Lock Banner if locked */}
+        {/* Concurrency Lock Banner */}
         {isLocked && (
           <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between text-xs text-amber-900">
             <div className="flex items-center gap-2">
@@ -213,7 +205,7 @@ export const UnderwriterDetailPage = () => {
           </div>
         )}
 
-        {/* Missing Information Audit Alert Banner */}
+        {/* Missing Information Alert Banner */}
         {missingFlags.length > 0 && (
           <div className="p-4 bg-amber-50/90 border border-amber-300 rounded-xl space-y-2">
             <div className="flex items-center gap-2 text-xs font-bold text-amber-900 uppercase tracking-wider">
@@ -254,11 +246,10 @@ export const UnderwriterDetailPage = () => {
           </div>
         )}
 
-        {/* Main Content Grid: 2 Columns */}
+        {/* 2-Column Responsive Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column (Metadata, Attachments, Audit Log) - 6 cols */}
+          {/* Left Column: Metadata & Audit Log */}
           <div className="lg:col-span-6 space-y-6">
-            {/* Risk & Coverage Specification */}
             <Card
               title="Risk &amp; Policy Specification"
               subtitle="Carrier submission attributes and insured exposure metrics"
@@ -272,7 +263,6 @@ export const UnderwriterDetailPage = () => {
                     {submission.insured_name}
                   </span>
                 </div>
-
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-textSecondary block text-[11px]">
                     Industry Segment
@@ -281,7 +271,6 @@ export const UnderwriterDetailPage = () => {
                     {submission.industry_segment}
                   </span>
                 </div>
-
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-textSecondary block text-[11px]">
                     Annual Revenue
@@ -290,7 +279,6 @@ export const UnderwriterDetailPage = () => {
                     ${Number(submission.annual_revenue || 0).toLocaleString()}
                   </span>
                 </div>
-
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-textSecondary block text-[11px]">
                     Facultative Limit Requested
@@ -299,7 +287,6 @@ export const UnderwriterDetailPage = () => {
                     ${Number(submission.sum_insured || 0).toLocaleString()}
                   </span>
                 </div>
-
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-textSecondary block text-[11px]">
                     Attachment Point (Retention)
@@ -308,7 +295,6 @@ export const UnderwriterDetailPage = () => {
                     ${Number(submission.attachment_point || 0).toLocaleString()}
                   </span>
                 </div>
-
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-textSecondary block text-[11px]">
                     Policy Period
@@ -318,7 +304,6 @@ export const UnderwriterDetailPage = () => {
                     {submission.policy_end_date}
                   </span>
                 </div>
-
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-textSecondary block text-[11px]">
                     Prior Incurred Claims (5y)
@@ -331,7 +316,6 @@ export const UnderwriterDetailPage = () => {
                     )
                   </span>
                 </div>
-
                 <div className="p-3 bg-gray-50 rounded-lg">
                   <span className="text-textSecondary block text-[11px]">
                     Security / Governance Score
@@ -343,7 +327,6 @@ export const UnderwriterDetailPage = () => {
               </div>
             </Card>
 
-            {/* Supporting Document Attachments */}
             <Card
               title="Risk Attachments &amp; Slips"
               subtitle="Audited financials, cyber audits, and original policy wordings"
@@ -396,7 +379,6 @@ export const UnderwriterDetailPage = () => {
               )}
             </Card>
 
-            {/* Audit Log / History */}
             {auditLogs && auditLogs.length > 0 && (
               <Card
                 title="Compliance Audit Log"
@@ -409,17 +391,19 @@ export const UnderwriterDetailPage = () => {
                       className="p-2.5 bg-gray-50 rounded-lg border border-gray-200 flex items-start gap-2"
                     >
                       <History className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-                      <div className="flex-1">
-                        <div className="flex justify-between items-center">
+                      <div className="flex-1 space-y-0.5">
+                        <div className="flex items-center justify-between">
                           <span className="font-semibold text-textPrimary">
-                            {log.action || "State Transition"}
+                            {log.action || log.event || "State Transition"}
                           </span>
                           <span className="text-[10px] text-textSecondary">
-                            {log.created_at || "Recently"}
+                            {log.created_at
+                              ? new Date(log.created_at).toLocaleString()
+                              : "Recently"}
                           </span>
                         </div>
-                        <p className="text-[11px] text-textSecondary mt-0.5">
-                          {log.details || log.description}
+                        <p className="text-[11px] text-textSecondary">
+                          {log.notes || log.details || log.description}
                         </p>
                       </div>
                     </div>
@@ -429,9 +413,8 @@ export const UnderwriterDetailPage = () => {
             )}
           </div>
 
-          {/* Right Column (Scoring Breakdown + Decision Console) - 6 cols */}
+          {/* Right Column: Automated Score Breakdown & Decision Console */}
           <div className="lg:col-span-6 space-y-6">
-            {/* Risk Score Breakdown Card */}
             <RiskScoreBreakdownCard
               score={riskScore}
               tier={riskTier}
@@ -439,7 +422,6 @@ export const UnderwriterDetailPage = () => {
               riskType={submission.risk_type}
             />
 
-            {/* Underwriting Decision Console Form */}
             <DecisionConsoleForm
               submissionId={submission.id}
               sumInsured={submission.sum_insured}

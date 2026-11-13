@@ -2,13 +2,10 @@ import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   Search,
-  Filter,
   ArrowUpDown,
   Lock,
-  Unlock,
   AlertTriangle,
   ShieldAlert,
-  Building,
   CheckCircle,
   RefreshCw,
   ExternalLink,
@@ -40,7 +37,7 @@ export const UnderwriterReviewQueueTable = () => {
     try {
       const data = await api.getUnderwritingQueue();
       setQueue(Array.isArray(data) ? data : data?.items || []);
-    } catch (err) {
+    } catch {
       setError("Failed to fetch underwriter review queue from backend.");
     } finally {
       setLoading(false);

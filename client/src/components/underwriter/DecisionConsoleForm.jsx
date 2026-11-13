@@ -1,15 +1,5 @@
-import React, { useState } from "react";
-import {
-  CheckCircle,
-  XCircle,
-  DollarSign,
-  Percent,
-  Calendar,
-  FileCheck,
-  AlertTriangle,
-  Send,
-  Lock,
-} from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { CheckCircle, XCircle, AlertTriangle, Send } from "lucide-react";
 import { Button } from "../common/Button";
 import { Card } from "../common/Card";
 import { api } from "../../services/api";
@@ -74,7 +64,48 @@ export const DecisionConsoleForm = ({
       code: "REGULATORY_INVESTIGATION_EXPOSURE",
       label: "Active Regulatory Inquiries / High D&O Litigation Risk",
     },
+    {
+      code: "HIGH_EXPOSURE_AGGREGATION",
+      label: "High Exposure Aggregation / Catastrophic Concentration",
+    },
   ];
+
+  useEffect(() => {
+    if (sumInsured) {
+      setCapacityOffered(String(sumInsured));
+      const rate = Number(rateOnLinePct) || 2.5;
+      setPremiumAmount(String(Math.round((Number(sumInsured) * rate) / 100)));
+    }
+  }, [sumInsured]);
+
+  useEffect(() => {
+    if (currentDecision) {
+      if (currentDecision.decision) {
+        setDecisionType(currentDecision.decision);
+      }
+      if (currentDecision.capacity_offered) {
+        setCapacityOffered(String(currentDecision.capacity_offered));
+      }
+      if (currentDecision.rate_on_line_pct) {
+        setRateOnLinePct(String(currentDecision.rate_on_line_pct));
+      }
+      if (currentDecision.premium_amount) {
+        setPremiumAmount(String(currentDecision.premium_amount));
+      }
+      if (currentDecision.binding_deadline) {
+        setBindingDeadline(currentDecision.binding_deadline);
+      }
+      if (currentDecision.subjectivities) {
+        setSubjectivities(currentDecision.subjectivities);
+      }
+      if (currentDecision.decline_reason_code) {
+        setDeclineReasonCode(currentDecision.decline_reason_code);
+      }
+      if (currentDecision.decline_notes) {
+        setDeclineNotes(currentDecision.decline_notes);
+      }
+    }
+  }, [currentDecision]);
 
   // Auto-calculate premium when capacity or rate changes
   const handleCapacityChange = (val) => {
