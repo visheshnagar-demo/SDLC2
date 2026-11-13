@@ -90,34 +90,60 @@ def create_submission(
     current_user: User = Depends(get_current_user),
 ):
     # Validation checks
-    if payload.annual_revenue <= 0:
+    if payload.annual_revenue is not None and payload.annual_revenue <= 0:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Annual revenue must be greater than zero.",
         )
-    if payload.primary_policy_limit <= 0:
+    if payload.primary_policy_limit is not None and payload.primary_policy_limit <= 0:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Primary policy limit must be greater than zero.",
         )
-    if payload.requested_reinsurance_limit <= 0:
+    if (
+        payload.requested_reinsurance_limit is not None
+        and payload.requested_reinsurance_limit <= 0
+    ):
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Requested reinsurance limit must be greater than zero.",
         )
-    if payload.attachment_point < 0:
+    if payload.attachment_point is not None and payload.attachment_point < 0:
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Attachment point cannot be negative.",
         )
 
-    tracking_num = generate_tracking_number(db, payload.risk_type)
+    risk_type_val = (payload.risk_type or "CYBER").upper()
+    tracking_num = generate_tracking_number(db, risk_type_val)
 
-    effective_dt = (
-        payload.policy_effective_date or payload.effective_date or date.today()
-    )
-    if payload.policy_expiration_date or payload.expiration_date:
-        expiration_dt = payload.policy_expiration_date or payload.expiration_date
+    eff_raw = payload.policy_effective_date or payload.effective_date or date.today()
+    if isinstance(eff_raw, str):
+        try:
+            effective_dt = date.fromisoformat(eff_raw)
+        except Exception:
+            effective_dt = date.today()
+    elif isinstance(eff_raw, date):
+        effective_dt = eff_raw
+    else:
+        effective_dt = date.today()
+
+    exp_raw = payload.policy_expiration_date or payload.expiration_date
+    if exp_raw:
+        if isinstance(exp_raw, str):
+            try:
+                expiration_dt = date.fromisoformat(exp_raw)
+            except Exception:
+                try:
+                    expiration_dt = date(
+                        effective_dt.year + 1, effective_dt.month, effective_dt.day
+                    )
+                except ValueError:
+                    expiration_dt = date(effective_dt.year + 1, effective_dt.month, 28)
+        elif isinstance(exp_raw, date):
+            expiration_dt = exp_raw
+        else:
+            expiration_dt = date(effective_dt.year + 1, effective_dt.month, 28)
     else:
         try:
             expiration_dt = date(
@@ -126,17 +152,35 @@ def create_submission(
         except ValueError:
             expiration_dt = date(effective_dt.year + 1, effective_dt.month, 28)
 
+    if expiration_dt < effective_dt:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Policy expiration date cannot be before effective date.",
+        )
+
     submission = ReinsuranceSubmission(
         id=str(uuid.uuid4()),
         tracking_number=tracking_num,
         carrier_id=current_user.id if current_user else None,
-        risk_type=payload.risk_type.upper(),
-        insured_name=payload.insured_name,
-        industry_sector=payload.industry_sector,
-        annual_revenue=float(payload.annual_revenue),
-        primary_policy_limit=float(payload.primary_policy_limit),
-        requested_reinsurance_limit=float(payload.requested_reinsurance_limit),
-        attachment_point=float(payload.attachment_point),
+        risk_type=risk_type_val,
+        insured_name=payload.insured_name or "Insured Entity Corp",
+        industry_sector=payload.industry_sector or "Financial Services",
+        annual_revenue=float(
+            payload.annual_revenue if payload.annual_revenue is not None else 50000000.0
+        ),
+        primary_policy_limit=float(
+            payload.primary_policy_limit
+            if payload.primary_policy_limit is not None
+            else 10000000.0
+        ),
+        requested_reinsurance_limit=float(
+            payload.requested_reinsurance_limit
+            if payload.requested_reinsurance_limit is not None
+            else 5000000.0
+        ),
+        attachment_point=float(
+            payload.attachment_point if payload.attachment_point is not None else 0.0
+        ),
         policy_effective_date=effective_dt,
         policy_expiration_date=expiration_dt,
         status="SUBMITTED",
@@ -152,21 +196,44 @@ def create_submission(
             prof_data = payload.risk_profile.get("profile_data") or payload.risk_profile
             prior_losses = (
                 payload.risk_profile.get("prior_losses_count")
-                or payload.risk_profile.get("prior_cyber_incidents_3yr")
-                or 0
+                if payload.risk_profile.get("prior_losses_count") is not None
+                else payload.risk_profile.get("prior_cyber_incidents_3yr")
+                if payload.risk_profile.get("prior_cyber_incidents_3yr") is not None
+                else payload.risk_profile.get("prior_losses")
+                if payload.risk_profile.get("prior_losses") is not None
+                else 0
             )
-            total_loss = float(payload.risk_profile.get("total_loss_amount") or 0.0)
-            sec_framework = payload.risk_profile.get("security_framework")
+            total_loss = float(
+                payload.risk_profile.get("total_loss_amount")
+                if payload.risk_profile.get("total_loss_amount") is not None
+                else payload.risk_profile.get("loss_amount")
+                if payload.risk_profile.get("loss_amount") is not None
+                else 0.0
+            )
+            sec_framework = (
+                payload.risk_profile.get("security_framework")
+                or payload.risk_profile.get("framework")
+                or payload.risk_profile.get("compliance_framework")
+            )
             mfa = (
                 payload.risk_profile.get("mfa_enforced")
                 if payload.risk_profile.get("mfa_enforced") is not None
                 else payload.risk_profile.get("mfa_implemented")
+                if payload.risk_profile.get("mfa_implemented") is not None
+                else payload.risk_profile.get("mfa_enabled")
             )
-            backups = payload.risk_profile.get("has_offline_backups")
+            backups = (
+                payload.risk_profile.get("has_offline_backups")
+                if payload.risk_profile.get("has_offline_backups") is not None
+                else payload.risk_profile.get("offline_backups")
+            )
             pending_claims = (
                 payload.risk_profile.get("has_pending_claims")
                 if payload.risk_profile.get("has_pending_claims") is not None
                 else payload.risk_profile.get("regulatory_investigation_pending")
+                if payload.risk_profile.get("regulatory_investigation_pending")
+                is not None
+                else payload.risk_profile.get("pending_claims")
             )
         else:
             prof_data = payload.risk_profile.profile_data or {}
@@ -195,16 +262,44 @@ def create_submission(
     doc_models = []
     if payload.documents:
         for doc in payload.documents:
+            if isinstance(doc, dict):
+                dtype = (
+                    doc.get("document_type")
+                    or doc.get("doc_type")
+                    or doc.get("type")
+                    or "PRIMARY_POLICY_SCHEDULE"
+                )
+                fname = (
+                    doc.get("file_name")
+                    or doc.get("filename")
+                    or doc.get("name")
+                    or "document.pdf"
+                )
+                fsize = doc.get("file_size_bytes") or doc.get("file_size") or 0
+                furl = doc.get("file_url") or doc.get("url")
+                is_ver = bool(
+                    doc.get("is_verified")
+                    or doc.get("verified")
+                    or doc.get("uploaded")
+                    or doc.get("status") == "UPLOADED"
+                )
+            else:
+                dtype = doc.document_type
+                fname = doc.file_name
+                fsize = doc.file_size_bytes or 0
+                furl = doc.file_url
+                is_ver = bool(
+                    doc.is_verified or doc.uploaded or doc.status == "UPLOADED"
+                )
+
             d = SubmissionDocument(
                 id=str(uuid.uuid4()),
                 submission_id=submission.id,
-                document_type=doc.document_type.upper(),
-                file_name=doc.file_name,
-                file_size_bytes=doc.file_size_bytes or 0,
-                file_url=doc.file_url,
-                is_verified=bool(
-                    doc.is_verified or doc.uploaded or doc.status == "UPLOADED"
-                ),
+                document_type=str(dtype).upper(),
+                file_name=str(fname),
+                file_size_bytes=int(fsize),
+                file_url=furl,
+                is_verified=is_ver,
                 uploaded_at=datetime.now(timezone.utc),
             )
             db.add(d)

@@ -122,12 +122,32 @@ class ReinsuranceSubmission(Base):
         return self.primary_policy_limit
 
     @property
+    def sum_insured(self) -> float:
+        return self.primary_policy_limit
+
+    @property
     def retention(self) -> float:
         return self.attachment_point
 
     @property
+    def industry(self) -> str:
+        return self.industry_sector
+
+    @property
+    def sector(self) -> str:
+        return self.industry_sector
+
+    @property
     def overall_risk_score(self) -> Optional[float]:
         return self.risk_score.overall_score if self.risk_score else None
+
+    @property
+    def score(self) -> Optional[float]:
+        return self.risk_score.overall_score if self.risk_score else None
+
+    @property
+    def risk_tier(self) -> Optional[str]:
+        return self.risk_score.risk_tier if self.risk_score else None
 
 
 class RiskProfile(Base):
@@ -202,6 +222,14 @@ class RiskScore(Base):
     )
 
     submission = relationship("ReinsuranceSubmission", back_populates="risk_score")
+
+    @property
+    def score(self) -> float:
+        return self.overall_score
+
+    @property
+    def composite_score(self) -> float:
+        return self.overall_score
 
 
 class MissingInformationFlag(Base):

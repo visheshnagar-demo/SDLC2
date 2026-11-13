@@ -114,14 +114,23 @@ def get_underwriter_queue(
                 insured_name=sub.insured_name,
                 risk_type=sub.risk_type,
                 industry_sector=sub.industry_sector,
+                industry=sub.industry_sector,
+                sector=sub.industry_sector,
                 requested_limit=sub.requested_reinsurance_limit,
+                requested_reinsurance_limit=sub.requested_reinsurance_limit,
+                primary_limit=sub.primary_policy_limit,
+                primary_policy_limit=sub.primary_policy_limit,
+                sum_insured=sub.primary_policy_limit,
                 attachment_point=sub.attachment_point,
+                retention=sub.attachment_point,
                 status=sub.status,
                 overall_risk_score=score_val,
+                score=score_val,
                 risk_tier=tier_val,
                 missing_flags_count=len(flags),
                 missing_flags=flags,
                 submitted_at=sub.created_at,
+                created_at=sub.created_at,
             )
         )
 

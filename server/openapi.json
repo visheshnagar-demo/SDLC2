@@ -915,7 +915,8 @@
               "QUOTE",
               "DECLINE"
             ],
-            "title": "Decision Type"
+            "title": "Decision Type",
+            "default": "QUOTE"
           },
           "quoted_capacity": {
             "anyOf": [
@@ -959,7 +960,8 @@
                 "type": "null"
               }
             ],
-            "title": "Quote Validity Days"
+            "title": "Quote Validity Days",
+            "default": 30
           },
           "decline_reason_code": {
             "anyOf": [
@@ -984,10 +986,8 @@
             "title": "Underwriter Notes"
           }
         },
+        "additionalProperties": true,
         "type": "object",
-        "required": [
-          "decision_type"
-        ],
         "title": "DecisionCreate"
       },
       "DecisionResponse": {
@@ -1131,11 +1131,13 @@
         "properties": {
           "document_type": {
             "type": "string",
-            "title": "Document Type"
+            "title": "Document Type",
+            "default": "PRIMARY_POLICY_SCHEDULE"
           },
           "file_name": {
             "type": "string",
-            "title": "File Name"
+            "title": "File Name",
+            "default": "document.pdf"
           },
           "file_size_bytes": {
             "anyOf": [
@@ -1197,10 +1199,6 @@
         },
         "additionalProperties": true,
         "type": "object",
-        "required": [
-          "document_type",
-          "file_name"
-        ],
         "title": "DocumentCreate"
       },
       "DocumentResponse": {
@@ -1290,6 +1288,17 @@
             "type": "string",
             "title": "Flag Severity"
           },
+          "severity": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Severity"
+          },
           "description": {
             "type": "string",
             "title": "Description"
@@ -1320,87 +1329,99 @@
       "ReinsuranceSubmissionCreate": {
         "properties": {
           "risk_type": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Risk Type"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Type",
+            "default": "CYBER"
           },
           "insured_name": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Insured Name"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Insured Name",
+            "default": "Insured Entity"
           },
           "industry_sector": {
-            "type": "string",
-            "minLength": 1,
-            "title": "Industry Sector"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry Sector",
+            "default": "Financial Services"
           },
           "annual_revenue": {
-            "type": "number",
-            "exclusiveMinimum": 0.0,
-            "title": "Annual Revenue"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Revenue",
+            "default": 50000000.0
           },
           "primary_policy_limit": {
-            "type": "number",
-            "exclusiveMinimum": 0.0,
-            "title": "Primary Policy Limit"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Policy Limit",
+            "default": 10000000.0
           },
           "requested_reinsurance_limit": {
-            "type": "number",
-            "exclusiveMinimum": 0.0,
-            "title": "Requested Reinsurance Limit"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Reinsurance Limit",
+            "default": 5000000.0
           },
           "attachment_point": {
-            "type": "number",
-            "minimum": 0.0,
-            "title": "Attachment Point"
-          },
-          "policy_effective_date": {
             "anyOf": [
               {
-                "type": "string",
-                "format": "date"
+                "type": "number"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Policy Effective Date"
+            "title": "Attachment Point",
+            "default": 0.0
           },
-          "policy_expiration_date": {
+          "sum_insured": {
             "anyOf": [
               {
-                "type": "string",
-                "format": "date"
+                "type": "number"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Policy Expiration Date"
-          },
-          "effective_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Effective Date"
-          },
-          "expiration_date": {
-            "anyOf": [
-              {
-                "type": "string",
-                "format": "date"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Expiration Date"
+            "title": "Sum Insured"
           },
           "requested_limit": {
             "anyOf": [
@@ -1435,6 +1456,88 @@
             ],
             "title": "Retention"
           },
+          "industry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry"
+          },
+          "sector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sector"
+          },
+          "policy_effective_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Effective Date"
+          },
+          "policy_expiration_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Expiration Date"
+          },
+          "effective_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Date"
+          },
+          "expiration_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiration Date"
+          },
           "risk_profile": {
             "anyOf": [
               {
@@ -1454,7 +1557,15 @@
             "anyOf": [
               {
                 "items": {
-                  "$ref": "#/components/schemas/DocumentCreate"
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/DocumentCreate"
+                    },
+                    {
+                      "additionalProperties": true,
+                      "type": "object"
+                    }
+                  ]
                 },
                 "type": "array"
               },
@@ -1467,15 +1578,6 @@
         },
         "additionalProperties": true,
         "type": "object",
-        "required": [
-          "risk_type",
-          "insured_name",
-          "industry_sector",
-          "annual_revenue",
-          "primary_policy_limit",
-          "requested_reinsurance_limit",
-          "attachment_point"
-        ],
         "title": "ReinsuranceSubmissionCreate"
       },
       "ReinsuranceSubmissionDetailResponse": {
@@ -1511,6 +1613,28 @@
             "type": "string",
             "title": "Industry Sector"
           },
+          "industry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry"
+          },
+          "sector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sector"
+          },
           "annual_revenue": {
             "type": "number",
             "title": "Annual Revenue"
@@ -1519,13 +1643,57 @@
             "type": "number",
             "title": "Primary Policy Limit"
           },
+          "primary_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Limit"
+          },
+          "sum_insured": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sum Insured"
+          },
           "requested_reinsurance_limit": {
             "type": "number",
             "title": "Requested Reinsurance Limit"
           },
+          "requested_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Limit"
+          },
           "attachment_point": {
             "type": "number",
             "title": "Attachment Point"
+          },
+          "retention": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention"
           },
           "policy_effective_date": {
             "type": "string",
@@ -1561,39 +1729,6 @@
             ],
             "title": "Expiration Date"
           },
-          "requested_limit": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requested Limit"
-          },
-          "primary_limit": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Primary Limit"
-          },
-          "retention": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Retention"
-          },
           "overall_risk_score": {
             "anyOf": [
               {
@@ -1604,6 +1739,28 @@
               }
             ],
             "title": "Overall Risk Score"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "risk_tier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Tier"
           },
           "status": {
             "type": "string",
@@ -1732,6 +1889,28 @@
             "type": "string",
             "title": "Industry Sector"
           },
+          "industry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry"
+          },
+          "sector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sector"
+          },
           "annual_revenue": {
             "type": "number",
             "title": "Annual Revenue"
@@ -1740,13 +1919,57 @@
             "type": "number",
             "title": "Primary Policy Limit"
           },
+          "primary_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Limit"
+          },
+          "sum_insured": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sum Insured"
+          },
           "requested_reinsurance_limit": {
             "type": "number",
             "title": "Requested Reinsurance Limit"
           },
+          "requested_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Limit"
+          },
           "attachment_point": {
             "type": "number",
             "title": "Attachment Point"
+          },
+          "retention": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention"
           },
           "policy_effective_date": {
             "type": "string",
@@ -1782,39 +2005,6 @@
             ],
             "title": "Expiration Date"
           },
-          "requested_limit": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Requested Limit"
-          },
-          "primary_limit": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Primary Limit"
-          },
-          "retention": {
-            "anyOf": [
-              {
-                "type": "number"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Retention"
-          },
           "overall_risk_score": {
             "anyOf": [
               {
@@ -1825,6 +2015,28 @@
               }
             ],
             "title": "Overall Risk Score"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "risk_tier": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Tier"
           },
           "status": {
             "type": "string",
@@ -2067,6 +2279,28 @@
             "type": "number",
             "title": "Overall Score"
           },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
+          },
+          "composite_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Composite Score"
+          },
           "completeness_score": {
             "type": "number",
             "title": "Completeness Score"
@@ -2195,13 +2429,90 @@
             "type": "string",
             "title": "Industry Sector"
           },
+          "industry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry"
+          },
+          "sector": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sector"
+          },
           "requested_limit": {
             "type": "number",
             "title": "Requested Limit"
           },
+          "requested_reinsurance_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Reinsurance Limit"
+          },
+          "primary_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Limit"
+          },
+          "primary_policy_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Policy Limit"
+          },
+          "sum_insured": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sum Insured"
+          },
           "attachment_point": {
             "type": "number",
             "title": "Attachment Point"
+          },
+          "retention": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention"
           },
           "status": {
             "type": "string",
@@ -2217,6 +2528,17 @@
               }
             ],
             "title": "Overall Risk Score"
+          },
+          "score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Score"
           },
           "risk_tier": {
             "anyOf": [
@@ -2246,6 +2568,18 @@
             "type": "string",
             "format": "date-time",
             "title": "Submitted At"
+          },
+          "created_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Created At"
           }
         },
         "additionalProperties": true,
@@ -2400,6 +2734,7 @@
             "title": "Updated At"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "email",

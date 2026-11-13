@@ -75,6 +75,48 @@ def test_create_submission_flexible_dates_and_aliases(client):
     assert data["attachment_point"] == 4000000.0
 
 
+def test_create_submission_sum_insured_and_fallbacks(client):
+    # Tests minimal submission with sum_insured and missing industry/attachment
+    payload = {
+        "risk_type": "CYBER",
+        "insured_name": "Sum Insured Corp",
+        "sum_insured": 12000000.0,
+        "requested_limit": 6000000.0,
+    }
+    response = client.post("/api/v1/submissions", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["insured_name"] == "Sum Insured Corp"
+    assert data["primary_policy_limit"] == 12000000.0
+    assert data["sum_insured"] == 12000000.0
+    assert data["requested_reinsurance_limit"] == 6000000.0
+    assert data["requested_limit"] == 6000000.0
+    assert data["attachment_point"] == 0.0
+
+
+def test_create_submission_industry_and_attachment_aliases(client):
+    # Tests industry alias and attachment alias
+    payload = {
+        "risk_type": "D_AND_O",
+        "company_name": "Executive Alpha Corp",
+        "industry": "Healthcare",
+        "revenue": 30000000.0,
+        "policy_limit": 6000000.0,
+        "reinsurance_limit": 3000000.0,
+        "attachment": 1000000.0,
+    }
+    response = client.post("/api/v1/submissions", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["insured_name"] == "Executive Alpha Corp"
+    assert data["risk_type"] == "D_AND_O"
+    assert data["industry_sector"] == "Healthcare"
+    assert data["annual_revenue"] == 30000000.0
+    assert data["primary_policy_limit"] == 6000000.0
+    assert data["requested_reinsurance_limit"] == 3000000.0
+    assert data["attachment_point"] == 1000000.0
+
+
 def test_create_d_and_o_submission_success(client):
     payload = {
         "risk_type": "D_AND_O",
