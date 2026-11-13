@@ -158,6 +158,7 @@ export const CarrierSubmissionForm = ({ onSuccess }) => {
       prior_claims_total: Number(formData.prior_claims_total) || 0,
       security_governance_score:
         Number(formData.security_governance_score) || 80,
+      is_final_submission: status === "SUBMITTED",
       status: status,
     };
 

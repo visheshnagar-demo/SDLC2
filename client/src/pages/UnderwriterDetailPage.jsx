@@ -56,14 +56,15 @@ export const UnderwriterDetailPage = () => {
     if (!submission) return;
     setLockLoading(true);
     const isCurrentlyLocked = Boolean(submission.active_lock_user_id);
-    const action = isCurrentlyLocked ? "unlock" : "lock";
+    const action = isCurrentlyLocked ? "RELEASE" : "ACQUIRE";
 
     try {
       const res = await api.toggleSubmissionLock(id, action);
       setSubmission((prev) => ({
         ...prev,
-        active_lock_user_id:
-          action === "lock" ? res?.user_id || "current_user" : null,
+        active_lock_user_id: res?.locked
+          ? res?.locked_by || "current_user"
+          : null,
       }));
     } catch {
       fetchDetail();
@@ -78,13 +79,14 @@ export const UnderwriterDetailPage = () => {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("document_type", "RISK_ASSESSMENT");
+    formData.append("document_category", "RISK_ASSESSMENT");
 
     setUploadLoading(true);
     try {
       await api.uploadAttachment(id, formData);
       fetchDetail();
     } catch {
-      // upload error
+      // handled
     } finally {
       setUploadLoading(false);
     }
@@ -216,39 +218,47 @@ export const UnderwriterDetailPage = () => {
               </span>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2 pt-1">
-              {missingFlags.map((flag, idx) => (
-                <div
-                  key={flag.id || idx}
-                  className="bg-surface p-2.5 rounded-lg border border-amber-200 text-xs text-amber-900 space-y-0.5 shadow-xs"
-                >
-                  <div className="font-semibold flex items-center justify-between">
-                    <span>
-                      {flag.flag_name || flag.field_name || "Missing Item"}
-                    </span>
-                    <span
-                      className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
-                        flag.is_blocking
-                          ? "bg-red-100 text-error"
-                          : "bg-amber-100 text-amber-800"
-                      }`}
-                    >
-                      {flag.is_blocking ? "Blocking" : "Warning"}
-                    </span>
+              {missingFlags.map((flag, idx) => {
+                const isBlocking =
+                  flag.is_blocking || flag.severity === "BLOCKING";
+                const title =
+                  flag.flag_name ||
+                  flag.field_name ||
+                  flag.flag_code ||
+                  "Missing Item";
+                const desc =
+                  flag.description ||
+                  flag.message ||
+                  flag.rationale ||
+                  "Documentation required for binding.";
+                return (
+                  <div
+                    key={flag.id || idx}
+                    className="bg-surface p-2.5 rounded-lg border border-amber-200 text-xs text-amber-900 space-y-0.5 shadow-xs"
+                  >
+                    <div className="font-semibold flex items-center justify-between">
+                      <span>{title}</span>
+                      <span
+                        className={`text-[9px] px-1.5 py-0.5 rounded font-bold uppercase ${
+                          isBlocking
+                            ? "bg-red-100 text-error"
+                            : "bg-amber-100 text-amber-800"
+                        }`}
+                      >
+                        {isBlocking ? "Blocking" : "Warning"}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-textSecondary">{desc}</p>
                   </div>
-                  <p className="text-[11px] text-textSecondary">
-                    {flag.description ||
-                      flag.rationale ||
-                      "Documentation required for binding."}
-                  </p>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* 2-Column Responsive Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-          {/* Left Column: Metadata & Audit Log */}
+          {/* Left Column: Metadata & Attachments & Audit */}
           <div className="lg:col-span-6 space-y-6">
             <Card
               title="Risk &amp; Policy Specification"
@@ -356,10 +366,16 @@ export const UnderwriterDetailPage = () => {
                         <Paperclip className="w-4 h-4 text-primary" />
                         <div>
                           <div className="font-medium text-textPrimary">
-                            {att.filename || att.name || "Document"}
+                            {att.file_name ||
+                              att.filename ||
+                              att.name ||
+                              "Document"}
                           </div>
                           <div className="text-[10px] text-textSecondary">
-                            {att.document_type || "Attachment"} &bull;{" "}
+                            {att.document_category ||
+                              att.document_type ||
+                              "Attachment"}{" "}
+                            &bull;{" "}
                             {att.file_size_bytes
                               ? `${Math.round(att.file_size_bytes / 1024)} KB`
                               : "Uploaded"}
@@ -379,33 +395,39 @@ export const UnderwriterDetailPage = () => {
               )}
             </Card>
 
+            {/* Audit Log Card */}
             {auditLogs && auditLogs.length > 0 && (
               <Card
-                title="Compliance Audit Log"
-                subtitle="State transitions and underwriter action history"
+                title="Compliance Audit Trail"
+                subtitle="Immutable timeline of underwriter reviews, locks, and status transitions"
               >
-                <div className="space-y-2 text-xs">
+                <div className="divide-y divide-gray-100 text-xs">
                   {auditLogs.map((log, idx) => (
                     <div
                       key={log.id || idx}
-                      className="p-2.5 bg-gray-50 rounded-lg border border-gray-200 flex items-start gap-2"
+                      className="py-2.5 flex items-start justify-between gap-3"
                     >
-                      <History className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
-                      <div className="flex-1 space-y-0.5">
-                        <div className="flex items-center justify-between">
-                          <span className="font-semibold text-textPrimary">
-                            {log.action || log.event || "State Transition"}
-                          </span>
-                          <span className="text-[10px] text-textSecondary">
-                            {log.created_at
-                              ? new Date(log.created_at).toLocaleString()
-                              : "Recently"}
-                          </span>
+                      <div className="flex items-start space-x-2">
+                        <History className="w-4 h-4 text-textSecondary mt-0.5 shrink-0" />
+                        <div>
+                          <div className="font-semibold text-textPrimary">
+                            {log.action || log.event || "Activity Recorded"}
+                          </div>
+                          <div className="text-[11px] text-textSecondary">
+                            {log.details ||
+                              log.state_diff_json ||
+                              log.notes ||
+                              log.description}
+                          </div>
                         </div>
-                        <p className="text-[11px] text-textSecondary">
-                          {log.notes || log.details || log.description}
-                        </p>
                       </div>
+                      <span className="text-[10px] text-textSecondary shrink-0 font-mono">
+                        {log.timestamp || log.created_at
+                          ? new Date(
+                              log.timestamp || log.created_at,
+                            ).toLocaleString()
+                          : ""}
+                      </span>
                     </div>
                   ))}
                 </div>
@@ -413,7 +435,7 @@ export const UnderwriterDetailPage = () => {
             )}
           </div>
 
-          {/* Right Column: Automated Score Breakdown & Decision Console */}
+          {/* Right Column: Scoring Engine & Decision Console */}
           <div className="lg:col-span-6 space-y-6">
             <RiskScoreBreakdownCard
               score={riskScore}
@@ -423,14 +445,14 @@ export const UnderwriterDetailPage = () => {
             />
 
             <DecisionConsoleForm
-              submissionId={submission.id}
+              submissionId={id}
               sumInsured={submission.sum_insured}
               currentDecision={
-                submission.decision || submission.underwriting_decision
+                submission.decision ||
+                submission.latest_decision ||
+                submission.underwriting_decision
               }
-              onDecisionSubmitted={() => {
-                fetchDetail();
-              }}
+              onDecisionSubmitted={fetchDetail}
             />
           </div>
         </div>

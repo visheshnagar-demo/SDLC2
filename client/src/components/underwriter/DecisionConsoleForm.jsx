@@ -27,7 +27,7 @@ export const DecisionConsoleForm = ({
 
   // Decline fields
   const [declineReasonCode, setDeclineReasonCode] = useState(
-    "EXCESSIVE_CLAIMS_HISTORY",
+    "RISK_APPETITE_EXCEEDED",
   );
   const [declineNotes, setDeclineNotes] = useState("");
 
@@ -37,36 +37,28 @@ export const DecisionConsoleForm = ({
 
   const declineReasonOptions = [
     {
-      code: "EXCESSIVE_CLAIMS_HISTORY",
-      label: "Excessive Prior Claims History / Ransomware Severity",
+      code: "RISK_APPETITE_EXCEEDED",
+      label: "Risk Appetite Exceeded / Class Out of Scope",
     },
     {
-      code: "INSUFFICIENT_SECURITY_CONTROLS",
-      label: "Insufficient Cyber Controls / Weak MFA Posture",
+      code: "UNFAVORABLE_LOSS_HISTORY",
+      label: "Unfavorable Prior Loss History / Claim Severity",
     },
     {
-      code: "OUT_OF_APPETITE_INDUSTRY",
-      label: "Industry Class Out of Reinsurance Underwriting Appetite",
+      code: "INCOMPLETE_DATA",
+      label: "Incomplete Data / Missing Documentation Disclosures",
     },
     {
-      code: "CAPACITY_CONSTRAINT",
-      label: "Reinsurance Aggregate Capacity Limit Reached",
+      code: "INADEQUATE_ATTACHMENT",
+      label: "Inadequate Attachment Point / Retention Too Low",
     },
     {
-      code: "PRICING_TERMS_MISMATCH",
-      label: "Pricing or Attachment Point Terms Inadequate",
+      code: "CAPACITY_UNAVAILABLE",
+      label: "Reinsurance Capacity Unavailable / Limit Reached",
     },
     {
-      code: "INCOMPLETE_DISCLOSURE",
-      label: "Incomplete Material Disclosure / Missing Audits",
-    },
-    {
-      code: "REGULATORY_INVESTIGATION_EXPOSURE",
-      label: "Active Regulatory Inquiries / High D&O Litigation Risk",
-    },
-    {
-      code: "HIGH_EXPOSURE_AGGREGATION",
-      label: "High Exposure Aggregation / Catastrophic Concentration",
+      code: "OTHER",
+      label: "Other Underwriting Grounds",
     },
   ];
 

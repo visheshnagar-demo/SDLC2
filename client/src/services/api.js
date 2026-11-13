@@ -55,11 +55,13 @@ export const api = {
     return response.data;
   },
 
-  toggleSubmissionLock: async (submissionId, action = "lock") => {
+  toggleSubmissionLock: async (submissionId, action = "ACQUIRE") => {
+    const formattedAction =
+      action === "lock" || action === "ACQUIRE" ? "ACQUIRE" : "RELEASE";
     const response = await apiClient.post(
       `/api/v1/underwriting/submissions/${submissionId}/lock`,
       {
-        action,
+        action: formattedAction,
       },
     );
     return response.data;
