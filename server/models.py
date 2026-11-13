@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime, timezone
+from typing import Optional
 from sqlalchemy import (
     Column,
     String,
@@ -103,6 +104,30 @@ class ReinsuranceSubmission(Base):
     audit_logs = relationship(
         "AuditLog", back_populates="submission", cascade="all, delete-orphan"
     )
+
+    @property
+    def effective_date(self):
+        return self.policy_effective_date
+
+    @property
+    def expiration_date(self):
+        return self.policy_expiration_date
+
+    @property
+    def requested_limit(self) -> float:
+        return self.requested_reinsurance_limit
+
+    @property
+    def primary_limit(self) -> float:
+        return self.primary_policy_limit
+
+    @property
+    def retention(self) -> float:
+        return self.attachment_point
+
+    @property
+    def overall_risk_score(self) -> Optional[float]:
+        return self.risk_score.overall_score if self.risk_score else None
 
 
 class RiskProfile(Base):

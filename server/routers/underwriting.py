@@ -18,12 +18,20 @@ from server.schemas import (
     UnderwritingQueueItem,
     RiskScoreResponse,
     AuditLogResponse,
+    DeclineReason,
 )
 from server.routers.auth import get_current_underwriter, get_current_user
+from server.routers.submissions import DECLINE_REASONS
 from server.services.flagging_engine import evaluate_missing_information
 from server.services.scoring_engine import calculate_risk_score
 
 router = APIRouter(prefix="/api/v1/underwriting", tags=["underwriting"])
+
+
+@router.get("/decline-reasons", response_model=List[DeclineReason])
+@router.get("/reasons", response_model=List[DeclineReason])
+def get_underwriting_decline_reasons():
+    return [DeclineReason(**r) for r in DECLINE_REASONS]
 
 
 @router.get("/queue", response_model=UnderwritingQueueResponse)
@@ -48,7 +56,14 @@ def get_underwriter_queue(
     if status:
         query = query.filter(ReinsuranceSubmission.status == status.upper())
     if risk_type:
-        query = query.filter(ReinsuranceSubmission.risk_type == risk_type.upper())
+        rt_norm = (
+            risk_type.upper().replace("&", "_AND_").replace("-", "_").replace(" ", "_")
+        )
+        query = query.filter(
+            ReinsuranceSubmission.risk_type.contains(
+                "CYBER" if "CYBER" in rt_norm else "D_AND_O"
+            )
+        )
     if risk_tier:
         query = query.filter(RiskScore.risk_tier == risk_tier.upper())
     if min_score is not None:

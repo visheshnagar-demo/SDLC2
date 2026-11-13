@@ -114,6 +114,56 @@
         ]
       }
     },
+    "/api/v1/submissions/reasons": {
+      "get": {
+        "tags": [
+          "submissions"
+        ],
+        "summary": "Get Submission Decline Reasons",
+        "operationId": "get_submission_decline_reasons_api_v1_submissions_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Submission Decline Reasons Api V1 Submissions Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/decline-reasons": {
+      "get": {
+        "tags": [
+          "submissions"
+        ],
+        "summary": "Get Submission Decline Reasons",
+        "operationId": "get_submission_decline_reasons_api_v1_submissions_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Submission Decline Reasons Api V1 Submissions Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/submissions": {
       "post": {
         "tags": [
@@ -307,6 +357,56 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/reasons": {
+      "get": {
+        "tags": [
+          "underwriting"
+        ],
+        "summary": "Get Underwriting Decline Reasons",
+        "operationId": "get_underwriting_decline_reasons_api_v1_underwriting_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Underwriting Decline Reasons Api V1 Underwriting Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/decline-reasons": {
+      "get": {
+        "tags": [
+          "underwriting"
+        ],
+        "summary": "Get Underwriting Decline Reasons",
+        "operationId": "get_underwriting_decline_reasons_api_v1_underwriting_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Underwriting Decline Reasons Api V1 Underwriting Decline Reasons Get"
                 }
               }
             }
@@ -646,6 +746,56 @@
         }
       }
     },
+    "/decline-reasons": {
+      "get": {
+        "tags": [
+          "underwriting"
+        ],
+        "summary": "Get Global Decline Reasons",
+        "operationId": "get_global_decline_reasons_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Global Decline Reasons Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/decline-reasons": {
+      "get": {
+        "tags": [
+          "underwriting"
+        ],
+        "summary": "Get Global Decline Reasons",
+        "operationId": "get_global_decline_reasons_api_v1_decline_reasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/DeclineReason"
+                  },
+                  "type": "array",
+                  "title": "Response Get Global Decline Reasons Api V1 Decline Reasons Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/health": {
       "get": {
         "tags": [
@@ -746,6 +896,7 @@
             "title": "Timestamp"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -936,6 +1087,7 @@
             "title": "Decided At"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -944,6 +1096,36 @@
           "decided_at"
         ],
         "title": "DecisionResponse"
+      },
+      "DeclineReason": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "label": {
+            "type": "string",
+            "title": "Label"
+          },
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description"
+          }
+        },
+        "additionalProperties": true,
+        "type": "object",
+        "required": [
+          "code",
+          "label"
+        ],
+        "title": "DeclineReason"
       },
       "DocumentCreate": {
         "properties": {
@@ -989,8 +1171,31 @@
             ],
             "title": "Is Verified",
             "default": false
+          },
+          "status": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Status"
+          },
+          "uploaded": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Uploaded"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "document_type",
@@ -1041,6 +1246,7 @@
             "title": "Uploaded At"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1098,6 +1304,7 @@
             "title": "Created At"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1114,10 +1321,7 @@
         "properties": {
           "risk_type": {
             "type": "string",
-            "enum": [
-              "CYBER",
-              "D_AND_O"
-            ],
+            "minLength": 1,
             "title": "Risk Type"
           },
           "insured_name": {
@@ -1151,14 +1355,85 @@
             "title": "Attachment Point"
           },
           "policy_effective_date": {
-            "type": "string",
-            "format": "date",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Policy Effective Date"
           },
           "policy_expiration_date": {
-            "type": "string",
-            "format": "date",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Policy Expiration Date"
+          },
+          "effective_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Date"
+          },
+          "expiration_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiration Date"
+          },
+          "requested_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Limit"
+          },
+          "primary_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Limit"
+          },
+          "retention": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention"
           },
           "risk_profile": {
             "anyOf": [
@@ -1166,9 +1441,14 @@
                 "$ref": "#/components/schemas/RiskProfileCreate"
               },
               {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Risk Profile"
           },
           "documents": {
             "anyOf": [
@@ -1185,6 +1465,7 @@
             "title": "Documents"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "risk_type",
@@ -1193,9 +1474,7 @@
           "annual_revenue",
           "primary_policy_limit",
           "requested_reinsurance_limit",
-          "attachment_point",
-          "policy_effective_date",
-          "policy_expiration_date"
+          "attachment_point"
         ],
         "title": "ReinsuranceSubmissionCreate"
       },
@@ -1258,6 +1537,74 @@
             "format": "date",
             "title": "Policy Expiration Date"
           },
+          "effective_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Date"
+          },
+          "expiration_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiration Date"
+          },
+          "requested_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Limit"
+          },
+          "primary_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Limit"
+          },
+          "retention": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention"
+          },
+          "overall_risk_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overall Risk Score"
+          },
           "status": {
             "type": "string",
             "title": "Status"
@@ -1295,9 +1642,17 @@
                 "$ref": "#/components/schemas/RiskScoreResponse"
               },
               {
+                "type": "number"
+              },
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
                 "type": "null"
               }
-            ]
+            ],
+            "title": "Risk Score"
           },
           "missing_flags": {
             "items": {
@@ -1324,6 +1679,7 @@
             "title": "Audit Logs"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1402,6 +1758,74 @@
             "format": "date",
             "title": "Policy Expiration Date"
           },
+          "effective_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Effective Date"
+          },
+          "expiration_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expiration Date"
+          },
+          "requested_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Limit"
+          },
+          "primary_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Limit"
+          },
+          "retention": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Retention"
+          },
+          "overall_risk_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overall Risk Score"
+          },
           "status": {
             "type": "string",
             "title": "Status"
@@ -1417,6 +1841,7 @@
             "title": "Updated At"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1519,6 +1944,7 @@
             "title": "Profile Data"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "title": "RiskProfileCreate"
       },
@@ -1618,6 +2044,7 @@
             "title": "Created At"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1678,6 +2105,7 @@
             "title": "Scored At"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",
@@ -1820,6 +2248,7 @@
             "title": "Submitted At"
           }
         },
+        "additionalProperties": true,
         "type": "object",
         "required": [
           "id",

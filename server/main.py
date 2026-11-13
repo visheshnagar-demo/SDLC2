@@ -1,10 +1,13 @@
 import os
 from contextlib import asynccontextmanager
+from typing import List
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 
 from server.database import init_db, seed_data, SessionLocal
 from server.routers import auth, submissions, underwriting, decisions
+from server.schemas import DeclineReason
+from server.routers.submissions import DECLINE_REASONS
 
 
 @asynccontextmanager
@@ -43,6 +46,14 @@ app.include_router(auth.router)
 app.include_router(submissions.router)
 app.include_router(underwriting.router)
 app.include_router(decisions.router)
+
+
+@app.get(
+    "/api/v1/decline-reasons", response_model=List[DeclineReason], tags=["underwriting"]
+)
+@app.get("/decline-reasons", response_model=List[DeclineReason], tags=["underwriting"])
+def get_global_decline_reasons():
+    return [DeclineReason(**r) for r in DECLINE_REASONS]
 
 
 @app.get("/health", tags=["health"])

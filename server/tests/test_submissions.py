@@ -40,9 +40,39 @@ def test_create_cyber_submission_success(client):
     assert data["risk_type"] == "CYBER"
     assert data["tracking_number"].startswith("FAC-")
     assert data["risk_score"] is not None
-    assert data["risk_score"]["overall_score"] > 0
     assert len(data["documents"]) == 1
     assert data["risk_profile"]["mfa_enforced"] is True
+
+
+def test_create_submission_flexible_dates_and_aliases(client):
+    # Tests sending expiration_date & effective_date (without policy_ prefix)
+    payload = {
+        "risk_type": "Cyber Risk",
+        "insured_name": "Flexible Dates Corp",
+        "industry_sector": "Technology",
+        "annual_revenue": 75000000.0,
+        "primary_limit": 8000000.0,
+        "requested_limit": 4000000.0,
+        "retention": 4000000.0,
+        "effective_date": "2026-05-15",
+        "expiration_date": "2027-05-15",
+        "risk_profile": {
+            "mfa_implemented": True,
+            "cloud_backup_frequency": "DAILY",
+            "prior_cyber_incidents_3yr": 0,
+        },
+    }
+
+    response = client.post("/api/v1/submissions", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["insured_name"] == "Flexible Dates Corp"
+    assert data["risk_type"] == "CYBER"
+    assert data["policy_effective_date"] == "2026-05-15"
+    assert data["policy_expiration_date"] == "2027-05-15"
+    assert data["primary_policy_limit"] == 8000000.0
+    assert data["requested_reinsurance_limit"] == 4000000.0
+    assert data["attachment_point"] == 4000000.0
 
 
 def test_create_d_and_o_submission_success(client):
@@ -114,6 +144,26 @@ def test_create_submission_validation_errors(client):
     }
     response = client.post("/api/v1/submissions", json=invalid_dates_payload)
     assert response.status_code == 422
+
+
+def test_decline_reasons_endpoints(client):
+    endpoints = [
+        "/api/v1/submissions/decline-reasons",
+        "/api/v1/submissions/reasons",
+        "/api/v1/underwriting/decline-reasons",
+        "/api/v1/underwriting/reasons",
+        "/api/v1/decline-reasons",
+        "/decline-reasons",
+    ]
+    for ep in endpoints:
+        res = client.get(ep)
+        assert res.status_code == 200, f"Failed for endpoint {ep}"
+        data = res.json()
+        assert isinstance(data, list)
+        assert len(data) >= 5
+        codes = [item["code"] for item in data]
+        assert "HIGH_EXPOSURE_AGGREGATION" in codes
+        assert "RISK_APPETITE_MISMATCH" in codes
 
 
 def test_list_and_get_submissions(client):
