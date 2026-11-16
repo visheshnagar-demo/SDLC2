@@ -67,7 +67,8 @@ class MasterOrchestratorService:
                 ):
                     return c
             if (
-                str(case_id).lower() in ("default", "active", "1", "current", "latest", "auto", "none", "")
+                str(case_id).lower()
+                in ("default", "active", "1", "current", "latest", "auto", "none", "")
                 and all_cases
             ):
                 return all_cases[0]

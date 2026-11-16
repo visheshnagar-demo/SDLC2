@@ -52,6 +52,7 @@ graph TD
 - server/tests/test_business_rules.py
 - server/tests/test_cases.py
 - server/tests/test_pricing_and_bind.py
+- server/tests/test_qa_acceptance.py
 - server/tests/test_scenarios.py
 - server/tests/test_stages.py
 

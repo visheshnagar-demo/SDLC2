@@ -1,5 +1,5 @@
 from typing import Any
-from fastapi import APIRouter, Depends, Query, Path
+from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 from server.database import get_db
 from server.models import Case
@@ -186,10 +186,8 @@ def evaluate_business_rules(
         "ALL",
     ):
         if case and case.bind_checklist:
-            results["BR-07"] = (
-                BusinessRulesEngine.evaluate_bind_readiness_checklist(
-                    case.bind_checklist
-                )
+            results["BR-07"] = BusinessRulesEngine.evaluate_bind_readiness_checklist(
+                case.bind_checklist
             )
         else:
             results["BR-07"] = {

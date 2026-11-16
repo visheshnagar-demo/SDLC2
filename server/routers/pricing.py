@@ -28,6 +28,7 @@ def calculate_pricing_standalone(
         case = db.query(Case).first()
         if not case:
             from server.database import seed_data
+
             seed_data(db)
             case = db.query(Case).first()
     target_case_id = str(case.id) if case else "default"

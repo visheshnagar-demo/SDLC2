@@ -134,12 +134,8 @@ def get_case_stages(
 @router.post(
     "/{case_id}/stage/{stage_key}/execute", response_model=StageExecutionResultDTO
 )
-@router.post(
-    "/{case_id}/stages/{stage_key}", response_model=StageExecutionResultDTO
-)
-@router.post(
-    "/{case_id}/stage/{stage_key}", response_model=StageExecutionResultDTO
-)
+@router.post("/{case_id}/stages/{stage_key}", response_model=StageExecutionResultDTO)
+@router.post("/{case_id}/stage/{stage_key}", response_model=StageExecutionResultDTO)
 def execute_stage(
     case_id: str = Path(...),
     stage_key: str = Path(...),
@@ -167,7 +163,9 @@ def execute_stage(
 @router.post("/{case_id}/override", response_model=AuditLogEntryDTO)
 def record_override(
     case_id: str = Path(...),
-    req: OverrideRequest = OverrideRequest(stage_key="COMPLETENESS_VALIDATION", override_value="True", rationale="Override"),
+    req: OverrideRequest = OverrideRequest(
+        stage_key="COMPLETENESS_VALIDATION", override_value="True", rationale="Override"
+    ),
     db: Session = Depends(get_db),
 ) -> AuditLogEntryDTO:
     """Record human-in-the-loop exception override."""
