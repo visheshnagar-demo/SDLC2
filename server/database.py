@@ -68,7 +68,11 @@ def get_db() -> Generator[Session, None, None]:
         if not db.query(server.models.Case).first():
             seed_data(db)
     except Exception:
-        pass
+        try:
+            init_db()
+            seed_data(db)
+        except Exception:
+            pass
     try:
         yield db
     finally:

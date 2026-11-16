@@ -47,24 +47,27 @@ class Case(Base):
         "ExtractedField",
         back_populates="case",
         cascade="all, delete-orphan",
-        lazy="joined",
+        lazy="selectin",
     )
     quotes = relationship(
-        "Quote", back_populates="case", cascade="all, delete-orphan", lazy="joined"
+        "Quote",
+        back_populates="case",
+        cascade="all, delete-orphan",
+        lazy="selectin",
     )
     stages = relationship(
         "StageStatus",
         back_populates="case",
         cascade="all, delete-orphan",
         order_by="StageStatus.stage_order",
-        lazy="joined",
+        lazy="selectin",
     )
     audit_logs = relationship(
         "AuditLog",
         back_populates="case",
         cascade="all, delete-orphan",
         order_by="AuditLog.timestamp.desc()",
-        lazy="joined",
+        lazy="selectin",
     )
     bind_checklist = relationship(
         "BindChecklist",
@@ -77,7 +80,7 @@ class Case(Base):
         "PricingScenario",
         back_populates="case",
         cascade="all, delete-orphan",
-        lazy="joined",
+        lazy="selectin",
     )
 
 

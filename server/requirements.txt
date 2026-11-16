@@ -1,6 +1,7 @@
 fastapi>=0.109.0
 httpx>=0.26.0
 passlib[bcrypt]
+passlib[bcrypt]
 Pillow
 pydantic-settings>=2.1.0
 pydantic>=2.5.0
