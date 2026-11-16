@@ -1,36 +1,32 @@
 import pytest
 from collections.abc import Generator
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker, Session
-from sqlalchemy.pool import StaticPool
+from sqlalchemy.orm import Session
 
 import server.models  # ensure models are registered on Base # noqa: F401
-from server.database import Base, get_db, seed_data
+from server.database import engine, SessionLocal, get_db, init_db, seed_data
 from server.main import app
-
-# Shared in-memory test database engine with StaticPool
-TEST_DATABASE_URL = "sqlite:///:memory:"
-test_engine = create_engine(
-    TEST_DATABASE_URL,
-    connect_args={"check_same_thread": False},
-    poolclass=StaticPool,
-)
-TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
 
 
 @pytest.fixture(scope="session", autouse=True)
 def setup_test_database():
-    Base.metadata.create_all(bind=test_engine)
-    db = TestingSessionLocal()
+    init_db(engine)
+    db = SessionLocal()
     seed_data(db)
     db.close()
     yield
-    Base.metadata.drop_all(bind=test_engine)
 
 
 def _override_get_db() -> Generator[Session, None, None]:
-    db = TestingSessionLocal()
+    init_db(engine)
+    db = SessionLocal()
+    try:
+        if not db.query(server.models.Case).first():
+            seed_data(db)
+    except Exception:
+        db.rollback()
+        init_db(engine)
+        seed_data(db)
     try:
         yield db
     finally:
@@ -42,7 +38,8 @@ app.dependency_overrides[get_db] = _override_get_db
 
 @pytest.fixture
 def db_session() -> Generator[Session, None, None]:
-    db = TestingSessionLocal()
+    init_db(engine)
+    db = SessionLocal()
     try:
         yield db
     finally:

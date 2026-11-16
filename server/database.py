@@ -1,6 +1,7 @@
 import os
 import tempfile
 from pathlib import Path
+from typing import Any
 from collections.abc import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
@@ -28,8 +29,8 @@ else:
 
 is_sqlite = DATABASE_URL.startswith("sqlite")
 connect_args = {"check_same_thread": False} if is_sqlite else {}
-engine_kwargs = {"connect_args": connect_args}
-if is_sqlite and (":memory:" in DATABASE_URL or os.getenv("TESTING") == "true"):
+engine_kwargs: dict[str, Any] = {"connect_args": connect_args}
+if is_sqlite:
     engine_kwargs["poolclass"] = StaticPool
 
 engine = create_engine(DATABASE_URL, **engine_kwargs)
@@ -39,7 +40,7 @@ Base = declarative_base()
 
 def init_db(target_engine=None) -> None:
     """Initialize database tables idempotently."""
-    import server.models  # ensure models are imported # noqa: F401
+    import server.models  # ensure models are registered on Base # noqa: F401
 
     bind_engine = target_engine or engine
     Base.metadata.create_all(bind=bind_engine)
@@ -50,26 +51,36 @@ def seed_data(db: Session | None = None) -> None:
     from server.services.fixtures import seed_initial_scenarios
 
     if db is None:
+        init_db(engine)
         session = SessionLocal()
         try:
             seed_initial_scenarios(session)
+        except Exception:
+            session.rollback()
         finally:
             session.close()
     else:
-        seed_initial_scenarios(db)
+        init_db(db.get_bind())
+        try:
+            seed_initial_scenarios(db)
+        except Exception:
+            db.rollback()
 
 
 def get_db() -> Generator[Session, None, None]:
-    init_db()
+    init_db(engine)
     db = SessionLocal()
     try:
         import server.models
 
+        # Ensure tables exist on db connection
+        Base.metadata.create_all(bind=db.get_bind())
         if not db.query(server.models.Case).first():
             seed_data(db)
     except Exception:
         try:
-            init_db()
+            db.rollback()
+            Base.metadata.create_all(bind=db.get_bind())
             seed_data(db)
         except Exception:
             pass
@@ -77,7 +88,3 @@ def get_db() -> Generator[Session, None, None]:
         yield db
     finally:
         db.close()
-
-
-# Auto-initialize DB on module import
-init_db()
