@@ -1,14 +1,38 @@
 import os
+import tempfile
+from pathlib import Path
 from collections.abc import Generator
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker, Session
+from sqlalchemy.pool import StaticPool
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:////tmp/qtb.db")
+raw_db_url = os.getenv("DATABASE_URL")
+if not raw_db_url:
+    if os.name == "nt":
+        temp_dir = Path(tempfile.gettempdir())
+        db_file = temp_dir / "qtb.db"
+        DATABASE_URL = f"sqlite:///{db_file.as_posix()}"
+    else:
+        try:
+            Path("/tmp").mkdir(parents=True, exist_ok=True)
+        except Exception:
+            pass
+        DATABASE_URL = "sqlite:////tmp/qtb.db"
+elif raw_db_url.startswith("sqlite:////tmp/") and os.name == "nt":
+    rel = raw_db_url[len("sqlite:////tmp/") :]
+    temp_dir = Path(tempfile.gettempdir())
+    db_file = temp_dir / rel
+    DATABASE_URL = f"sqlite:///{db_file.as_posix()}"
+else:
+    DATABASE_URL = raw_db_url
 
-# For SQLite, ensure check_same_thread is False
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+is_sqlite = DATABASE_URL.startswith("sqlite")
+connect_args = {"check_same_thread": False} if is_sqlite else {}
+engine_kwargs = {"connect_args": connect_args}
+if is_sqlite and (":memory:" in DATABASE_URL or os.getenv("TESTING") == "true"):
+    engine_kwargs["poolclass"] = StaticPool
 
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 

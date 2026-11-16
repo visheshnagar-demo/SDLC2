@@ -29,28 +29,28 @@ def setup_test_database():
     Base.metadata.drop_all(bind=test_engine)
 
 
+def _override_get_db() -> Generator[Session, None, None]:
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+
+app.dependency_overrides[get_db] = _override_get_db
+
+
 @pytest.fixture
 def db_session() -> Generator[Session, None, None]:
-    connection = test_engine.connect()
-    transaction = connection.begin()
-    session = TestingSessionLocal(bind=connection)
-
-    yield session
-
-    session.close()
-    transaction.rollback()
-    connection.close()
+    db = TestingSessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 @pytest.fixture
-def client(db_session: Session) -> Generator[TestClient, None, None]:
-    def override_get_db():
-        try:
-            yield db_session
-        finally:
-            pass
-
-    app.dependency_overrides[get_db] = override_get_db
+def client() -> Generator[TestClient, None, None]:
+    app.dependency_overrides[get_db] = _override_get_db
     with TestClient(app) as c:
         yield c
-    app.dependency_overrides.clear()
