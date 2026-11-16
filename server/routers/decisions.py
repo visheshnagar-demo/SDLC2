@@ -80,6 +80,10 @@ def record_decision_alias(
     "/submissions/{submission_id}/audit",
     response_model=List[schemas.AuditLogResponse],
 )
+@router.get(
+    "/submissions/{submission_id}/audit-trail",
+    response_model=List[schemas.AuditLogResponse],
+)
 def get_submission_audit_alias(
     submission_id: str,
     db: Session = Depends(get_db),

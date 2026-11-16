@@ -1,4 +1,5 @@
 import random
+from datetime import datetime, timezone
 from typing import List, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
@@ -78,7 +79,7 @@ def create_submission(
         attachment_point=payload.attachment_point,
         policy_effective_date=payload.policy_effective_date,
         policy_expiration_date=payload.policy_expiration_date,
-        status="SUBMITTED",
+        status="pending_review",
     )
     db.add(submission)
     db.flush()
@@ -108,8 +109,8 @@ def create_submission(
         for doc in payload.documents:
             d = models.SubmissionDocument(
                 submission_id=submission.id,
-                document_type=doc.document_type,
-                file_name=doc.file_name,
+                document_type=doc.document_type or "GENERAL",
+                file_name=doc.file_name or "document.pdf",
                 file_size=doc.file_size or 0,
                 file_url=doc.file_url,
                 status=doc.status or "VERIFIED",
@@ -147,6 +148,8 @@ def create_submission(
     submission.risk_tier = score_data["risk_tier"]
     if flag_count > 0:
         submission.status = "FLAGGED"
+    else:
+        submission.status = "pending_review"
 
     risk_score_obj = models.RiskScore(
         submission_id=submission.id,
@@ -184,7 +187,7 @@ def create_submission(
 )
 def list_submissions(
     skip: int = Query(0, ge=0),
-    limit: int = Query(20, ge=1, le=100),
+    limit: int = Query(50, ge=1, le=100),
     status: Optional[str] = None,
     risk_type: Optional[str] = None,
     search: Optional[str] = None,
@@ -192,7 +195,7 @@ def list_submissions(
 ):
     query = db.query(models.ReinsuranceSubmission)
     if status:
-        query = query.filter(models.ReinsuranceSubmission.status == status.upper())
+        query = query.filter(models.ReinsuranceSubmission.status.ilike(f"%{status}%"))
     if risk_type:
         rt = risk_type.upper().replace("&", "_AND_")
         query = query.filter(models.ReinsuranceSubmission.risk_type.like(f"%{rt}%"))
@@ -231,3 +234,184 @@ def get_submission(
             detail=f"Submission {submission_id} not found",
         )
     return sub
+
+
+@router.post(
+    "/submissions/{submission_id}/score",
+    response_model=schemas.RiskScoreResponse,
+)
+@router.post(
+    "/submissions/{submission_id}/risk-score",
+    response_model=schemas.RiskScoreResponse,
+)
+@router.get(
+    "/submissions/{submission_id}/score",
+    response_model=schemas.RiskScoreResponse,
+)
+@router.get(
+    "/submissions/{submission_id}/risk-score",
+    response_model=schemas.RiskScoreResponse,
+)
+def recompute_submission_score(
+    submission_id: str,
+    db: Session = Depends(get_db),
+):
+    sub = (
+        db.query(models.ReinsuranceSubmission)
+        .filter(
+            (models.ReinsuranceSubmission.id == submission_id)
+            | (models.ReinsuranceSubmission.tracking_number == submission_id)
+        )
+        .first()
+    )
+    if not sub:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Submission {submission_id} not found",
+        )
+
+    profile = (
+        db.query(models.RiskProfile)
+        .filter(models.RiskProfile.submission_id == sub.id)
+        .first()
+    )
+    docs = (
+        db.query(models.SubmissionDocument)
+        .filter(models.SubmissionDocument.submission_id == sub.id)
+        .all()
+    )
+
+    previous_score = str(sub.overall_risk_score)
+    score_data = RiskScoringEngine.calculate_score(sub, profile, docs)
+    sub.overall_risk_score = score_data["composite_score"]
+    sub.risk_tier = score_data["risk_tier"]
+
+    risk_score_obj = models.RiskScore(
+        submission_id=sub.id,
+        composite_score=score_data["composite_score"],
+        completeness_score=score_data["completeness_score"],
+        exposure_score=score_data["exposure_score"],
+        loss_history_score=score_data["loss_history_score"],
+        governance_score=score_data["governance_score"],
+        risk_tier=score_data["risk_tier"],
+        benchmark_delta=score_data["benchmark_delta"],
+        notes=score_data["notes"],
+    )
+    db.add(risk_score_obj)
+
+    audit = models.AuditLog(
+        submission_id=sub.id,
+        actor_id="underwriter_agent",
+        actor_role="Reinsurance_Underwriter",
+        action="RISK_SCORE_RECOMPUTED",
+        state_before=previous_score,
+        state_after=str(score_data["composite_score"]),
+        details=f"Recomputed composite risk score: {score_data['composite_score']} ({score_data['risk_tier']})",
+    )
+    db.add(audit)
+
+    db.commit()
+    db.refresh(risk_score_obj)
+    return risk_score_obj
+
+
+@router.get(
+    "/submissions/{submission_id}/flags",
+    response_model=List[schemas.MissingInformationFlagResponse],
+)
+@router.get(
+    "/submissions/{submission_id}/missing-flags",
+    response_model=List[schemas.MissingInformationFlagResponse],
+)
+def get_submission_missing_flags(
+    submission_id: str,
+    db: Session = Depends(get_db),
+):
+    sub = (
+        db.query(models.ReinsuranceSubmission)
+        .filter(
+            (models.ReinsuranceSubmission.id == submission_id)
+            | (models.ReinsuranceSubmission.tracking_number == submission_id)
+        )
+        .first()
+    )
+    if not sub:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Submission {submission_id} not found",
+        )
+
+    return (
+        db.query(models.MissingInformationFlag)
+        .filter(models.MissingInformationFlag.submission_id == sub.id)
+        .all()
+    )
+
+
+@router.post(
+    "/submissions/{submission_id}/flags/{flag_id}/resolve",
+    response_model=schemas.MissingInformationFlagResponse,
+)
+def resolve_submission_flag(
+    submission_id: str,
+    flag_id: str,
+    db: Session = Depends(get_db),
+):
+    sub = (
+        db.query(models.ReinsuranceSubmission)
+        .filter(
+            (models.ReinsuranceSubmission.id == submission_id)
+            | (models.ReinsuranceSubmission.tracking_number == submission_id)
+        )
+        .first()
+    )
+    if not sub:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Submission {submission_id} not found",
+        )
+
+    flag = (
+        db.query(models.MissingInformationFlag)
+        .filter(
+            models.MissingInformationFlag.id == flag_id,
+            models.MissingInformationFlag.submission_id == sub.id,
+        )
+        .first()
+    )
+    if not flag:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Flag {flag_id} not found",
+        )
+
+    flag.is_resolved = True
+    flag.resolved_at = datetime.now(timezone.utc)
+    db.flush()
+
+    unresolved_count = (
+        db.query(models.MissingInformationFlag)
+        .filter(
+            models.MissingInformationFlag.submission_id == sub.id,
+            models.MissingInformationFlag.is_resolved == False,  # noqa: E712
+        )
+        .count()
+    )
+    sub.missing_flags_count = unresolved_count
+    if unresolved_count == 0 and sub.status == "FLAGGED":
+        sub.status = "UNDER_REVIEW"
+
+    audit = models.AuditLog(
+        submission_id=sub.id,
+        actor_id="underwriter@reinsurance.com",
+        actor_role="Reinsurance_Underwriter",
+        action="FLAG_RESOLVED",
+        state_before="UNRESOLVED",
+        state_after="RESOLVED",
+        details=f"Missing info flag '{flag.field_or_document_name}' resolved",
+    )
+    db.add(audit)
+
+    db.commit()
+    db.refresh(flag)
+    return flag

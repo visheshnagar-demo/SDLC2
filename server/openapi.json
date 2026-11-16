@@ -122,7 +122,7 @@
               "type": "integer",
               "maximum": 100,
               "minimum": 1,
-              "default": 20,
+              "default": 50,
               "title": "Limit"
             }
           },
@@ -228,6 +228,313 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/ReinsuranceSubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}/risk-score": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Recompute Submission Score",
+        "operationId": "recompute_submission_score_api_v1_submissions__submission_id__risk_score_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Recompute Submission Score",
+        "operationId": "recompute_submission_score_api_v1_submissions__submission_id__risk_score_post",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}/score": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Recompute Submission Score",
+        "operationId": "recompute_submission_score_api_v1_submissions__submission_id__score_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Recompute Submission Score",
+        "operationId": "recompute_submission_score_api_v1_submissions__submission_id__score_post",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}/missing-flags": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Get Submission Missing Flags",
+        "operationId": "get_submission_missing_flags_api_v1_submissions__submission_id__missing_flags_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MissingInformationFlagResponse"
+                  },
+                  "title": "Response Get Submission Missing Flags Api V1 Submissions  Submission Id  Missing Flags Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}/flags": {
+      "get": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Get Submission Missing Flags",
+        "operationId": "get_submission_missing_flags_api_v1_submissions__submission_id__flags_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MissingInformationFlagResponse"
+                  },
+                  "title": "Response Get Submission Missing Flags Api V1 Submissions  Submission Id  Flags Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}/flags/{flag_id}/resolve": {
+      "post": {
+        "tags": [
+          "Submissions"
+        ],
+        "summary": "Resolve Submission Flag",
+        "operationId": "resolve_submission_flag_api_v1_submissions__submission_id__flags__flag_id__resolve_post",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          },
+          {
+            "name": "flag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Flag Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MissingInformationFlagResponse"
                 }
               }
             }
@@ -419,6 +726,153 @@
         }
       }
     },
+    "/api/v1/underwriting/submissions": {
+      "get": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "List Underwriting Submissions",
+        "operationId": "list_underwriting_submissions_api_v1_underwriting_submissions_get",
+        "parameters": [
+          {
+            "name": "skip",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0,
+              "title": "Skip"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "name": "risk_type",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Risk Type"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/ReinsuranceSubmissionResponse"
+                  },
+                  "title": "Response List Underwriting Submissions Api V1 Underwriting Submissions Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "Create Underwriting Submission",
+        "operationId": "create_underwriting_submission_api_v1_underwriting_submissions_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReinsuranceSubmissionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReinsuranceSubmissionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/underwriting/submissions/{submission_id}": {
       "get": {
         "tags": [
@@ -461,7 +915,129 @@
         }
       }
     },
+    "/api/v1/underwriting/submissions/{submission_id}/risk-score": {
+      "get": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "Recompute Risk Score",
+        "operationId": "recompute_risk_score_api_v1_underwriting_submissions__submission_id__risk_score_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "Recompute Risk Score",
+        "operationId": "recompute_risk_score_api_v1_underwriting_submissions__submission_id__risk_score_post",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/underwriting/submissions/{submission_id}/score": {
+      "get": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "Recompute Risk Score",
+        "operationId": "recompute_risk_score_api_v1_underwriting_submissions__submission_id__score_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RiskScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Underwriting Queue & Decisions"
@@ -486,6 +1062,58 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/RiskScoreResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/submissions/{submission_id}/decision": {
+      "post": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "Record Underwriting Decision",
+        "operationId": "record_underwriting_decision_api_v1_underwriting_submissions__submission_id__decision_post",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DecisionCreate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DecisionResponse"
                 }
               }
             }
@@ -555,6 +1183,52 @@
         }
       }
     },
+    "/api/v1/underwriting/submissions/{submission_id}/audit-trail": {
+      "get": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "Get Submission Audit Trail",
+        "operationId": "get_submission_audit_trail_api_v1_underwriting_submissions__submission_id__audit_trail_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditLogResponse"
+                  },
+                  "title": "Response Get Submission Audit Trail Api V1 Underwriting Submissions  Submission Id  Audit Trail Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/underwriting/submissions/{submission_id}/audit": {
       "get": {
         "tags": [
@@ -601,7 +1275,148 @@
         }
       }
     },
+    "/api/v1/underwriting/submissions/{submission_id}/missing-flags": {
+      "get": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "Get Underwriting Missing Flags",
+        "operationId": "get_underwriting_missing_flags_api_v1_underwriting_submissions__submission_id__missing_flags_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MissingInformationFlagResponse"
+                  },
+                  "title": "Response Get Underwriting Missing Flags Api V1 Underwriting Submissions  Submission Id  Missing Flags Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/underwriting/submissions/{submission_id}/flags": {
+      "get": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "Get Underwriting Missing Flags",
+        "operationId": "get_underwriting_missing_flags_api_v1_underwriting_submissions__submission_id__flags_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MissingInformationFlagResponse"
+                  },
+                  "title": "Response Get Underwriting Missing Flags Api V1 Underwriting Submissions  Submission Id  Flags Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/underwriting/submissions/{submission_id}/flags/{flag_id}/resolve": {
+      "put": {
+        "tags": [
+          "Underwriting Queue & Decisions"
+        ],
+        "summary": "Resolve Missing Flag",
+        "operationId": "resolve_missing_flag_api_v1_underwriting_submissions__submission_id__flags__flag_id__resolve_put",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          },
+          {
+            "name": "flag_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Flag Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MissingInformationFlagResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "tags": [
           "Underwriting Queue & Decisions"
@@ -739,6 +1554,52 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/DecisionResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/submissions/{submission_id}/audit-trail": {
+      "get": {
+        "tags": [
+          "Decisions & Audit"
+        ],
+        "summary": "Get Submission Audit Alias",
+        "operationId": "get_submission_audit_alias_api_v1_submissions__submission_id__audit_trail_get",
+        "parameters": [
+          {
+            "name": "submission_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Submission Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/AuditLogResponse"
+                  },
+                  "title": "Response Get Submission Audit Alias Api V1 Submissions  Submission Id  Audit Trail Get"
                 }
               }
             }
@@ -1030,6 +1891,17 @@
             "type": "string",
             "title": "Decision Type"
           },
+          "decision": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decision"
+          },
           "quoted_capacity": {
             "anyOf": [
               {
@@ -1085,6 +1957,17 @@
             ],
             "title": "Decline Reason Code"
           },
+          "decline_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Decline Reason"
+          },
           "underwriter_notes": {
             "anyOf": [
               {
@@ -1095,6 +1978,17 @@
               }
             ],
             "title": "Underwriter Notes"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
           },
           "decided_by": {
             "anyOf": [
@@ -1256,6 +2150,17 @@
             "type": "string",
             "title": "Tracking Number"
           },
+          "tracking_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tracking Id"
+          },
           "insured_name": {
             "type": "string",
             "title": "Insured Name"
@@ -1279,6 +2184,17 @@
           "overall_risk_score": {
             "type": "number",
             "title": "Overall Risk Score"
+          },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Score"
           },
           "risk_tier": {
             "type": "string",
@@ -1318,41 +2234,251 @@
       },
       "ReinsuranceSubmissionCreate": {
         "properties": {
-          "risk_type": {
-            "type": "string",
-            "title": "Risk Type"
-          },
           "insured_name": {
             "type": "string",
             "title": "Insured Name"
           },
+          "risk_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Type",
+            "default": "CYBER"
+          },
           "industry_sector": {
-            "type": "string",
-            "title": "Industry Sector"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry Sector",
+            "default": "Financial Services"
           },
           "annual_revenue": {
-            "type": "number",
-            "title": "Annual Revenue"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Annual Revenue",
+            "default": 10000000.0
           },
           "primary_policy_limit": {
-            "type": "number",
-            "title": "Primary Policy Limit"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Primary Policy Limit",
+            "default": 10000000.0
           },
           "requested_reinsurance_limit": {
-            "type": "number",
-            "title": "Requested Reinsurance Limit"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Reinsurance Limit",
+            "default": 5000000.0
           },
           "attachment_point": {
-            "type": "number",
-            "title": "Attachment Point"
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachment Point",
+            "default": 0.0
           },
           "policy_effective_date": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Policy Effective Date"
           },
           "policy_expiration_date": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Policy Expiration Date"
+          },
+          "loss_history": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Loss History"
+          },
+          "security_audit": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Security Audit"
+          },
+          "financial_statements": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Financial Statements"
+          },
+          "litigation_history": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Litigation History"
+          },
+          "attachments": {
+            "anyOf": [
+              {
+                "items": {},
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attachments"
+          },
+          "revenue": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Revenue"
+          },
+          "market_cap": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Market Cap"
+          },
+          "industry": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Industry"
+          },
+          "notes": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Notes"
+          },
+          "policy_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Policy Limit"
+          },
+          "limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Limit"
+          },
+          "sum_insured": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Sum Insured"
+          },
+          "requested_limit": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Requested Limit"
           },
           "risk_profile": {
             "anyOf": [
@@ -1381,15 +2507,7 @@
         },
         "type": "object",
         "required": [
-          "risk_type",
-          "insured_name",
-          "industry_sector",
-          "annual_revenue",
-          "primary_policy_limit",
-          "requested_reinsurance_limit",
-          "attachment_point",
-          "policy_effective_date",
-          "policy_expiration_date"
+          "insured_name"
         ],
         "title": "ReinsuranceSubmissionCreate"
       },
@@ -1402,6 +2520,17 @@
           "tracking_number": {
             "type": "string",
             "title": "Tracking Number"
+          },
+          "tracking_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Tracking Id"
           },
           "risk_type": {
             "type": "string",
@@ -1448,15 +2577,52 @@
             "title": "Overall Risk Score",
             "default": 0.0
           },
+          "risk_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Risk Score"
+          },
           "risk_tier": {
             "type": "string",
             "title": "Risk Tier",
             "default": "MEDIUM"
           },
+          "completeness_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completeness Score",
+            "default": 0.0
+          },
           "missing_flags_count": {
             "type": "integer",
             "title": "Missing Flags Count",
             "default": 0
+          },
+          "flagged_fields": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Flagged Fields"
           },
           "created_at": {
             "anyOf": [
@@ -1686,6 +2852,94 @@
               }
             ],
             "title": "Details"
+          },
+          "mfa_implemented": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mfa Implemented"
+          },
+          "endpoint_detection_deployed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint Detection Deployed"
+          },
+          "data_backup_airgapped": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Backup Airgapped"
+          },
+          "claims_history_5yr_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claims History 5Yr Count"
+          },
+          "records_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records Count"
+          },
+          "board_oversight_policy": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Board Oversight Policy"
+          },
+          "dno_prior_litigation": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dno Prior Litigation"
+          },
+          "financial_restatements_3yr": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Financial Restatements 3Yr"
           }
         },
         "type": "object",
@@ -1797,6 +3051,94 @@
               }
             ],
             "title": "Details"
+          },
+          "mfa_implemented": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mfa Implemented"
+          },
+          "endpoint_detection_deployed": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Endpoint Detection Deployed"
+          },
+          "data_backup_airgapped": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Data Backup Airgapped"
+          },
+          "claims_history_5yr_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Claims History 5Yr Count"
+          },
+          "records_count": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Records Count"
+          },
+          "board_oversight_policy": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Board Oversight Policy"
+          },
+          "dno_prior_litigation": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Dno Prior Litigation"
+          },
+          "financial_restatements_3yr": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Financial Restatements 3Yr"
           },
           "id": {
             "type": "string",
@@ -1936,12 +3278,39 @@
       "SubmissionDocumentCreate": {
         "properties": {
           "document_type": {
-            "type": "string",
-            "title": "Document Type"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type",
+            "default": "GENERAL"
           },
           "file_name": {
-            "type": "string",
-            "title": "File Name"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name",
+            "default": "document.pdf"
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filename"
           },
           "file_size": {
             "anyOf": [
@@ -1980,21 +3349,44 @@
           }
         },
         "type": "object",
-        "required": [
-          "document_type",
-          "file_name"
-        ],
         "title": "SubmissionDocumentCreate"
       },
       "SubmissionDocumentResponse": {
         "properties": {
           "document_type": {
-            "type": "string",
-            "title": "Document Type"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Document Type",
+            "default": "GENERAL"
           },
           "file_name": {
-            "type": "string",
-            "title": "File Name"
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Name",
+            "default": "document.pdf"
+          },
+          "filename": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filename"
           },
           "file_size": {
             "anyOf": [
@@ -2054,8 +3446,6 @@
         },
         "type": "object",
         "required": [
-          "document_type",
-          "file_name",
           "id",
           "submission_id"
         ],

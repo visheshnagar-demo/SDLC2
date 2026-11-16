@@ -5,7 +5,10 @@ from sqlalchemy.orm import Session
 from server.database import get_db
 from server import models, schemas
 from server.services.scoring_engine import RiskScoringEngine
-from server.routers.submissions import DECLINE_REASONS_CATALOGUE
+from server.routers.submissions import (
+    DECLINE_REASONS_CATALOGUE,
+    create_submission as base_create_submission,
+)
 
 router = APIRouter(
     prefix="/api/v1/underwriting", tags=["Underwriting Queue & Decisions"]
@@ -30,13 +33,13 @@ def get_underwriting_queue(
 ):
     query = db.query(models.ReinsuranceSubmission)
     if status:
-        query = query.filter(models.ReinsuranceSubmission.status == status.upper())
+        query = query.filter(models.ReinsuranceSubmission.status.ilike(f"%{status}%"))
     if risk_type:
         rt = risk_type.upper().replace("&", "_AND_")
         query = query.filter(models.ReinsuranceSubmission.risk_type.like(f"%{rt}%"))
     if risk_tier:
         query = query.filter(
-            models.ReinsuranceSubmission.risk_tier == risk_tier.upper()
+            models.ReinsuranceSubmission.risk_tier.ilike(f"%{risk_tier}%")
         )
     if search:
         query = query.filter(
@@ -57,18 +60,63 @@ def get_underwriting_queue(
             schemas.QueueItemResponse(
                 id=s.id,
                 tracking_number=s.tracking_number,
+                tracking_id=s.tracking_number,
                 insured_name=s.insured_name,
                 risk_type=s.risk_type,
                 requested_limit=s.requested_reinsurance_limit,
                 attachment_point=s.attachment_point,
                 status=s.status,
                 overall_risk_score=s.overall_risk_score or 0.0,
+                risk_score=s.overall_risk_score or 0.0,
                 risk_tier=s.risk_tier or "MEDIUM",
                 missing_flags_count=s.missing_flags_count or 0,
                 created_at=s.created_at,
             )
         )
     return items
+
+
+@router.get(
+    "/submissions",
+    response_model=List[schemas.ReinsuranceSubmissionResponse],
+)
+def list_underwriting_submissions(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(50, ge=1, le=100),
+    status: Optional[str] = None,
+    risk_type: Optional[str] = None,
+    search: Optional[str] = None,
+    db: Session = Depends(get_db),
+):
+    query = db.query(models.ReinsuranceSubmission)
+    if status:
+        query = query.filter(models.ReinsuranceSubmission.status.ilike(f"%{status}%"))
+    if risk_type:
+        rt = risk_type.upper().replace("&", "_AND_")
+        query = query.filter(models.ReinsuranceSubmission.risk_type.like(f"%{rt}%"))
+    if search:
+        query = query.filter(
+            models.ReinsuranceSubmission.insured_name.ilike(f"%{search}%")
+            | models.ReinsuranceSubmission.tracking_number.ilike(f"%{search}%")
+        )
+    return (
+        query.order_by(models.ReinsuranceSubmission.created_at.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+
+@router.post(
+    "/submissions",
+    response_model=schemas.ReinsuranceSubmissionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+def create_underwriting_submission(
+    payload: schemas.ReinsuranceSubmissionCreate,
+    db: Session = Depends(get_db),
+):
+    return base_create_submission(payload=payload, db=db)
 
 
 @router.get(
@@ -97,6 +145,18 @@ def get_underwriting_submission(
 
 @router.post(
     "/submissions/{submission_id}/score",
+    response_model=schemas.RiskScoreResponse,
+)
+@router.post(
+    "/submissions/{submission_id}/risk-score",
+    response_model=schemas.RiskScoreResponse,
+)
+@router.get(
+    "/submissions/{submission_id}/score",
+    response_model=schemas.RiskScoreResponse,
+)
+@router.get(
+    "/submissions/{submission_id}/risk-score",
     response_model=schemas.RiskScoreResponse,
 )
 def recompute_risk_score(
@@ -128,6 +188,7 @@ def recompute_risk_score(
         .all()
     )
 
+    previous_score = str(sub.overall_risk_score)
     score_data = RiskScoringEngine.calculate_score(sub, profile, docs)
     sub.overall_risk_score = score_data["composite_score"]
     sub.risk_tier = score_data["risk_tier"]
@@ -150,7 +211,7 @@ def recompute_risk_score(
         actor_id="underwriter_agent",
         actor_role="Reinsurance_Underwriter",
         action="RISK_SCORE_RECOMPUTED",
-        state_before=str(sub.overall_risk_score),
+        state_before=previous_score,
         state_after=str(score_data["composite_score"]),
         details=f"Recomputed composite risk score: {score_data['composite_score']} ({score_data['risk_tier']})",
     )
@@ -163,6 +224,11 @@ def recompute_risk_score(
 
 @router.post(
     "/submissions/{submission_id}/decisions",
+    response_model=schemas.DecisionResponse,
+    status_code=status.HTTP_201_CREATED,
+)
+@router.post(
+    "/submissions/{submission_id}/decision",
     response_model=schemas.DecisionResponse,
     status_code=status.HTTP_201_CREATED,
 )
@@ -233,6 +299,10 @@ def record_underwriting_decision(
     "/submissions/{submission_id}/audit",
     response_model=List[schemas.AuditLogResponse],
 )
+@router.get(
+    "/submissions/{submission_id}/audit-trail",
+    response_model=List[schemas.AuditLogResponse],
+)
 def get_submission_audit_trail(
     submission_id: str,
     db: Session = Depends(get_db),
@@ -260,7 +330,44 @@ def get_submission_audit_trail(
     return logs
 
 
+@router.get(
+    "/submissions/{submission_id}/flags",
+    response_model=List[schemas.MissingInformationFlagResponse],
+)
+@router.get(
+    "/submissions/{submission_id}/missing-flags",
+    response_model=List[schemas.MissingInformationFlagResponse],
+)
+def get_underwriting_missing_flags(
+    submission_id: str,
+    db: Session = Depends(get_db),
+):
+    sub = (
+        db.query(models.ReinsuranceSubmission)
+        .filter(
+            (models.ReinsuranceSubmission.id == submission_id)
+            | (models.ReinsuranceSubmission.tracking_number == submission_id)
+        )
+        .first()
+    )
+    if not sub:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"Submission {submission_id} not found",
+        )
+
+    return (
+        db.query(models.MissingInformationFlag)
+        .filter(models.MissingInformationFlag.submission_id == sub.id)
+        .all()
+    )
+
+
 @router.post(
+    "/submissions/{submission_id}/flags/{flag_id}/resolve",
+    response_model=schemas.MissingInformationFlagResponse,
+)
+@router.put(
     "/submissions/{submission_id}/flags/{flag_id}/resolve",
     response_model=schemas.MissingInformationFlagResponse,
 )
@@ -299,6 +406,7 @@ def resolve_missing_flag(
 
     flag.is_resolved = True
     flag.resolved_at = datetime.now(timezone.utc)
+    db.flush()
 
     # Recalculate unresolved flags count
     unresolved_count = (

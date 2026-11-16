@@ -30,9 +30,12 @@ def test_create_cyber_submission_snake_case(client):
     assert data["insured_name"] == "CyberTech Security Corp"
     assert data["risk_type"] == "CYBER"
     assert data["tracking_number"].startswith("FAC-2026-CY-")
+    assert data["tracking_id"] == data["tracking_number"]
     assert "overall_risk_score" in data
     assert data["overall_risk_score"] > 0
     assert "risk_tier" in data
+    assert "completeness_score" in data
+    assert "flagged_fields" in data
 
 
 def test_create_d_and_o_submission_camel_case(client):
@@ -69,6 +72,26 @@ def test_create_d_and_o_submission_camel_case(client):
     assert data["tracking_number"].startswith("FAC-2026-DO-")
 
 
+def test_create_submission_flexible_casing_and_aliases(client):
+    payload = {
+        "type": "cyber",
+        "insuredName": "Flexible Intake Corp",
+        "limit": 12000000.0,
+        "attachment_point": 2000000.0,
+        "loss_history": [{"year": 2024, "loss": 0}],
+        "revenue": 45000000.0,
+        "industry": "Technology",
+    }
+    response = client.post("/api/v1/submissions", json=payload)
+    assert response.status_code == 201
+    data = response.json()
+    assert data["insured_name"] == "Flexible Intake Corp"
+    assert data["risk_type"] == "CYBER"
+    assert data["primary_policy_limit"] == 12000000.0
+    assert data["annual_revenue"] == 45000000.0
+    assert data["industry_sector"] == "Technology"
+
+
 def test_create_submission_empty_payload_fails_422(client):
     response = client.post("/api/v1/submissions", json={})
     assert response.status_code == 422
@@ -77,9 +100,15 @@ def test_create_submission_empty_payload_fails_422(client):
 def test_create_submission_missing_required_fields_fails_422(client):
     response = client.post(
         "/api/v1/submissions",
-        json={"insured_name": "Incomplete Submission Corp"},
+        json={"annual_revenue": 5000000.0, "risk_type": "CYBER"},
     )
     assert response.status_code == 422
+
+    response_empty_name = client.post(
+        "/api/v1/submissions",
+        json={"insured_name": "   ", "annual_revenue": 5000000.0},
+    )
+    assert response_empty_name.status_code == 422
 
 
 def test_missing_info_flagging_on_cyber_intake(client):
@@ -105,6 +134,7 @@ def test_missing_info_flagging_on_cyber_intake(client):
     assert data["missing_flags_count"] > 0
     flag_names = [f["field_or_document_name"] for f in data["missing_flags"]]
     assert "mfa_enforcement" in flag_names
+    assert "mfa_enforcement" in data["flagged_fields"]
 
 
 def test_list_and_get_submissions(client):
@@ -133,10 +163,22 @@ def test_list_and_get_submissions(client):
     assert isinstance(items, list)
     assert len(items) >= 1
 
+    # List via underwriting endpoint
+    uw_list_res = client.get("/api/v1/underwriting/submissions")
+    assert uw_list_res.status_code == 200
+    uw_items = uw_list_res.json()
+    assert isinstance(uw_items, list)
+    assert len(uw_items) >= 1
+
     # Get by ID
     get_res = client.get(f"/api/v1/submissions/{sub_id}")
     assert get_res.status_code == 200
     assert get_res.json()["id"] == sub_id
+
+    # Get by ID via underwriting endpoint
+    uw_get_res = client.get(f"/api/v1/underwriting/submissions/{sub_id}")
+    assert uw_get_res.status_code == 200
+    assert uw_get_res.json()["id"] == sub_id
 
     # Get by tracking number
     get_tracking_res = client.get(f"/api/v1/submissions/{tracking}")

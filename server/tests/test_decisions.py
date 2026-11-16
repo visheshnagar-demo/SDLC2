@@ -37,6 +37,37 @@ def test_record_quote_decision(client):
     assert sub_res.json()["status"] == "QUOTED"
 
 
+def test_record_decision_singular_endpoint(client):
+    payload = {
+        "risk_type": "CYBER",
+        "insured_name": "Singular Decision Corp",
+        "primary_policy_limit": 10000000.0,
+        "attachment_point": 2000000.0,
+    }
+    created = client.post("/api/v1/submissions", json=payload).json()
+    sub_id = created["id"]
+
+    decision_payload = {
+        "decision": "QUOTE",
+        "capacity": 8000000.0,
+        "rate": 3.5,
+        "premium": 280000.0,
+        "notes": "Approved via singular decision endpoint",
+    }
+    res = client.post(
+        f"/api/v1/submissions/{sub_id}/decision", json=decision_payload
+    )
+    assert res.status_code == 201
+    data = res.json()
+    assert data["decision_type"] == "QUOTE"
+    assert data["quoted_capacity"] == 8000000.0
+
+    uw_res = client.post(
+        f"/api/v1/underwriting/submissions/{sub_id}/decision", json=decision_payload
+    )
+    assert uw_res.status_code == 201
+
+
 def test_record_decline_decision(client):
     payload = {
         "risk_type": "D_AND_O",
@@ -132,3 +163,8 @@ def test_chronological_audit_trail(client):
     assert "SUBMISSION_CREATED" in actions
     assert "RISK_SCORE_RECOMPUTED" in actions
     assert "DECISION_QUOTE" in actions
+
+    # Also test /submissions/{id}/audit
+    sub_audit_res = client.get(f"/api/v1/submissions/{sub_id}/audit")
+    assert sub_audit_res.status_code == 200
+    assert len(sub_audit_res.json()) >= 3
