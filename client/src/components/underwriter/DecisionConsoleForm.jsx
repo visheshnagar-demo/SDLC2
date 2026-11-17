@@ -1,15 +1,16 @@
-import React, { useState } from 'react';
-import { CheckCircle2, XCircle, AlertCircle, Send, FileCheck, ShieldAlert } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { CheckCircle2, XCircle, AlertCircle, FileCheck } from 'lucide-react';
 import Button from '../common/Button';
 import Card from '../common/Card';
 import { api } from '../../services/api';
 
-const DECLINE_REASONS = [
+const DEFAULT_DECLINE_REASONS = [
   { code: 'HIGH_LOSS_FREQUENCY', label: 'High Loss Frequency / Adverse Loss Record' },
   { code: 'INSUFFICIENT_RETENTION', label: 'Insufficient Attachment Point / Retention' },
   { code: 'INADEQUATE_SECURITY_POSTURE', label: 'Inadequate Cyber Security Controls / Governance' },
   { code: 'UNFAVORABLE_INDUSTRY_EXPOSURE', label: 'Unfavorable Industry Sector Exposure' },
   { code: 'CAPACITY_LIMIT_EXCEEDED', label: 'Underwriting Capacity or Aggregation Limit Reached' },
+  { code: 'HIGH_EXPOSURE_AGGREGATION', label: 'High Exposure Aggregation / Concentration Risk' },
   { code: 'MISSING_MANDATORY_DISCLOSURES', label: 'Missing Mandatory Risk Disclosures / Attachments' },
   { code: 'SANCTIONS_COMPLIANCE_RESTRICTION', label: 'Regulatory / Sanctions Compliance Restriction' },
 ];
@@ -21,6 +22,7 @@ export const DecisionConsoleForm = ({
   onDecisionRecorded,
 }) => {
   const [decisionType, setDecisionType] = useState('QUOTE');
+  const [declineOptions, setDeclineOptions] = useState(DEFAULT_DECLINE_REASONS);
   const [formData, setFormData] = useState({
     capacity_offered: sumInsured,
     rate_on_line_pct: 2.5,
@@ -35,6 +37,21 @@ export const DecisionConsoleForm = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+
+  useEffect(() => {
+    const fetchReasons = async () => {
+      const data = await api.getDeclineReasons();
+      if (Array.isArray(data) && data.length > 0) {
+        setDeclineOptions(
+          data.map((item) => ({
+            code: item.code || item.reason_code || item,
+            label: item.label || item.description || item.code || item,
+          }))
+        );
+      }
+    };
+    fetchReasons();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value, type } = e.target;
@@ -116,8 +133,6 @@ export const DecisionConsoleForm = ({
       setIsSubmitting(false);
     }
   };
-
-  const isAlreadyFinalized = ['QUOTED', 'DECLINED'].includes(currentStatus);
 
   return (
     <Card
@@ -273,7 +288,7 @@ export const DecisionConsoleForm = ({
                 onChange={handleInputChange}
                 className="w-full px-3 py-2.5 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-rose-100 focus:border-rose-500 bg-white"
               >
-                {DECLINE_REASONS.map((r) => (
+                {declineOptions.map((r) => (
                   <option key={r.code} value={r.code}>
                     {r.label}
                   </option>

@@ -60,6 +60,16 @@ export const api = {
     const response = await apiClient.post(`/api/v1/underwriting/submissions/${submissionId}/decisions`, decisionPayload);
     return response.data;
   },
+
+  getDeclineReasons: async () => {
+    try {
+      const response = await apiClient.get('/api/v1/underwriting/decline-reasons');
+      return response.data;
+    } catch {
+      // Return null to let the component use standard catalogue
+      return null;
+    }
+  },
 };
 
 export default api;
