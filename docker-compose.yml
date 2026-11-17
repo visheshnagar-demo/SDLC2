@@ -15,8 +15,8 @@ services:
 
   frontend:
     build:
-      context: .
-      dockerfile: client/Dockerfile
+      context: ./client
+      dockerfile: Dockerfile
       args:
         VITE_API_BASE_URL: http://backend:8000
     ports:
