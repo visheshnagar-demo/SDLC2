@@ -3,10 +3,12 @@ FROM node:20-alpine AS build
 
 WORKDIR /app
 
-COPY package*.json ./
+# Copy dependency manifests (paths relative to repo root build context)
+COPY client/package*.json ./
 RUN npm ci --prefer-offline || npm install
 
-COPY . .
+# Copy frontend source code
+COPY client/ ./
 
 ARG VITE_API_BASE_URL=http://localhost:8000
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
