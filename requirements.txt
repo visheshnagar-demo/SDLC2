@@ -1,6 +1,10 @@
 passlib[bcrypt]
+passlib[bcrypt]
 Pillow
 pydantic[email]
+pydantic[email]
+pytest
 python-dateutil
 python-multipart
 reportlab
+requests

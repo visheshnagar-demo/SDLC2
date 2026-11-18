@@ -16,7 +16,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
 import java.util.Collections;
-import java.util.List;
 import java.util.Optional;
 
 @Component
@@ -33,31 +32,24 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
+        String token = getJwtFromRequest(request);
 
-        try {
-            String jwt = getJwtFromRequest(request);
+        if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
+            String userId = tokenProvider.getUserIdFromToken(token);
+            Optional<User> userOptional = userRepository.findById(userId);
 
-            if (StringUtils.hasText(jwt) && tokenProvider.validateToken(jwt)) {
-                String userId = tokenProvider.getUserIdFromToken(jwt);
-                String role = tokenProvider.getRoleFromToken(jwt);
-
-                Optional<User> userOpt = userRepository.findById(userId);
-                if (userOpt.isPresent() && userOpt.get().isActive()) {
-                    User user = userOpt.get();
-                    List<SimpleGrantedAuthority> authorities = Collections.singletonList(
-                            new SimpleGrantedAuthority("ROLE_" + (role != null ? role.toUpperCase() : "CUSTOMER"))
-                    );
-
+            if (userOptional.isPresent()) {
+                User user = userOptional.get();
+                if (user.isActive()) {
                     UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            user, null, authorities
+                            user,
+                            null,
+                            Collections.singletonList(new SimpleGrantedAuthority(user.getRole()))
                     );
                     authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-
                     SecurityContextHolder.getContext().setAuthentication(authentication);
                 }
             }
-        } catch (Exception ex) {
-            logger.error("Could not set user authentication in security context", ex);
         }
 
         filterChain.doFilter(request, response);

@@ -9,66 +9,49 @@ import java.util.UUID;
 public class User {
 
     @Id
-    @Column(length = 36)
+    @Column(name = "id", length = 36, nullable = false)
     private String id;
 
-    @Column(nullable = false, unique = true, length = 255)
+    @Column(name = "email", nullable = false, unique = true)
     private String email;
 
-    @Column(name = "hashed_password", nullable = false, length = 255)
-    private String hashedPassword;
+    @Column(name = "password_hash", nullable = false)
+    private String passwordHash;
 
-    @Column(name = "full_name", nullable = false, length = 255)
+    @Column(name = "full_name", nullable = false)
     private String fullName;
 
-    @Column(nullable = false, length = 50)
-    private String role = "Customer";
+    @Column(name = "role", nullable = false)
+    private String role;
 
     @Column(name = "is_active", nullable = false)
-    private boolean isActive = true;
+    private boolean isActive;
 
-    @Column(name = "failed_login_count", nullable = false)
-    private int failedLoginCount = 0;
-
-    @Column(name = "locked_until")
-    private Instant lockedUntil;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
+    @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
     @Column(name = "updated_at", nullable = false)
     private Instant updatedAt;
 
     public User() {
-        this.id = UUID.randomUUID().toString();
-        this.createdAt = Instant.now();
-        this.updatedAt = Instant.now();
-    }
-
-    public User(String email, String hashedPassword, String fullName, String role) {
-        this();
-        this.email = email;
-        this.hashedPassword = hashedPassword;
-        this.fullName = fullName;
-        this.role = role != null ? role : "Customer";
-        this.isActive = true;
     }
 
     @PrePersist
-    protected void onCreate() {
+    public void prePersist() {
         if (this.id == null) {
             this.id = UUID.randomUUID().toString();
         }
+        Instant now = Instant.now();
         if (this.createdAt == null) {
-            this.createdAt = Instant.now();
+            this.createdAt = now;
         }
         if (this.updatedAt == null) {
-            this.updatedAt = Instant.now();
+            this.updatedAt = now;
         }
     }
 
     @PreUpdate
-    protected void onUpdate() {
+    public void preUpdate() {
         this.updatedAt = Instant.now();
     }
 
@@ -88,12 +71,12 @@ public class User {
         this.email = email;
     }
 
-    public String getHashedPassword() {
-        return hashedPassword;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setHashedPassword(String hashedPassword) {
-        this.hashedPassword = hashedPassword;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getFullName() {
@@ -118,22 +101,6 @@ public class User {
 
     public void setActive(boolean active) {
         isActive = active;
-    }
-
-    public int getFailedLoginCount() {
-        return failedLoginCount;
-    }
-
-    public void setFailedLoginCount(int failedLoginCount) {
-        this.failedLoginCount = failedLoginCount;
-    }
-
-    public Instant getLockedUntil() {
-        return lockedUntil;
-    }
-
-    public void setLockedUntil(Instant lockedUntil) {
-        this.lockedUntil = lockedUntil;
     }
 
     public Instant getCreatedAt() {

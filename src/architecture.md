@@ -29,7 +29,31 @@ graph TD
 - (no server/ files found yet)
 
 ## Frontend Modules (client/)
-- (no client/ files found yet)
+- client/postcss.config.js
+- client/src/App.jsx
+- client/src/__tests__/App.test.jsx
+- client/src/__tests__/LoginForm.test.jsx
+- client/src/__tests__/OnboardingStepper.test.jsx
+- client/src/__tests__/ProfileDashboard.test.jsx
+- client/src/__tests__/RegisterForm.test.jsx
+- client/src/__tests__/SessionLifecycleCard.test.jsx
+- client/src/components/LoginForm.jsx
+- client/src/components/Navbar.jsx
+- client/src/components/OnboardingStepper.jsx
+- client/src/components/ProfileDashboard.jsx
+- client/src/components/ProtectedRoute.jsx
+- client/src/components/RegisterForm.jsx
+- client/src/components/SessionLifecycleCard.jsx
+- client/src/context/AuthContext.jsx
+- client/src/main.jsx
+- client/src/pages/DashboardPage.jsx
+- client/src/pages/LoginPage.jsx
+- client/src/pages/NotFoundPage.jsx
+- client/src/pages/RegisterPage.jsx
+- client/src/services/api.js
+- client/src/setup.js
+- client/tailwind.config.js
+- client/vite.config.js
 
 ## API Endpoints
 - POST /api/v1/auth/register

@@ -7,6 +7,9 @@ public class AuthResponse {
     @JsonProperty("access_token")
     private String accessToken;
 
+    @JsonProperty("token")
+    private String token;
+
     @JsonProperty("refresh_token")
     private String refreshToken;
 
@@ -14,16 +17,19 @@ public class AuthResponse {
     private String tokenType = "Bearer";
 
     @JsonProperty("expires_in")
-    private int expiresIn = 900;
+    private long expiresIn;
 
+    @JsonProperty("user")
     private UserProfileResponse user;
 
-    public AuthResponse() {}
+    public AuthResponse() {
+    }
 
-    public AuthResponse(String accessToken, String refreshToken, String tokenType, int expiresIn, UserProfileResponse user) {
+    public AuthResponse(String accessToken, String refreshToken, long expiresIn, UserProfileResponse user) {
         this.accessToken = accessToken;
+        this.token = accessToken;
         this.refreshToken = refreshToken;
-        this.tokenType = tokenType != null ? tokenType : "Bearer";
+        this.tokenType = "Bearer";
         this.expiresIn = expiresIn;
         this.user = user;
     }
@@ -34,6 +40,18 @@ public class AuthResponse {
 
     public void setAccessToken(String accessToken) {
         this.accessToken = accessToken;
+        this.token = accessToken;
+    }
+
+    public String getToken() {
+        return token != null ? token : accessToken;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+        if (this.accessToken == null) {
+            this.accessToken = token;
+        }
     }
 
     public String getRefreshToken() {
@@ -52,11 +70,11 @@ public class AuthResponse {
         this.tokenType = tokenType;
     }
 
-    public int getExpiresIn() {
+    public long getExpiresIn() {
         return expiresIn;
     }
 
-    public void setExpiresIn(int expiresIn) {
+    public void setExpiresIn(long expiresIn) {
         this.expiresIn = expiresIn;
     }
 

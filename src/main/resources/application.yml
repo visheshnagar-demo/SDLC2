@@ -1,5 +1,5 @@
 server:
-  port: 8080
+  port: ${PORT:8080}
 
 spring:
   application:
@@ -11,22 +11,18 @@ spring:
     password: ${SPRING_DATASOURCE_PASSWORD:}
   jpa:
     hibernate:
-      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+      ddl-auto: update
+    database-platform: ${SPRING_JPA_DATABASE_PLATFORM:org.hibernate.dialect.H2Dialect}
     show-sql: false
-    properties:
-      hibernate:
-        format_sql: true
+  h2:
+    console:
+      enabled: true
 
 app:
   jwt:
-    secret: ${JWT_SECRET_KEY:c2Rscy1hc3Npc3RhbnQtZGlnaXRhbC1pZGVudGl0eS1hdXRoLXNlcnZpY2Utc2VjcmV0LWtleS0yMDI2LXZlcnktc2VjdXJl}
-    access-token-expiration-ms: 900000 # 15 minutes
-    refresh-token-expiration-ms: 604800000 # 7 days
-  cors:
-    allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:8080}
+    secret: ${JWT_SECRET_KEY:defaultSecretKeyForDevelopmentMustBeAtLeast256BitsLongSoItDoesNotFailHS256Signature123456}
+    access-token-expiration-ms: 3600000
+    refresh-token-expiration-ms: 604800000
 
-springdoc:
-  swagger-ui:
-    path: /swagger-ui.html
-  api-docs:
-    path: /v3/api-docs
+cors:
+  allowed-origins: ${ALLOWED_ORIGINS:http://localhost:5173,http://localhost:3000,http://localhost:8080}

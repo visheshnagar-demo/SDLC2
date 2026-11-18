@@ -1,6 +1,5 @@
 package com.citidirect.auth.dto;
 
-import com.citidirect.auth.entity.User;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.Instant;
 
@@ -20,7 +19,8 @@ public class UserProfileResponse {
     @JsonProperty("created_at")
     private Instant createdAt;
 
-    public UserProfileResponse() {}
+    public UserProfileResponse() {
+    }
 
     public UserProfileResponse(String id, String email, String fullName, String role, boolean isActive, Instant createdAt) {
         this.id = id;
@@ -29,18 +29,6 @@ public class UserProfileResponse {
         this.role = role;
         this.isActive = isActive;
         this.createdAt = createdAt;
-    }
-
-    public static UserProfileResponse fromEntity(User user) {
-        if (user == null) return null;
-        return new UserProfileResponse(
-            user.getId(),
-            user.getEmail(),
-            user.getFullName(),
-            user.getRole(),
-            user.isActive(),
-            user.getCreatedAt()
-        );
     }
 
     public String getId() {
