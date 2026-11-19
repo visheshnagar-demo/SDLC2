@@ -1,12 +1,11 @@
 package com.sdlc.identity.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import jakarta.validation.constraints.NotBlank;
 
 public class RefreshRequest {
 
-    @NotBlank(message = "Refresh token is required")
-    @JsonProperty("refresh_token")
+    @JsonAlias({"refresh_token", "refreshToken"})
     private String refreshToken;
 
     public RefreshRequest() {
@@ -22,5 +21,12 @@ public class RefreshRequest {
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    @JsonProperty("refresh_token")
+    public void setRefreshTokenSnake(String refreshToken) {
+        if (this.refreshToken == null || this.refreshToken.isEmpty()) {
+            this.refreshToken = refreshToken;
+        }
     }
 }

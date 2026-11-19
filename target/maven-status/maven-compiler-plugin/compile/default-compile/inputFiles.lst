@@ -1,11 +1,9 @@
 C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\dto\UserResponse.java
-C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\dto\ErrorResponse.java
 C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\repository\UserRepository.java
 C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\security\JwtAuthenticationFilter.java
 C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\IdentityApplication.java
 C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\dto\RegisterRequest.java
 C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\dto\LoginRequest.java
-C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\config\DataInitializer.java
 C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\config\CorsConfig.java
 C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\model\User.java
 C:\Users\Vishesh\AppData\Local\Temp\backend_workspaces\SCRUM-498\repo\src\main\java\com\sdlc\identity\model\UserStatus.java

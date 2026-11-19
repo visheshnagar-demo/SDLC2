@@ -1,7 +1,9 @@
 package com.sdlc.identity.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class AuthResponse {
 
     @JsonProperty("access_token")
@@ -14,18 +16,18 @@ public class AuthResponse {
     private String tokenType = "Bearer";
 
     @JsonProperty("expires_in")
-    private long expiresIn = 900; // in seconds
+    private Long expiresIn = 3600L;
 
     private UserResponse user;
 
     public AuthResponse() {
     }
 
-    public AuthResponse(String accessToken, String refreshToken, long expiresIn, UserResponse user) {
+    public AuthResponse(String accessToken, String refreshToken, String tokenType, Long expiresIn, UserResponse user) {
         this.accessToken = accessToken;
         this.refreshToken = refreshToken;
-        this.tokenType = "Bearer";
-        this.expiresIn = expiresIn;
+        this.tokenType = tokenType != null ? tokenType : "Bearer";
+        this.expiresIn = expiresIn != null ? expiresIn : 3600L;
         this.user = user;
     }
 
@@ -37,12 +39,32 @@ public class AuthResponse {
         this.accessToken = accessToken;
     }
 
+    @JsonProperty("token")
+    public String getToken() {
+        return accessToken;
+    }
+
+    @JsonProperty("accessToken")
+    public String getAccessTokenCamel() {
+        return accessToken;
+    }
+
+    @JsonProperty("jwt")
+    public String getJwt() {
+        return accessToken;
+    }
+
     public String getRefreshToken() {
         return refreshToken;
     }
 
     public void setRefreshToken(String refreshToken) {
         this.refreshToken = refreshToken;
+    }
+
+    @JsonProperty("refreshToken")
+    public String getRefreshTokenCamel() {
+        return refreshToken;
     }
 
     public String getTokenType() {
@@ -53,11 +75,11 @@ public class AuthResponse {
         this.tokenType = tokenType;
     }
 
-    public long getExpiresIn() {
+    public Long getExpiresIn() {
         return expiresIn;
     }
 
-    public void setExpiresIn(long expiresIn) {
+    public void setExpiresIn(Long expiresIn) {
         this.expiresIn = expiresIn;
     }
 

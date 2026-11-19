@@ -1,32 +1,33 @@
 package com.sdlc.identity.dto;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.sdlc.identity.model.User;
+import com.sdlc.identity.model.Role;
+import com.sdlc.identity.model.UserStatus;
 
-import java.time.Instant;
-import java.util.UUID;
+import java.time.LocalDateTime;
 
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserResponse {
-
-    private UUID id;
+    private String id;
     private String email;
 
     @JsonProperty("full_name")
     private String fullName;
 
-    private String role;
-    private String status;
+    private Role role;
+    private UserStatus status;
 
     @JsonProperty("is_active")
-    private boolean isActive;
+    private Boolean isActive;
 
     @JsonProperty("created_at")
-    private Instant createdAt;
+    private LocalDateTime createdAt;
 
     public UserResponse() {
     }
 
-    public UserResponse(UUID id, String email, String fullName, String role, String status, boolean isActive, Instant createdAt) {
+    public UserResponse(String id, String email, String fullName, Role role, UserStatus status, Boolean isActive, LocalDateTime createdAt) {
         this.id = id;
         this.email = email;
         this.fullName = fullName;
@@ -36,23 +37,11 @@ public class UserResponse {
         this.createdAt = createdAt;
     }
 
-    public static UserResponse fromEntity(User user) {
-        return new UserResponse(
-                user.getId(),
-                user.getEmail(),
-                user.getFullName(),
-                user.getRole().name(),
-                user.getStatus().name(),
-                user.isActive(),
-                user.getCreatedAt()
-        );
-    }
-
-    public UUID getId() {
+    public String getId() {
         return id;
     }
 
-    public void setId(UUID id) {
+    public void setId(String id) {
         this.id = id;
     }
 
@@ -72,35 +61,41 @@ public class UserResponse {
         this.fullName = fullName;
     }
 
-    public String getRole() {
+    // Also support getFullNameCamel for JSON if requested
+    @JsonProperty("fullName")
+    public String getFullNameCamel() {
+        return fullName;
+    }
+
+    public Role getRole() {
         return role;
     }
 
-    public void setRole(String role) {
+    public void setRole(Role role) {
         this.role = role;
     }
 
-    public String getStatus() {
+    public UserStatus getStatus() {
         return status;
     }
 
-    public void setStatus(String status) {
+    public void setStatus(UserStatus status) {
         this.status = status;
     }
 
-    public boolean isActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setActive(boolean active) {
-        isActive = active;
+    public void setIsActive(Boolean isActive) {
+        this.isActive = isActive;
     }
 
-    public Instant getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(Instant createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 }

@@ -1,9 +1,9 @@
 package com.sdlc.identity.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Size;
 
 public class RegisterRequest {
 
@@ -12,11 +12,9 @@ public class RegisterRequest {
     private String email;
 
     @NotBlank(message = "Password is required")
-    @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    @NotBlank(message = "Full name is required")
-    @JsonProperty("full_name")
+    @JsonAlias({"full_name", "fullName"})
     private String fullName;
 
     public RegisterRequest() {
@@ -50,5 +48,12 @@ public class RegisterRequest {
 
     public void setFullName(String fullName) {
         this.fullName = fullName;
+    }
+
+    @JsonProperty("full_name")
+    public void setFullNameSnake(String fullName) {
+        if (this.fullName == null || this.fullName.isEmpty()) {
+            this.fullName = fullName;
+        }
     }
 }

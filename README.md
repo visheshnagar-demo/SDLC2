@@ -1,31 +1,44 @@
-# Identity Service (SCRUM-498)
+# Project
 
-Customer Registration and Authentication Service built with Spring Boot 3, Spring Security, Spring Data JPA, and PostgreSQL.
-
-## Backend (Java / Spring Boot)
+## Server
 
 ### Prerequisites
-- Java 21 (or Java 17+)
-- Maven 3.9+
+- Python 3.9+
+- pip and venv
 
-### Setup & Running Tests
+### Setup
+
+1. Create and activate virtual environment:
 ```bash
-# Run unit and integration tests
-mvn clean test
+python -m venv server/.venv
+# On Windows:
+server\.venv\Scripts\activate
+# On macOS/Linux:
+source server/.venv/bin/activate
 ```
 
-### Starting the Backend Application
+2. Install dependencies:
 ```bash
-# Run with default profile (H2 in-memory DB fallback)
-mvn spring-boot:run
-
-# Or package and run the JAR
-mvn clean package -DskipTests
-java -jar target/identity-service-1.0.0.jar --server.port=8080
+cd server
+pip install -r requirements.txt
+cd ..
 ```
 
-The API will be available at `http://localhost:8080`
-Swagger UI / OpenAPI documentation: `http://localhost:8080/swagger-ui.html` or `/v3/api-docs`
+### Running Tests
+```bash
+cd server
+python -m pytest -v
+cd ..
+```
+
+### Starting the Development Server
+```bash
+# Run from the repo root so that `from server.X` imports resolve correctly
+python -m uvicorn server.main:app --reload --host 0.0.0.0 --port 8000
+```
+
+The API will be available at `http://localhost:8000`
+API documentation: `http://localhost:8000/docs`
 
 ## Full-Stack Local Development
 
@@ -39,9 +52,12 @@ cp .env.example .env
 
 ### 2. Start the Backend (Terminal 1)
 ```bash
-mvn spring-boot:run
+python -m venv server/.venv
+source server/.venv/bin/activate  # On Windows: server\.venv\Scripts\activate
+pip install -r server/requirements.txt
+python -m uvicorn server.main:app --reload --host 0.0.0.0 --port 8000
 ```
-Backend API: `http://localhost:8080` | Health Check: `http://localhost:8080/api/health`
+Backend API: `http://localhost:8000` | API Docs: `http://localhost:8000/docs`
 
 ### 3. Start the Frontend (Terminal 2)
 ```bash
@@ -51,86 +67,22 @@ npm run dev
 ```
 Frontend: `http://localhost:5173`
 
-The frontend connects to the backend API at `http://localhost:8080` (or `http://localhost:8000`) via the `VITE_API_BASE_URL` environment variable.
+The frontend connects to the backend API at `http://localhost:8000` by default via the `VITE_API_BASE_URL` environment variable.
 
 ### 4. Test Credentials
-The backend automatically seeds pre-configured, active test accounts on startup:
-- **Regular Customer** — Email: `test@example.com`, Password: `testpassword`, Role: `ROLE_CUSTOMER`
-- **System Admin** — Email: `admin@example.com`, Password: `adminpassword`, Role: `ROLE_ADMIN`
-- **Compliance Officer** — Email: `compliance@example.com`, Password: `compliancepassword`, Role: `ROLE_COMPLIANCE_OFFICER`
+If the app has authentication, the backend seeds ready-to-use accounts on startup
+(idempotent). These are guaranteed logged-in-able — every activation/verification
+gate (`is_active`, `is_verified`, `email_verified`, `disabled`) is set to the
+permissive value, so no manual DB step is needed:
+- **Regular user** — Email: `test@example.com`, Password: `testpassword`
+- **Admin user** (only when the app has roles/RBAC) — Email: `admin@example.com`, Password: `adminpassword`, role: `admin`
 
-### API Endpoints
-- `POST /api/v1/auth/register` - Register a new customer account
-- `POST /api/v1/auth/login` - Authenticate with email and password, returns JWT tokens
-- `POST /api/v1/auth/refresh` - Refresh access token using a valid refresh token
-- `GET /api/v1/auth/me` - Retrieve current user profile (requires `Authorization: Bearer <token>`)
-- `GET /api/health` - Service health status
+Passwords are stored hashed with the app's own hashing utility (never in plaintext).
 
-
-## Frontend (client/)
-
-### Prerequisites
-- Node.js 18+ and npm 8+
-
-### Setup
-
-1. Install dependencies:
-```bash
-cd client
-npm install
-cd ..
-```
-
-### Available Commands
-
-**Development Server:**
-```bash
-cd client
-npm run dev
-cd ..
-```
-Opens the app at `http://localhost:5173`
-
-**Production Build:**
-```bash
-cd client
-npm run build
-cd ..
-```
-Creates optimized build in `client/dist/`
-
-**Run Tests:**
-```bash
-cd client
-npm test
-cd ..
-```
-
-**Build & Preview:**
-```bash
-cd client
-npm run preview
-cd ..
-```
-Preview production build locally
-
-### Environment Variables
-
-**React / Vite frontends:**
-The frontend reads `VITE_API_BASE_URL` at build time (baked into the JS bundle):
-```
-VITE_API_BASE_URL=http://localhost:8080/api
-```
-For production, pass `--build-arg VITE_API_BASE_URL=https://<backend>.run.app/api` when building the Docker image.
-
-**Angular frontends:**
-The backend URL is injected at container startup via `API_BASE_URL` env var (runtime, not build time):
-```
-API_BASE_URL=http://localhost:8080/api
-```
-For production, set `API_BASE_URL=https://<backend>.run.app/api` as a Cloud Run env var on the frontend service.
-
-### Running with the Backend
-
-The frontend requires the backend server to be running. See the **Full-Stack Local Development** section in this README for complete setup instructions.
+### Port Reference
+| Service  | Port | URL                        |
+|----------|------|----------------------------|
+| Backend  | 8000 | http://localhost:8000      |
+| Frontend | 5173 | http://localhost:5173      |
+| API Docs | 8000 | http://localhost:8000/docs |
 

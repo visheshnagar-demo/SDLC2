@@ -1,6 +1,5 @@
 package com.sdlc.identity.security;
 
-import com.sdlc.identity.model.User;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
@@ -15,80 +14,71 @@ import java.util.Date;
 @Component
 public class JwtTokenProvider {
 
-    private final SecretKey signingKey;
-    private final long accessTokenExpirationMs;
-    private final long refreshTokenExpirationMs;
+    private final SecretKey secretKey;
+    private final long accessExpirationMs;
+    private final long refreshExpirationMs;
 
     public JwtTokenProvider(
-            @Value("${jwt.secret:dev-jwt-secret-key-must-be-at-least-256-bits-long-for-hmac-sha256-security-compliance-2026!}") String secret,
-            @Value("${jwt.access-token-expiration-ms:900000}") long accessTokenExpirationMs,
-            @Value("${jwt.refresh-token-expiration-ms:604800000}") long refreshTokenExpirationMs) {
-        this.signingKey = Keys.hmacShaKeyFor(secret.getBytes(StandardCharsets.UTF_8));
-        this.accessTokenExpirationMs = accessTokenExpirationMs;
-        this.refreshTokenExpirationMs = refreshTokenExpirationMs;
+            @Value("${jwt.secret:default-dev-jwt-secret-key-must-be-at-least-256-bits-long-for-hmac-sha-256!}") String secret,
+            @Value("${jwt.access-expiration-ms:3600000}") long accessExpirationMs,
+            @Value("${jwt.refresh-expiration-ms:604800000}") long refreshExpirationMs) {
+        byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
+        if (keyBytes.length < 32) {
+            byte[] padded = new byte[32];
+            System.arraycopy(keyBytes, 0, padded, 0, keyBytes.length);
+            keyBytes = padded;
+        }
+        this.secretKey = Keys.hmacShaKeyFor(keyBytes);
+        this.accessExpirationMs = accessExpirationMs;
+        this.refreshExpirationMs = refreshExpirationMs;
     }
 
-    public String generateAccessToken(User user) {
+    public String generateAccessToken(String userId, String email, String role) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + accessTokenExpirationMs);
+        Date expiryDate = new Date(now.getTime() + accessExpirationMs);
 
         return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("userId", user.getId().toString())
-                .claim("role", user.getRole().name())
-                .claim("fullName", user.getFullName())
-                .claim("tokenType", "ACCESS")
+                .subject(email)
+                .claim("userId", userId)
+                .claim("role", role)
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .signWith(signingKey)
+                .signWith(secretKey)
                 .compact();
     }
 
-    public String generateRefreshToken(User user) {
+    public String generateRefreshToken(String userId, String email) {
         Date now = new Date();
-        Date expiryDate = new Date(now.getTime() + refreshTokenExpirationMs);
+        Date expiryDate = new Date(now.getTime() + refreshExpirationMs);
 
         return Jwts.builder()
-                .subject(user.getEmail())
-                .claim("userId", user.getId().toString())
-                .claim("tokenType", "REFRESH")
+                .subject(email)
+                .claim("userId", userId)
+                .claim("type", "refresh")
                 .issuedAt(now)
                 .expiration(expiryDate)
-                .signWith(signingKey)
+                .signWith(secretKey)
                 .compact();
     }
 
     public String getEmailFromToken(String token) {
-        Claims claims = getClaims(token);
-        return claims != null ? claims.getSubject() : null;
-    }
-
-    public Claims getClaims(String token) {
-        try {
-            return Jwts.parser()
-                    .verifyWith(signingKey)
-                    .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-        } catch (JwtException | IllegalArgumentException e) {
-            return null;
-        }
+        Claims claims = Jwts.parser()
+                .verifyWith(secretKey)
+                .build()
+                .parseSignedClaims(token)
+                .getPayload();
+        return claims.getSubject();
     }
 
     public boolean validateToken(String token) {
         try {
-            Claims claims = Jwts.parser()
-                    .verifyWith(signingKey)
+            Jwts.parser()
+                    .verifyWith(secretKey)
                     .build()
-                    .parseSignedClaims(token)
-                    .getPayload();
-            return claims != null && claims.getExpiration().after(new Date());
+                    .parseSignedClaims(token);
+            return true;
         } catch (JwtException | IllegalArgumentException e) {
             return false;
         }
-    }
-
-    public long getAccessTokenExpirationSeconds() {
-        return accessTokenExpirationMs / 1000;
     }
 }
