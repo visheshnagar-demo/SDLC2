@@ -1,0 +1,3 @@
+com\sdlc\identity\IdentityApplicationTests.class
+com\sdlc\identity\controller\AuthControllerTest.class
+com\sdlc\identity\service\AuthServiceTest.class
