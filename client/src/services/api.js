@@ -51,6 +51,7 @@ apiClient.interceptors.response.use(
   }
 );
 
+// Auth Services
 export const registerUser = async (data) => {
   const response = await apiClient.post('/api/v1/auth/register', data);
   return response.data;
@@ -80,10 +81,41 @@ export const getCurrentUser = async () => {
   return response.data;
 };
 
+// Document & OCR Services
+export const uploadDocument = async (formDataOrFile, documentType = 'PASSPORT') => {
+  let body = formDataOrFile;
+  if (formDataOrFile instanceof File) {
+    body = new FormData();
+    body.append('file', formDataOrFile);
+    if (documentType) {
+      body.append('documentType', documentType);
+    }
+  }
+  const response = await apiClient.post('/api/v1/documents/upload', body, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  });
+  return response.data;
+};
+
+export const getDocumentById = async (id) => {
+  const response = await apiClient.get(`/api/v1/documents/${id}`);
+  return response.data;
+};
+
+export const getMyDocuments = async () => {
+  const response = await apiClient.get('/api/v1/documents/me');
+  return response.data;
+};
+
 export default {
   registerUser,
   loginUser,
   refreshAuthToken,
   logoutUser,
   getCurrentUser,
+  uploadDocument,
+  getDocumentById,
+  getMyDocuments,
 };
