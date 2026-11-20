@@ -1,5 +1,6 @@
 package com.citidirect.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -17,6 +18,7 @@ public class RegisterRequest {
 
     @NotBlank(message = "Full name is required")
     @JsonProperty("full_name")
+    @JsonAlias({"fullName", "name"})
     private String fullName;
 
     public RegisterRequest() {

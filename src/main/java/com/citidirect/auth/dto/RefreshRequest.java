@@ -1,5 +1,6 @@
 package com.citidirect.auth.dto;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.NotBlank;
 
@@ -7,6 +8,7 @@ public class RefreshRequest {
 
     @NotBlank(message = "Refresh token is required")
     @JsonProperty("refresh_token")
+    @JsonAlias({"refreshToken", "token"})
     private String refreshToken;
 
     public RefreshRequest() {

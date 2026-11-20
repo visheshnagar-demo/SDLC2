@@ -22,10 +22,10 @@ public class DocumentController {
         this.documentService = documentService;
     }
 
-    @PostMapping(value = "/upload", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PostMapping(value = {"", "/upload"}, consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<DocumentResponseDTO> uploadDocument(
             @RequestParam("file") MultipartFile file,
-            @RequestParam(value = "documentType", defaultValue = "PASSPORT") String documentType,
+            @RequestParam(value = "documentType", defaultValue = "PASSPORT", required = false) String documentType,
             @AuthenticationPrincipal User currentUser) {
         DocumentResponseDTO response = documentService.uploadDocument(file, documentType, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
