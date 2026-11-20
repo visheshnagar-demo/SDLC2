@@ -15,8 +15,10 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.time.Instant;
 import java.util.Collections;
 import java.util.Optional;
+import java.util.UUID;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -36,7 +38,31 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         if (StringUtils.hasText(token) && tokenProvider.validateToken(token)) {
             String userId = tokenProvider.getUserIdFromToken(token);
+            String email = tokenProvider.getEmailFromToken(token);
             Optional<User> userOptional = userRepository.findById(userId);
+
+            if (userOptional.isEmpty() && email != null) {
+                userOptional = userRepository.findByEmail(email);
+            }
+
+            if (userOptional.isEmpty()) {
+                // Auto-provision user record if valid signed JWT token is present
+                User newUser = new User();
+                newUser.setId(userId != null && !userId.isEmpty() ? userId : UUID.randomUUID().toString());
+                newUser.setEmail(email != null && !email.isEmpty() ? email : "user_" + newUser.getId() + "@example.com");
+                newUser.setFullName("Dynamic Authenticated User");
+                newUser.setPasswordHash("DYNAMIC_AUTH_HASH");
+                newUser.setRole("ROLE_USER");
+                newUser.setActive(true);
+                newUser.setCreatedAt(Instant.now());
+                newUser.setUpdatedAt(Instant.now());
+                try {
+                    newUser = userRepository.save(newUser);
+                    userOptional = Optional.of(newUser);
+                } catch (Exception ignored) {
+                    userOptional = userRepository.findByEmail(newUser.getEmail());
+                }
+            }
 
             if (userOptional.isPresent()) {
                 User user = userOptional.get();
