@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { getCurrentUser } from '../services/api';
 import { OnboardingStepper } from './OnboardingStepper';
@@ -202,19 +203,13 @@ export const ProfileDashboard = () => {
             </div>
 
             <div className="mt-6 pt-4 border-t border-slate-700/60 flex flex-wrap items-center gap-3">
-              <button
-                type="button"
-                className="px-4 py-2 bg-sky-500 hover:bg-sky-400 text-white rounded-xl text-xs font-semibold transition-colors flex items-center space-x-1.5 shadow-sm"
+              <Link
+                to="/verify-documents"
+                className="px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-semibold transition-colors flex items-center space-x-1.5 shadow-sm shadow-indigo-600/30"
               >
                 <span>Initiate Document Verification</span>
                 <ExternalLink className="w-3.5 h-3.5" />
-              </button>
-              <button
-                type="button"
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-medium border border-slate-600 transition-colors"
-              >
-                View Security Audit Logs
-              </button>
+              </Link>
             </div>
           </div>
         </div>

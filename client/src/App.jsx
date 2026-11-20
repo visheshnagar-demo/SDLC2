@@ -6,6 +6,7 @@ import { ProtectedRoute } from './components/ProtectedRoute';
 import { RegisterPage } from './pages/RegisterPage';
 import { LoginPage } from './pages/LoginPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { DocumentVerificationPage } from './pages/DocumentVerificationPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 
 const RootRedirect = () => {
@@ -13,7 +14,7 @@ const RootRedirect = () => {
   if (isLoading) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-sky-600 border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
@@ -23,7 +24,7 @@ const RootRedirect = () => {
 export const App = () => {
   return (
     <AuthProvider>
-      <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
+      <div className="min-h-screen bg-slate-900 flex flex-col font-sans text-slate-100">
         <Navbar />
         <main className="flex-1">
           <Routes>
@@ -35,6 +36,22 @@ export const App = () => {
               element={
                 <ProtectedRoute>
                   <DashboardPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/verify-documents"
+              element={
+                <ProtectedRoute>
+                  <DocumentVerificationPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/documents"
+              element={
+                <ProtectedRoute>
+                  <DocumentVerificationPage />
                 </ProtectedRoute>
               }
             />
