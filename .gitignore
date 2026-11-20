@@ -43,6 +43,10 @@ oauth_token
 *.swp
 *.swo
 
+# Java build output
+target/
+*.class
+
 # Python — bytecode & packaging
 __pycache__/
 *.py[cod]
